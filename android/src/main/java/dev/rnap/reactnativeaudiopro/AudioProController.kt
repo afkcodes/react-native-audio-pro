@@ -11,6 +11,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
+import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
@@ -27,9 +28,17 @@ object AudioProController {
 	private var reactContext: ReactApplicationContext? = null
 	private lateinit var engineBrowserFuture: ListenableFuture<MediaBrowser>
 	private var enginerBrowser: MediaBrowser? = null
+	private var engineBrowserConnecting: Boolean = false
 	private var engineProgressHandler: Handler? = null
 	private var engineProgressRunnable: Runnable? = null
 	private var enginePlayerListener: Player.Listener? = null
+	private val engineBrowserConnectionListener =
+		object : MediaBrowser.Listener {
+			override fun onDisconnected(controller: MediaController) {
+				log("MediaBrowser disconnected, clearing cached instance")
+				handleBrowserDisconnected(controller)
+			}
+		}
 
 	private var activeTrack: ReadableMap? = null
 	private var activeVolume: Float = 1.0f
@@ -65,24 +74,73 @@ object AudioProController {
 	}
 
 	private fun ensureSession() {
-		if (!::engineBrowserFuture.isInitialized || enginerBrowser == null) {
+		if (!engineBrowserConnecting && (!::engineBrowserFuture.isInitialized || !hasConnectedBrowser())) {
 			CoroutineScope(Dispatchers.Main).launch {
 				internalPrepareSession()
 			}
 		}
 	}
 
+	private fun hasConnectedBrowser(): Boolean {
+		return enginerBrowser?.isConnected == true
+	}
+
+	private fun handleBrowserDisconnected(controller: MediaController) {
+		runOnUiThread {
+			// Only clear if we're dealing with the active controller reference
+			if (enginerBrowser == controller) {
+				detachPlayerListener()
+				stopProgressTimer()
+				if (::engineBrowserFuture.isInitialized) {
+					MediaBrowser.releaseFuture(engineBrowserFuture)
+				}
+				enginerBrowser = null
+				engineBrowserConnecting = false
+			} else {
+				log(
+					"Ignoring disconnect from stale MediaBrowser instance. Active=$enginerBrowser, disconnected=$controller"
+				)
+			}
+		}
+	}
+
 	private suspend fun internalPrepareSession() {
-		log("Preparing MediaBrowser session")
-		val token =
-			SessionToken(
-				reactContext!!,
-				ComponentName(reactContext!!, AudioProPlaybackService::class.java)
-			)
-		engineBrowserFuture = MediaBrowser.Builder(reactContext!!, token).buildAsync()
-		enginerBrowser = engineBrowserFuture.await()
-		attachPlayerListener()
-		log("MediaBrowser is ready")
+		if (engineBrowserConnecting) {
+			return
+		}
+		engineBrowserConnecting = true
+		try {
+			if (::engineBrowserFuture.isInitialized) {
+				MediaBrowser.releaseFuture(engineBrowserFuture)
+			}
+			if (enginerBrowser != null) {
+				detachPlayerListener()
+				enginerBrowser = null
+			}
+			if (hasConnectedBrowser()) {
+				// Another concurrent initializer may have already connected.
+				return
+			}
+			val context = reactContext ?: run {
+				log("React context unavailable, skipping MediaBrowser initialization")
+				return
+			}
+			log("Preparing MediaBrowser session")
+			val token =
+				SessionToken(
+					context,
+					ComponentName(context, AudioProPlaybackService::class.java)
+				)
+			engineBrowserFuture =
+				MediaBrowser.Builder(context, token)
+					.setListener(engineBrowserConnectionListener)
+					.buildAsync()
+			enginerBrowser = engineBrowserFuture.await()
+			attachPlayerListener()
+			log("MediaBrowser is ready")
+		} finally {
+			engineBrowserConnecting = false
+		}
 	}
 
 	// Data class to hold parsed play options
@@ -364,7 +422,7 @@ object AudioProController {
 	 * Ensures the session is ready and prepares for new playback.
 	 */
 	private suspend fun ensurePreparedForNewPlayback() {
-		if (enginerBrowser == null) {
+		if (!hasConnectedBrowser()) {
 			internalPrepareSession()
 		}
 		prepareForNewPlayback()
@@ -427,6 +485,7 @@ object AudioProController {
 				MediaBrowser.releaseFuture(engineBrowserFuture)
 			}
 			enginerBrowser = null
+			engineBrowserConnecting = false
 		}
 	}
 
