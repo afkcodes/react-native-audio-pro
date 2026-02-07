@@ -29,6 +29,7 @@ export interface AudioProStore {
 	setVolume: (volume: number) => void;
 	setError: (error: AudioProPlaybackErrorPayload | null) => void;
 	updateFromEvent: (event: AudioProEvent) => void;
+	activeTrackIndex: number;
 }
 
 function getTrackIdentity(track: AudioProTrack | null | undefined): string | null {
@@ -59,6 +60,7 @@ export const internalStore = create<AudioProStore>((set, get) => ({
 	playerState: AudioProState.IDLE,
 	position: 0,
 	duration: 0,
+	activeTrackIndex: -1,
 	playbackSpeed: 1.0,
 	volume: normalizeVolume(1.0),
 	debug: false,
@@ -146,13 +148,18 @@ export const internalStore = create<AudioProStore>((set, get) => ({
 			updates.duration = payload.duration;
 		}
 
+		if (payload?.index !== undefined && payload.index !== current.activeTrackIndex) {
+			updates.activeTrackIndex = payload.index;
+		}
+
 		// 5. Track loading/unloading
 		if (track) {
 			const prev = current.trackPlaying;
 			const eventSignalsTrackSwap =
-				type === AudioProEventType.STATE_CHANGED &&
-				(payload?.state === AudioProState.LOADING ||
-					payload?.state === AudioProState.PLAYING);
+				(type === AudioProEventType.STATE_CHANGED &&
+					(payload?.state === AudioProState.LOADING ||
+						payload?.state === AudioProState.PLAYING)) ||
+				type === AudioProEventType.TRACK_CHANGED;
 			const shouldAdoptTrack = !prev || tracksMatch(prev, track) || eventSignalsTrackSwap;
 
 			if (shouldAdoptTrack && (!prev || hasTrackMetadataChanged(prev, track))) {

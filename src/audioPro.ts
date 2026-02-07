@@ -6,16 +6,10 @@ import {
 	guardTrackPlaying,
 	logDebug,
 	normalizeVolume,
-	validateTrack,
 	validateFilePath,
+	validateTrack,
 } from './utils';
-import {
-	AudioProAmbientEventType,
-	AudioProEventType,
-	AudioProState,
-	DEFAULT_CONFIG,
-	DEFAULT_SEEK_MS,
-} from './values';
+import { AudioProAmbientEventType, AudioProState, DEFAULT_CONFIG } from './values';
 
 import type {
 	AmbientAudioPlayOptions,
@@ -98,65 +92,19 @@ export const AudioPro = {
 	},
 
 	/**
-	 * Load and play an audio track
+	 * Resume playback or start playback if paused/stopped.
+	 * To play a specific track, use `addToQueue` then `play` or `skipTo`.
 	 *
-	 * @param track - The audio track to play
-	 * @param track.id - Unique identifier for the track
-	 * @param track.url - URL of the audio file (http://, https://, or file://)
-	 * @param track.title - Title of the track
-	 * @param track.artwork - URL of the artwork image (http://, https://, or file://)
-	 * @param track.album - Optional album name
-	 * @param track.artist - Optional artist name
 	 * @param options - Optional playback options
-	 * @param options.autoPlay - Whether to start playback immediately (default: true)
-	 * @param options.headers - Custom HTTP headers for audio and artwork requests
 	 */
-	play(track: AudioProTrack, options: AudioProPlayOptions = {}) {
-		const resolvedTrack = { ...track };
-
-		// Validate URL schemes for track and artwork
-		validateFilePath(resolvedTrack.url);
-		validateFilePath(resolvedTrack.artwork);
-
-		if (!validateTrack(resolvedTrack)) {
-			const errorMessage = '[react-native-audio-pro]: Invalid track provided to play().';
-			console.error(errorMessage);
-			emitter.emit('AudioProEvent', {
-				type: AudioProEventType.PLAYBACK_ERROR,
-				track: null,
-				payload: {
-					error: errorMessage,
-					errorCode: -1,
-				},
-			});
-			return;
-		}
-
-		const { error, setError, configureOptions, playbackSpeed, setTrackPlaying, volume } =
-			internalStore.getState();
-
-		// Clear errors and set track as playing
-		setTrackPlaying(resolvedTrack);
-		if (error) {
-			setError(null);
-		}
-
-		// Prepare options for native module
-		const nativeOptions = {
-			...configureOptions,
-			...options,
-			playbackSpeed,
-			volume: normalizeVolume(volume),
-		};
-
-		logDebug('AudioPro: play()', track, 'options:', options, 'nativeOptions:', nativeOptions);
-
-		NativeAudioPro.play(resolvedTrack, nativeOptions);
+	play(options: AudioProPlayOptions = {}) {
+		// play() is valid in IDLE state as it starts playback
+		logDebug('AudioPro: play()', options);
+		NativeAudioPro.play(null, options); // Pass null track to indicate resume/start queue
 	},
 
 	/**
 	 * Pause the current playback
-	 * No-op if no track is playing or player is in IDLE or ERROR state
 	 */
 	pause() {
 		if (!guardTrackPlaying('pause')) return;
@@ -166,54 +114,85 @@ export const AudioPro = {
 	},
 
 	/**
-	 * Resume playback if paused
-	 * No-op if no track is playing or player is in IDLE or ERROR state
-	 */
-	resume() {
-		if (!guardTrackPlaying('resume')) return;
-		logDebug('AudioPro: resume()');
-		if (!isValidPlayerStateForOperation('resume()')) return;
-
-		// Clear any existing error
-		const { error, setError } = internalStore.getState();
-		if (error) {
-			setError(null);
-		}
-		NativeAudioPro.resume();
-	},
-
-	/**
-	 * Stop the playback, resetting to position 0
-	 * This keeps the track loaded but resets the position
+	 * Stop playback and reset position
 	 */
 	stop() {
 		logDebug('AudioPro: stop()');
-		const { error, setError } = internalStore.getState();
-		if (error) {
-			setError(null);
-		}
+		const { setError } = internalStore.getState();
+		setError(null);
 		NativeAudioPro.stop();
 	},
 
 	/**
-	 * Fully reset the player to IDLE state
-	 * Tears down the player instance and removes all media sessions
+	 * Add tracks to the queue.
+	 *
+	 * @param tracks - Single track or array of tracks to add
 	 */
-	clear() {
-		logDebug('AudioPro: clear()');
-		const { error, setError, setTrackPlaying, setVolume } = internalStore.getState();
-		if (error) {
-			setError(null);
+	addToQueue(tracks: AudioProTrack | AudioProTrack[]): void {
+		const trackList = Array.isArray(tracks) ? tracks : [tracks];
+		const validTracks = trackList
+			.map((t) => {
+				const rt = { ...t };
+				validateFilePath(rt.url);
+				validateFilePath(rt.artwork);
+				return rt;
+			})
+			.filter((t) => validateTrack(t));
+
+		if (validTracks.length === 0) {
+			console.warn('[react-native-audio-pro]: No valid tracks provided to addToQueue().');
+			return;
 		}
-		setTrackPlaying(null);
-		setVolume(normalizeVolume(1.0));
-		NativeAudioPro.clear();
+
+		logDebug('AudioPro: addToQueue()', validTracks.length, 'tracks');
+		NativeAudioPro.addToQueue(validTracks);
+	},
+
+	/**
+	 * Clear the playback queue
+	 */
+	clearQueue(): void {
+		logDebug('AudioPro: clearQueue()');
+		NativeAudioPro.clearQueue();
+	},
+
+	/**
+	 * Skip to the next track
+	 */
+	playNext(): void {
+		logDebug('AudioPro: playNext()');
+		NativeAudioPro.playNext();
+	},
+
+	/**
+	 * Skip to the previous track
+	 */
+	playPrevious(): void {
+		logDebug('AudioPro: playPrevious()');
+		NativeAudioPro.playPrevious();
+	},
+
+	/**
+	 * Skip to a specific index in the queue
+	 * @param index - The index to skip to (0-based)
+	 */
+	skipTo(index: number): void {
+		logDebug('AudioPro: skipTo()', index);
+		NativeAudioPro.skipTo(index);
+	},
+
+	/**
+	 * Remove a track from the queue at the specified index
+	 * @param index - Index of the track to remove (0-based)
+	 */
+	removeTrack(index: number): void {
+		logDebug('AudioPro: removeTrack()', index);
+		NativeAudioPro.removeTrack(index);
 	},
 
 	/**
 	 * Seek to a specific position in the current track
-	 *
-	 * @param positionMs - Position in milliseconds to seek to
+	 * @param positionMs - Position in milliseconds
 	 */
 	seekTo(positionMs: number) {
 		if (!guardTrackPlaying('seekTo')) return;
@@ -224,30 +203,44 @@ export const AudioPro = {
 	},
 
 	/**
-	 * Seek forward by the specified amount
-	 *
-	 * @param amountMs - Amount in milliseconds to seek forward (default: 30000ms)
+	 * Seek by a relative offset
+	 * @param offsetMs - Offset in milliseconds (positive for forward, negative for backward)
 	 */
-	seekForward(amountMs: number = DEFAULT_SEEK_MS) {
-		if (!guardTrackPlaying('seekForward')) return;
-		logDebug('AudioPro: seekForward()', amountMs);
-		if (!isValidPlayerStateForOperation('seekForward()')) return;
-		if (amountMs <= 0) return;
-		NativeAudioPro.seekForward(amountMs);
+	seekBy(offsetMs: number) {
+		if (!guardTrackPlaying('seekBy')) return;
+		logDebug('AudioPro: seekBy()', offsetMs);
+		if (!isValidPlayerStateForOperation('seekBy()')) return;
+		NativeAudioPro.seekBy(offsetMs);
 	},
 
 	/**
-	 * Seek backward by the specified amount
-	 *
-	 * @param amountMs - Amount in milliseconds to seek backward (default: 30000ms)
+	 * Set the repeat mode
+	 * @param mode - "OFF" | "TRACK" | "QUEUE"
 	 */
-	seekBack(amountMs: number = DEFAULT_SEEK_MS) {
-		if (!guardTrackPlaying('seekBack')) return;
-		logDebug('AudioPro: seekBack()', amountMs);
-		if (!isValidPlayerStateForOperation('seekBack()')) return;
-		if (amountMs <= 0) return;
-		NativeAudioPro.seekBack(amountMs);
+	setRepeatMode(mode: 'OFF' | 'TRACK' | 'QUEUE') {
+		logDebug('AudioPro: setRepeatMode()', mode);
+		NativeAudioPro.setRepeatMode(mode);
 	},
+
+	/**
+	 * Set shuffle mode
+	 * @param enabled - true to enable shuffle, false to disable
+	 */
+	setShuffleMode(enabled: boolean) {
+		logDebug('AudioPro: setShuffleMode()', enabled);
+		NativeAudioPro.setShuffleMode(enabled);
+	},
+
+	/**
+	 * Toggle shuffle mode
+	 * @returns The new shuffle state
+	 */
+	/* 
+	toggleShuffle() {
+		// keeping this might require sync state reading which is async
+		// better handle toggle in UI or store state in JS
+	} 
+	*/
 
 	/**
 	 * Add a listener for audio player events
@@ -285,6 +278,14 @@ export const AudioPro = {
 	 */
 	getPlayingTrack() {
 		return internalStore.getState().trackPlaying;
+	},
+
+	/**
+	 * Get the index of the currently playing track in the queue
+	 * @returns Index of the current track, or -1 if no track is playing
+	 */
+	getActiveTrackIndex() {
+		return internalStore.getState().activeTrackIndex;
 	},
 
 	/**
@@ -381,6 +382,16 @@ export const AudioPro = {
 		logDebug('AudioPro: setProgressInterval()', clampedMs);
 		const { setConfigureOptions, configureOptions } = internalStore.getState();
 		setConfigureOptions({ ...configureOptions, progressIntervalMs: clampedMs });
+	},
+
+	/**
+	 * Get the current playback queue
+	 *
+	 * @returns Promise resolving to the list of tracks in the queue
+	 */
+	getQueue(): Promise<AudioProTrack[]> {
+		logDebug('AudioPro: getQueue()');
+		return NativeAudioPro.getQueue();
 	},
 
 	/**

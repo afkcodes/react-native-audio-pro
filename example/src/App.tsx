@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import {
-	ActivityIndicator,
+	DeviceEventEmitter,
 	Image,
 	SafeAreaView,
 	ScrollView,
@@ -11,47 +11,50 @@ import {
 } from 'react-native';
 
 import Slider from '@react-native-community/slider';
-import { type AudioProTrack, useAudioPro } from 'react-native-audio-pro';
+import { AudioPro, AudioProState, type AudioProTrack, useAudioPro } from 'react-native-audio-pro';
 
-import {
-	getCurrentTrackIndex,
-	getProgressInterval,
-	setCurrentTrackIndex,
-	setProgressInterval,
-} from './player-service';
 import { playlist } from './playlist';
 import { styles } from './styles';
-import { formatTime, getStateColor } from './utils';
-import { AudioPro } from '../../src/audioPro';
-import { AudioProState } from '../../src/values';
+import { formatTime } from './utils';
 
 export default function App() {
-	const [currentIndex, setLocalIndex] = useState(getCurrentTrackIndex());
-	const [progressInterval, setLocalProgressInterval] = useState(getProgressInterval());
-	const currentTrack = playlist[currentIndex];
-	const { position, duration, state, playingTrack, playbackSpeed, volume, error } = useAudioPro();
+	const {
+		position,
+		duration,
+		state,
+		playingTrack,
+		activeTrackIndex,
+		playbackSpeed,
+		volume,
+		error,
+	} = useAudioPro();
+
+	// Use playingTrack directly from native (source of truth)
+	// Fallback to first track in playlist if nothing is playing
+	const currentTrack = playingTrack ?? playlist[0];
+
+	// For queue controls, we still need an index reference
+	const queueIndex = activeTrackIndex === -1 ? 0 : activeTrackIndex;
 	const [ambientState, setAmbientState] = useState<'stopped' | 'playing' | 'paused'>('stopped');
 
-	// Sync the local index with the player service
-	useEffect(() => {
-		const index = getCurrentTrackIndex();
-		if (index !== currentIndex) {
-			setLocalIndex(index);
-			// Mark that we need to load the track if it changed
-			if (state !== AudioProState.PLAYING) {
-				setNeedsTrackLoad(true);
-			}
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [state]); // Re-sync when playback state changes
+	// Track whether we need to load a new track before playing
+	const [needsTrackLoad, setNeedsTrackLoad] = useState(true);
 
-	// Reset needsTrackLoad when the track actually changes
+	// new loop/shuffle state
+	const [loopMode, setLoopMode] = useState<'OFF' | 'TRACK' | 'QUEUE'>('OFF');
+	const [shuffle, setShuffle] = useState(false);
+
+	// Update needsTrackLoad based on state
 	useEffect(() => {
-		if (playingTrack?.id === currentTrack?.id) {
+		if (state === AudioProState.IDLE || state === AudioProState.STOPPED) {
+			// If we are stopped/idle and index implies we want to play, we might need load?
+			// Actually, if we rely on native queue, we don't need this complex logic.
+			// But for the "Play" button to work initially:
+		}
+		if (state === AudioProState.PLAYING) {
 			setNeedsTrackLoad(false);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [playingTrack?.id]);
+	}, [state]);
 
 	// Set up ambient audio event listeners
 	useEffect(() => {
@@ -74,41 +77,38 @@ export default function App() {
 			}
 		});
 
+		const logListener = DeviceEventEmitter.addListener('AudioProLog', (event) => {
+			console.log('[NativeLog]', event.message);
+		});
+
 		// Clean up listeners when component unmounts
 		return () => {
 			ambientListener.remove();
+			logListener.remove();
 		};
 	}, []);
 
-	// Update both local state and player service when changing tracks
-	const updateCurrentIndex = (index: number) => {
-		setLocalIndex(index);
-		setCurrentTrackIndex(index);
-	};
-
 	// Track whether we need to load a new track before playing
-	const [needsTrackLoad, setNeedsTrackLoad] = useState(true);
-
-	// Track whether to autoPlay when loading a track
-	const [autoPlay, setAutoPlay] = useState(true);
 
 	if (!currentTrack) return null;
 
 	// Handle play/pause button press
 	const handlePlayPause = () => {
 		if (state === AudioProState.PLAYING) {
-			// If playing, simply pause
 			AudioPro.pause();
-		} else if (state === AudioProState.PAUSED && !needsTrackLoad) {
-			// If paused and we don't need to load a new track, resume
-			AudioPro.resume();
-		} else {
-			// If stopped, or we need to load a new track, play the current track
-			AudioPro.play(currentTrack, {
-				autoPlay,
-				// startTimeMs: 60000,
-			});
-			setNeedsTrackLoad(false);
+		} else if (
+			state === AudioProState.PAUSED ||
+			state === AudioProState.STOPPED ||
+			state === AudioProState.IDLE
+		) {
+			if (needsTrackLoad) {
+				// Initial load
+				AudioPro.play();
+				setNeedsTrackLoad(false);
+			} else {
+				// Just resume
+				AudioPro.play();
+			}
 		}
 	};
 
@@ -118,7 +118,7 @@ export default function App() {
 	};
 
 	const handleClear = () => {
-		AudioPro.clear();
+		AudioPro.clearQueue();
 		setNeedsTrackLoad(true);
 	};
 
@@ -127,49 +127,11 @@ export default function App() {
 	};
 
 	const handleSeekBack = () => {
-		AudioPro.seekBack();
+		AudioPro.seekBy(-5000);
 	};
 
 	const handleSeekForward = () => {
-		AudioPro.seekForward();
-	};
-
-	const handlePrevious = () => {
-		if (position > 5000) {
-			// If we're more than 5 seconds into the track, seek to beginning
-			AudioPro.seekTo(0);
-		} else {
-			// Otherwise, go to previous track
-			const newIndex = currentIndex > 0 ? currentIndex - 1 : playlist.length - 1;
-
-			// Update the track index
-			updateCurrentIndex(newIndex);
-
-			// If we're currently playing or paused (but loaded), immediately load the new track
-			if (state === AudioProState.PLAYING || state === AudioProState.PAUSED) {
-				AudioPro.play(playlist[newIndex] as AudioProTrack, {
-					autoPlay,
-				});
-				setNeedsTrackLoad(false);
-			} else {
-				// Otherwise, mark that we need to load the track when play is pressed
-				setNeedsTrackLoad(true);
-			}
-		}
-	};
-
-	const handleNext = () => {
-		const newIndex = (currentIndex + 1) % playlist.length;
-		updateCurrentIndex(newIndex);
-
-		// If we're currently playing or paused (but loaded), immediately load the new track
-		if (state === AudioProState.PLAYING || state === AudioProState.PAUSED) {
-			AudioPro.play(playlist[newIndex] as AudioProTrack, { autoPlay });
-			setNeedsTrackLoad(false);
-		} else {
-			// Otherwise, mark that we need to load the track when play is pressed
-			setNeedsTrackLoad(true);
-		}
+		AudioPro.seekBy(5000);
 	};
 
 	const handleIncreaseSpeed = () => {
@@ -190,20 +152,6 @@ export default function App() {
 	const handleDecreaseVolume = () => {
 		const newVolume = Math.max(0.0, volume - 0.1);
 		AudioPro.setVolume(newVolume);
-	};
-
-	// These handlers adjust how frequently progress events are emitted (in ms)
-	// Changes take effect on the next call to play()
-	const handleIncreaseProgressInterval = () => {
-		const newInterval = Math.min(10000, progressInterval + 100);
-		setProgressInterval(newInterval);
-		setLocalProgressInterval(newInterval);
-	};
-
-	const handleDecreaseProgressInterval = () => {
-		const newInterval = Math.max(100, progressInterval - 100);
-		setProgressInterval(newInterval);
-		setLocalProgressInterval(newInterval);
 	};
 
 	// Handle ambient audio playback
@@ -269,36 +217,71 @@ export default function App() {
 					</Text>
 				</View>
 				<View style={styles.controlsRow}>
-					<TouchableOpacity onPress={handlePrevious}>
-						<Text style={styles.controlText}>prev</Text>
+					<TouchableOpacity onPress={() => AudioPro.playPrevious()}>
+						<Image
+							source={{
+								uri: 'https://img.icons8.com/ios-glyphs/60/ffffff/skip-to-start.png',
+							}}
+							style={styles.controlIcon}
+						/>
 					</TouchableOpacity>
-					{state === AudioProState.LOADING ? (
-						<View style={styles.loadingContainer}>
-							<ActivityIndicator size="large" color="#1EB1FC" />
-						</View>
-					) : (
-						<TouchableOpacity onPress={handlePlayPause}>
-							<Text style={styles.playPauseText}>
-								{state === AudioProState.PLAYING
-									? 'pause()'
-									: state === AudioProState.PAUSED && !needsTrackLoad
-										? 'resume()'
-										: 'play(track)'}
-							</Text>
-						</TouchableOpacity>
-					)}
-					<TouchableOpacity onPress={handleNext}>
-						<Text style={styles.controlText}>next</Text>
-					</TouchableOpacity>
-				</View>
-				<View style={styles.seekRow}>
+
 					<TouchableOpacity onPress={handleSeekBack}>
-						<Text style={styles.controlText}>-30s</Text>
+						<Text style={styles.controlText}>-5s</Text>
 					</TouchableOpacity>
+
+					<TouchableOpacity onPress={handlePlayPause} style={styles.playPauseButton}>
+						<Image
+							source={{
+								uri:
+									state === AudioProState.PLAYING ||
+									state === AudioProState.LOADING
+										? 'https://img.icons8.com/ios-glyphs/60/ffffff/pause--v1.png'
+										: 'https://img.icons8.com/ios-glyphs/60/ffffff/play--v1.png',
+							}}
+							style={styles.playPauseIcon}
+						/>
+					</TouchableOpacity>
+
 					<TouchableOpacity onPress={handleSeekForward}>
-						<Text style={styles.controlText}>+30s</Text>
+						<Text style={styles.controlText}>+5s</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity onPress={() => AudioPro.playNext()}>
+						<Image
+							source={{
+								uri: 'https://img.icons8.com/ios-glyphs/60/ffffff/end--v1.png',
+							}}
+							style={styles.controlIcon}
+						/>
 					</TouchableOpacity>
 				</View>
+
+				<View style={[styles.speedRow, { marginTop: 10 }]}>
+					<TouchableOpacity
+						onPress={() => {
+							const modes: ('OFF' | 'TRACK' | 'QUEUE')[] = ['OFF', 'TRACK', 'QUEUE'];
+							const currentIndex = modes.indexOf(loopMode);
+							const nextIndex = (currentIndex + 1) % modes.length;
+							const next = modes[nextIndex] || 'OFF';
+							setLoopMode(next);
+							AudioPro.setRepeatMode(next);
+						}}
+					>
+						<Text style={styles.controlText}>Loop: {loopMode}</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						onPress={() => {
+							const next = !shuffle;
+							setShuffle(next);
+							AudioPro.setShuffleMode(next);
+						}}
+					>
+						<Text style={styles.controlText}>Shuffle: {shuffle ? 'ON' : 'OFF'}</Text>
+					</TouchableOpacity>
+				</View>
+
 				<View style={styles.speedRow}>
 					<TouchableOpacity onPress={handleDecreaseSpeed}>
 						<Text style={styles.controlText}>-</Text>
@@ -318,15 +301,8 @@ export default function App() {
 							<Text style={styles.controlText}>+</Text>
 						</TouchableOpacity>
 					</View>
-					<View style={styles.speedRow}>
-						<TouchableOpacity onPress={handleDecreaseProgressInterval}>
-							<Text style={styles.controlText}>-</Text>
-						</TouchableOpacity>
-						<Text style={styles.speedText}>Prog: {progressInterval}ms</Text>
-						<TouchableOpacity onPress={handleIncreaseProgressInterval}>
-							<Text style={styles.controlText}>+</Text>
-						</TouchableOpacity>
-					</View>
+
+					{/* Progress interval controls moved or removed if cleaner UI desired, keeping for debug */}
 				</View>
 				<View style={styles.stopRow}>
 					<TouchableOpacity onPress={handleStop}>
@@ -337,18 +313,49 @@ export default function App() {
 					</TouchableOpacity>
 				</View>
 
-				<View style={styles.stopRow}>
-					<TouchableOpacity onPress={() => setAutoPlay(!autoPlay)}>
-						<Text style={styles.optionText}>
-							autoPlay: {/* eslint-disable-next-line react-native/no-inline-styles */}
-							<Text style={{ color: autoPlay ? '#90EE90' : '#FFA500' }}>
-								{autoPlay ? 'true' : 'false'}
-							</Text>
-						</Text>
-					</TouchableOpacity>
-					<Text style={styles.stateText}>
-						state: <Text style={{ color: getStateColor(state) }}>{state}</Text>
-					</Text>
+				<View style={styles.ambientSection}>
+					<Text style={styles.sectionTitle}>Queue Controls</Text>
+					<View style={styles.stopRow}>
+						<TouchableOpacity
+							onPress={() => {
+								const nextIndex = (queueIndex + 1) % playlist.length;
+								const track1 = playlist[nextIndex];
+								const track2 = playlist[(nextIndex + 1) % playlist.length];
+
+								AudioPro.addToQueue([track1, track2] as AudioProTrack[]);
+								console.log('Added 2 tracks to queue');
+							}}
+						>
+							<Text style={styles.controlText}>+2 Tracks</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={() => {
+								AudioPro.clearQueue();
+								console.log('Queue cleared');
+							}}
+						>
+							<Text style={styles.controlText}>ClearQ</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={async () => {
+								const q = await AudioPro.getQueue();
+								console.log('Queue:', q);
+								// Simple alert via console for now
+							}}
+						>
+							<Text style={styles.controlText}>LogQ</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={() => {
+								// Remove the next track in the queue (if any)
+								const nextIndex = queueIndex + 1;
+								AudioPro.removeTrack(nextIndex);
+								console.log('Removed track at index:', nextIndex);
+							}}
+						>
+							<Text style={styles.controlText}>RmNext</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
 
 				<View style={styles.ambientSection}>

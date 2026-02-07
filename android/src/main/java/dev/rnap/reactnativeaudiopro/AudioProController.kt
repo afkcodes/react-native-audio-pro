@@ -25,6 +25,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.guava.await
 import kotlin.math.abs
 
+import android.app.PendingIntent
+import java.util.ArrayList
+
 object AudioProController {
 	private const val DUPLICATE_POSITION_EPSILON_MS = 250L
 
@@ -70,7 +73,21 @@ object AudioProController {
 			if (!settingDebugIncludesProgress && args.isNotEmpty() && args[0] == AudioProModule.EVENT_TYPE_PROGRESS) {
 				return
 			}
-			Log.d("[react-native-audio-pro]", args.joinToString(" "))
+			val msg = args.joinToString(" ")
+			Log.d(Constants.LOG_TAG, msg)
+			
+			// Always emit to JS for debugging if context is available
+			try {
+				if (reactContext != null && reactContext!!.hasActiveCatalystInstance()) {
+					val params = Arguments.createMap()
+					params.putString("message", msg)
+					reactContext!!
+						.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+						.emit("AudioProLog", params)
+				}
+			} catch (e: Exception) {
+				// Ignore
+			}
 		}
 	}
 
@@ -78,9 +95,21 @@ object AudioProController {
 		reactContext = context
 	}
 
-	private fun ensureSession() {
-		if (!engineBrowserConnecting && (!::engineBrowserFuture.isInitialized || !hasConnectedBrowser())) {
-			CoroutineScope(Dispatchers.Main).launch {
+	private suspend fun ensureSession() {
+		if (enginerBrowser == null) {
+			if (engineBrowserConnecting) {
+				// Wait for pending connection
+				while (engineBrowserConnecting || enginerBrowser == null) {
+					kotlinx.coroutines.delay(50)
+					if (!engineBrowserConnecting && enginerBrowser == null) {
+						// Connection attempted but failed or finished without result?
+						// Try to init again if still null
+						break 
+					}
+				}
+			}
+			
+			if (enginerBrowser == null) {
 				internalPrepareSession()
 			}
 		}
@@ -111,42 +140,44 @@ object AudioProController {
 
 	private suspend fun internalPrepareSession() {
 		if (engineBrowserConnecting) {
+			// Double check locking
+			while (engineBrowserConnecting) {
+				kotlinx.coroutines.delay(50)
+			}
 			return
 		}
+		
+		val context = reactContext ?: run {
+			log("React context unavailable, skipping MediaBrowser initialization")
+			return
+		}
+		
 		engineBrowserConnecting = true
 		try {
-			if (::engineBrowserFuture.isInitialized) {
-				MediaBrowser.releaseFuture(engineBrowserFuture)
-			}
-			if (enginerBrowser != null) {
-				detachPlayerListener()
-				enginerBrowser = null
-			}
-			if (hasConnectedBrowser()) {
-				// Another concurrent initializer may have already connected.
-				return
-			}
-			val context = reactContext ?: run {
-				log("React context unavailable, skipping MediaBrowser initialization")
-				return
-			}
 			log("Preparing MediaBrowser session")
 			val token =
 				SessionToken(
 					context,
 					ComponentName(context, AudioProPlaybackService::class.java)
 				)
+			
+			// We need to wait for the future to complete
+			// Guava ListenableFuture to Coroutine
 			engineBrowserFuture =
 				MediaBrowser.Builder(context, token)
 					.setListener(engineBrowserConnectionListener)
 					.buildAsync()
+					
 			enginerBrowser = engineBrowserFuture.await()
 			attachPlayerListener()
 			log("MediaBrowser is ready")
+		} catch (e: Exception) {
+			log("Failed to connect MediaBrowser: ${e.message}")
 		} finally {
 			engineBrowserConnecting = false
 		}
 	}
+
 
 	// Data class to hold parsed play options
 	private data class PlaybackOptions(
@@ -161,11 +192,13 @@ object AudioProController {
 		val showNextPrevControls: Boolean,
 		val showSkipControls: Boolean,
 		val skipIntervalMs: Long,
+		val addTrack: Boolean = false, // If true, adds track to queue instead of replacing
 	)
 
 	// Extracts and applies play options from JS before playback
 	// Enforces mutual exclusivity between next/prev and skip controls for session config.
 	private fun extractPlaybackOptions(options: ReadableMap): PlaybackOptions {
+		val addTrack = if (options.hasKey("addTrack")) options.getBoolean("addTrack") else false
 		val contentType = if (options.hasKey("contentType")) {
 			options.getString("contentType") ?: "MUSIC"
 		} else "MUSIC"
@@ -191,14 +224,14 @@ object AudioProController {
 		// Warn if showNextPrevControls is changed after session initialization
 		if (::engineBrowserFuture.isInitialized && enginerBrowser != null && showControls != settingShowNextPrevControls) {
 			Log.w(
-				"[react-native-audio-pro]",
+				Constants.LOG_TAG,
 				"showNextPrevControls changed mid-session; call clear() before changing."
 			)
 		}
 		// Warn if showSkipControls is changed after session initialization
 		if (::engineBrowserFuture.isInitialized && enginerBrowser != null && showSkip != settingShowSkipControls) {
 			Log.w(
-				"[react-native-audio-pro]",
+				Constants.LOG_TAG,
 				"showSkipControls changed mid-session; call clear() before changing."
 			)
 		}
@@ -209,7 +242,7 @@ object AudioProController {
 		if (showControls && showSkip) {
 			// If both are requested, prefer next/prev and log a warning.
 			Log.w(
-				"[react-native-audio-pro]",
+				Constants.LOG_TAG,
 				"Both showNextPrevControls and showSkipControls are true; only next/prev controls will be enabled for this session."
 			)
 			resolvedShowSkip = false
@@ -241,6 +274,7 @@ object AudioProController {
 			resolvedShowNextPrev,
 			resolvedShowSkip,
 			skipIntervalMs,
+			addTrack,
 		)
 	}
 
@@ -268,37 +302,8 @@ object AudioProController {
 		flowLastEmittedDuration = null
 	}
 
-	suspend fun play(track: ReadableMap, options: ReadableMap) {
-		val opts = extractPlaybackOptions(options)
-
-		ensurePreparedForNewPlayback()
-		activeTrack = track
-
-		// If startTimeMs is provided, set a pending seek position
-		if (opts.startTimeMs != null) {
-			flowPendingSeekPosition = opts.startTimeMs
-		}
-
-		log(
-			"Configured with " +
-				"contentType=${opts.contentType} " +
-				"enableDebug=${opts.enableDebug} " +
-				"includeProgressInDebug=${opts.includeProgressInDebug} " +
-				"speed=${opts.speed} " +
-				"volume=${opts.volume} " +
-				"autoPlay=${opts.autoPlay} " +
-				"startTimeMs=${opts.startTimeMs} " +
-				"progressIntervalMs=${opts.progressIntervalMs} " +
-				"showNextPrevControls=${opts.showNextPrevControls} " +
-				"showSkipControls=${opts.showSkipControls} " +
-				"skipIntervalMs=${opts.skipIntervalMs}"
-		)
-
-		val url = track.getString("url") ?: run {
-			log("Missing track URL")
-			return
-		}
-
+	private fun toMediaItem(track: ReadableMap): MediaItem {
+		val url = track.getString("url") ?: ""
 		val title = track.getString("title") ?: "Unknown Title"
 		val artist = track.getString("artist") ?: "Unknown Artist"
 		val album = track.getString("album") ?: "Unknown Album"
@@ -313,52 +318,234 @@ object AudioProController {
 			metadataBuilder.setArtworkUri(artwork)
 		}
 
-		// Process custom headers if provided
-		headersAudio = null
-		headersArtwork = null
+		// Serialize the full track object into extras for retrieval
+		val extras = Arguments.toBundle(track)
+		metadataBuilder.setExtras(extras)
 
-		if (options.hasKey("headers")) {
-			val headers = options.getMap("headers")
-			if (headers != null) {
-				headersAudio = extractHeaders(headers.getMap("audio"))
-				headersArtwork = extractHeaders(headers.getMap("artwork"))
-			}
-		}
-
-		// Parse the URL string into a Uri object to properly handle all URI schemes including file://
 		val uri = url.toUri()
-		log("Parsed URI: $uri, scheme: ${uri.scheme}")
-
-		val mediaItem = MediaItem.Builder()
+		return MediaItem.Builder()
 			.setUri(uri)
-			.setMediaId("custom_track_1")
+			.setMediaId(track.getString("id") ?: "track_${System.currentTimeMillis()}")
 			.setMediaMetadata(metadataBuilder.build())
 			.build()
+	}
 
+
+	
+	suspend fun addToQueue(tracks: com.facebook.react.bridge.ReadableArray) {
+		ensureSession()
+		val items = ArrayList<MediaItem>()
+		for (i in 0 until tracks.size()) {
+			tracks.getMap(i)?.let {
+				items.add(toMediaItem(it))
+			}
+		}
 		runOnUiThread {
-			log("Play", title, url)
-			emitState(AudioProModule.STATE_LOADING, 0L, 0L, "play()")
-
-			enginerBrowser?.let {
-				// Set the new media item and prepare the player
-				it.setMediaItem(mediaItem)
-				it.prepare()
-
-				// Set playback speed regardless of autoPlay
-				it.setPlaybackSpeed(opts.speed)
-				// Set volume regardless of autoPlay
-				it.setVolume(opts.volume)
-
-				if (opts.autoPlay) {
-					it.play()
-				} else {
-					emitState(AudioProModule.STATE_PAUSED, 0L, 0L, "play(autoPlay=false)")
-				}
-			} ?: Log.w("[react-native-audio-pro]", "MediaBrowser not ready")
+			enginerBrowser?.addMediaItems(items)
+			log("Added ${items.size} tracks to queue")
+		}
+	}
+	
+	suspend fun addToQueue(track: ReadableMap) {
+		ensureSession()
+		val item = toMediaItem(track)
+		runOnUiThread {
+			enginerBrowser?.addMediaItem(item)
+			log("Added track to queue: ${track.getString("title")}")
 		}
 	}
 
-	fun pause() {
+	suspend fun clearQueue() {
+		ensureSession()
+		runOnUiThread {
+			enginerBrowser?.stop()
+			enginerBrowser?.clearMediaItems()
+			log("Stopped playback and cleared queue")
+		}
+	}
+
+
+	suspend fun skipTo(index: Int) {
+		ensureSession()
+		runOnUiThread {
+			if (index >= 0 && index < (enginerBrowser?.mediaItemCount ?: 0)) {
+				enginerBrowser?.seekToDefaultPosition(index)
+				enginerBrowser?.play()
+				log("Skipped to index $index")
+			}
+		}
+	}
+
+	suspend fun removeTrack(index: Int) {
+		ensureSession()
+		runOnUiThread {
+			if (index >= 0 && index < (enginerBrowser?.mediaItemCount ?: 0)) {
+				enginerBrowser?.removeMediaItem(index)
+				log("Removed track at index $index")
+			} else {
+				log("Invalid index for removeTrack: $index")
+			}
+		}
+	}
+			if (enginerBrowser != null) {
+				if (index >= 0 && index < enginerBrowser!!.mediaItemCount) {
+					enginerBrowser?.seekToDefaultPosition(index)
+					log("Skipped to index: $index")
+				} else {
+					log("Invalid skip index: $index")
+				}
+			}
+		}
+	}
+
+	suspend fun playNext() {
+		ensureSession()
+		runOnUiThread {
+			val browser = enginerBrowser
+			if (browser != null) {
+				log("playNext: count=${browser.mediaItemCount}, index=${browser.currentMediaItemIndex}, hasNext=${browser.hasNextMediaItem()}")
+				if (browser.hasNextMediaItem()) {
+					browser.seekToNextMediaItem()
+					if (browser.playbackState == Player.STATE_IDLE || browser.playbackState == Player.STATE_ENDED) {
+						browser.prepare()
+					}
+					browser.play()
+					log("Skipped to next track")
+				} else {
+					log("No next track to skip to")
+				}
+			} else {
+				log("playNext: Browser is null")
+			}
+		}
+	}
+
+	suspend fun playPrevious() {
+		ensureSession()
+		runOnUiThread {
+			val browser = enginerBrowser
+			if (browser != null) {
+				log("playPrevious: count=${browser.mediaItemCount}, index=${browser.currentMediaItemIndex}, hasPrevious=${browser.hasPreviousMediaItem()}")
+				if (browser.hasPreviousMediaItem()) {
+					browser.seekToPreviousMediaItem()
+					if (browser.playbackState == Player.STATE_IDLE || browser.playbackState == Player.STATE_ENDED) {
+						browser.prepare()
+					}
+					browser.play()
+					log("Skipped to previous track")
+				} else {
+					log("No previous track to skip to")
+					browser.seekTo(0)
+				}
+			} else {
+				log("playPrevious: Browser is null")
+			}
+		}
+	}
+	
+	suspend fun getQueue(): com.facebook.react.bridge.WritableArray {
+		ensureSession()
+		// We'll need a way to return this sync or async. 
+		// Since we are in suspend function, we can use a CompletableDeferred or just wait?
+		// But reading from browser must be on main thread? 
+		// Actually getters on MediaBrowser might be thread safe if it's just local state replica?
+		// "Methods of the MediaBrowser... must be called from the application thread." 
+		
+		val deferred = kotlinx.coroutines.CompletableDeferred<com.facebook.react.bridge.WritableArray>()
+		
+		runOnUiThread {
+			val array = Arguments.createArray()
+			enginerBrowser?.let { browser ->
+				for (i in 0 until browser.mediaItemCount) {
+					val item = browser.getMediaItemAt(i)
+					val extras = item.mediaMetadata.extras
+					if (extras != null) {
+						array.pushMap(Arguments.fromBundle(extras))
+					} else {
+						// Fallback if no extras
+						val map = Arguments.createMap()
+						map.putString("title", item.mediaMetadata.title.toString())
+						map.putString("url", item.mediaId) // Just using ID as placeholder
+						array.pushMap(map)
+					}
+				}
+			}
+			deferred.complete(array)
+		}
+		
+		return deferred.await()
+	}
+
+	suspend fun play(track: ReadableMap?, options: ReadableMap?) {
+		ensurePreparedForNewPlayback()
+		
+		// If custom options are provided, parse them. Otherwise use defaults or existing?
+		// For queue play, we might update options.
+		// NOTE: options are conceptually for the *session* config (debug, capabilities).
+		// If track is null, we assume we just want to play/resume key or provided index?
+		// BUT `play` signature in RN usually implies starting something.
+		
+		// Logic:
+		// 1. If options provided, apply them.
+		// 2. If track provided -> Clear Queue, Add Track, Play. (Legacy/Single Mode)
+		// 3. If track null -> Play current.
+		
+		val opts = if (options != null) extractPlaybackOptions(options) else null
+		
+		// If startTimeMs is provided, set a pending seek position
+		if (opts?.startTimeMs != null) {
+			flowPendingSeekPosition = opts.startTimeMs
+		}
+
+		if (opts != null) {
+			log("Configured options: $opts")
+		}
+
+		runOnUiThread {
+			enginerBrowser?.let { player ->
+				if (track != null) {
+					val item = toMediaItem(track)
+					if (opts?.addTrack == true) {
+						// Add to queue logic
+						player.addMediaItem(item)
+						player.prepare()
+						
+						// If we want to play this added track immediately:
+						// Seek to the last item (which we just added)
+						player.seekToDefaultPosition(player.mediaItemCount - 1)
+						log("Added and playing track: ${track.getString("title")}")
+					} else {
+						// "Legacy" mode: Replace queue with this track
+						player.setMediaItem(item)
+						player.prepare()
+						log("Playing single track (replaced queue): ${track.getString("title")}")
+					}
+					activeTrack = track
+				} else {
+					// Resume/Play existing queue
+					if (player.playbackState == Player.STATE_IDLE) {
+						player.prepare()
+					}
+					log("Playing current queue")
+				}
+				
+				if (opts != null) {
+					player.setPlaybackSpeed(opts.speed)
+					player.setVolume(opts.volume)
+				}
+				
+				// Handle autoPlay
+				val shouldAutoPlay = opts?.autoPlay ?: true
+				if (shouldAutoPlay) {
+					player.play()
+				} else {
+					emitState(AudioProModule.STATE_PAUSED, 0L, 0L, "play(autoPlay=false)")
+				}
+			} ?: Log.w(Constants.LOG_TAG, "MediaBrowser not ready")
+		}
+	}
+
+	suspend fun pause() {
 		log("pause() called")
 		ensureSession()
 		runOnUiThread {
@@ -371,7 +558,7 @@ object AudioProController {
 		}
 	}
 
-	fun resume() {
+	suspend fun resume() {
 		log("resume() called")
 		ensureSession()
 		runOnUiThread {
@@ -384,7 +571,7 @@ object AudioProController {
 		}
 	}
 
-	fun stop() {
+	suspend fun stop() {
 		log("stop() called")
 		// Reset error state when explicitly stopping
 		flowIsInErrorState = false
@@ -465,7 +652,7 @@ object AudioProController {
 				enginerBrowser?.release()
 				log("Player successfully stopped and released")
 			} catch (e: Exception) {
-				Log.e("[react-native-audio-pro]", "Error stopping player", e)
+				Log.e(Constants.LOG_TAG, "Error stopping player", e)
 			}
 		}
 
@@ -480,11 +667,8 @@ object AudioProController {
 		// Release resources
 		release()
 
-		// Add a small delay before destroying service to ensure player is fully released
-		Handler(Looper.getMainLooper()).postDelayed({
-			// Destroy the playback service to remove notification and tear down the media session
-			destroyPlaybackService()
-		}, 50)
+		// Destroy the playback service directly to remove notification and tear down the media session
+		destroyPlaybackService()
 
 		// Emit final state
 		emitState(finalState, 0L, 0L, "resetInternal($finalState)")
@@ -513,9 +697,9 @@ object AudioProController {
 				try {
 					val notificationManager =
 						context.getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-					notificationManager.cancel(789) // Using the same NOTIFICATION_ID as in AudioProPlaybackService
+					notificationManager.cancel(Constants.NOTIFICATION_ID) // Using the same NOTIFICATION_ID as in AudioProPlaybackService
 				} catch (e: Exception) {
-					Log.e("[react-native-audio-pro]", "Error canceling notification", e)
+					Log.e(Constants.LOG_TAG, "Error canceling notification", e)
 				}
 
 				// Stop the service
@@ -523,52 +707,56 @@ object AudioProController {
 				context.stopService(intent)
 			}
 		} catch (e: Exception) {
-			Log.e("[react-native-audio-pro]", "Error stopping service", e)
+			Log.e(Constants.LOG_TAG, "Error stopping service", e)
 		}
 	}
 
 
-	fun seekTo(position: Long) {
+	suspend fun seekTo(position: Long) {
 		ensureSession()
 		runOnUiThread {
-			val dur = enginerBrowser?.duration ?: 0L
-			val validPosition = when {
-				position < 0 -> 0L
-				position > dur -> dur
-				else -> position
-			}
-
-			// Set pending seek position
-			flowPendingSeekPosition = validPosition
-
-			// Stop progress timer during seek
-			stopProgressTimer()
-
-			log("Seeking to position: $validPosition")
-			enginerBrowser?.seekTo(validPosition)
-
-			// SEEK_COMPLETE will be emitted in onPositionDiscontinuity
+			performSeek(position)
 		}
 	}
 
-	fun seekForward(amount: Long) {
+	private fun performSeek(position: Long) {
+		val dur = enginerBrowser?.duration ?: 0L
+		val validPosition = when {
+			position < 0 -> 0L
+			position > dur -> dur
+			else -> position
+		}
+
+		// Set pending seek position
+		flowPendingSeekPosition = validPosition
+
+		// Stop progress timer during seek
+		stopProgressTimer()
+
+		log("Seeking to position: $validPosition")
+		enginerBrowser?.seekTo(validPosition)
+	}
+
+	suspend fun seekForward(amount: Long) {
+		ensureSession()
 		runOnUiThread {
 			val current = enginerBrowser?.currentPosition ?: 0L
 			val dur = enginerBrowser?.duration ?: 0L
 			val newPos = (current + amount).coerceAtMost(dur)
 
 			log("Seeking forward to position: $newPos")
-			seekTo(newPos)
+			performSeek(newPos)
 		}
 	}
 
-	fun seekBack(amount: Long) {
+	suspend fun seekBack(amount: Long) {
+		ensureSession()
 		runOnUiThread {
 			val current = enginerBrowser?.currentPosition ?: 0L
 			val newPos = (current - amount).coerceAtLeast(0L)
 
 			log("Seeking back to position: $newPos")
-			seekTo(newPos)
+			performSeek(newPos)
 		}
 	}
 
@@ -769,6 +957,36 @@ object AudioProController {
 			 * This method is for unrecoverable player failures that require player teardown.
 			 * For non-critical errors that don't require state transition, use emitError() directly.
 			 */
+			override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+				log("onMediaItemTransition", "mediaId=", mediaItem?.mediaId, "reason=", reason)
+				
+				if (mediaItem != null) {
+					val extras = mediaItem.mediaMetadata.extras
+					if (extras != null) {
+						val index = enginerBrowser?.currentMediaItemIndex ?: -1
+						
+						val trackMap = Arguments.fromBundle(extras)
+						// Add index to track map for convenience
+						trackMap?.let {
+							(it as? com.facebook.react.bridge.WritableMap)?.putInt("index", index)
+						}
+						
+						activeTrack = trackMap // Update active track
+
+						val payload = Arguments.createMap().apply {
+							putInt("index", index)
+						}
+
+						emitEvent(
+                            AudioProModule.EVENT_TYPE_TRACK_CHANGED, 
+                            trackMap, 
+                            payload, 
+                            "onMediaItemTransition(reason=$reason)"
+                        )
+					}
+				}
+			}
+
 			override fun onPlayerError(error: PlaybackException) {
 				// If we're already in an error state, just log and return
 				if (flowIsInErrorState) {
@@ -802,10 +1020,7 @@ object AudioProController {
 			}
 		}
 		engineProgressRunnable?.let {
-			engineProgressHandler?.postDelayed(
-				it,
-				settingProgressIntervalMs
-			)
+			engineProgressHandler?.post(it)
 		}
 	}
 
@@ -847,7 +1062,7 @@ object AudioProController {
 				.emit(AudioProModule.EVENT_NAME, body)
 		} else {
 			Log.w(
-				"[react-native-audio-pro]",
+				Constants.LOG_TAG,
 				"Context is not an instance of ReactApplicationContext"
 			)
 		}
@@ -895,10 +1110,12 @@ object AudioProController {
 			}
 		}
 
+		val index = enginerBrowser?.currentMediaItemIndex ?: -1
 		val payload = Arguments.createMap().apply {
 			putString("state", state)
 			putDouble("position", sanitizedPosition.toDouble())
 			putDouble("duration", sanitizedDuration.toDouble())
+			putInt("index", index)
 		}
 		emitEvent(AudioProModule.EVENT_TYPE_STATE_CHANGED, activeTrack, payload, reason)
 
@@ -953,7 +1170,7 @@ object AudioProController {
 		emitEvent(AudioProModule.EVENT_TYPE_REMOTE_PREV, activeTrack, payload, reason)
 	}
 
-	fun setPlaybackSpeed(speed: Float) {
+	suspend fun setPlaybackSpeed(speed: Float) {
 		ensureSession()
 		activePlaybackSpeed = speed
 		runOnUiThread {
@@ -972,12 +1189,46 @@ object AudioProController {
 		}
 	}
 
-	fun setVolume(volume: Float) {
+	suspend fun setVolume(volume: Float) {
 		ensureSession()
 		activeVolume = volume
 		runOnUiThread {
 			log("Setting volume to", volume)
 			enginerBrowser?.setVolume(volume)
+		}
+	}
+
+	suspend fun setRepeatMode(mode: String) {
+		ensureSession()
+		runOnUiThread {
+			log("Setting repeat mode to", mode)
+			enginerBrowser?.let { player ->
+				val repeatMode = when (mode) {
+					"SINGLE", "TRACK" -> Player.REPEAT_MODE_ONE
+					"QUEUE" -> Player.REPEAT_MODE_ALL
+					else -> Player.REPEAT_MODE_OFF
+				}
+				player.repeatMode = repeatMode
+			}
+		}
+	}
+
+	suspend fun setShuffleMode(enabled: Boolean) {
+		ensureSession()
+		runOnUiThread {
+			log("Setting shuffle mode to", enabled)
+			enginerBrowser?.shuffleModeEnabled = enabled
+		}
+	}
+
+	suspend fun seekBy(offsetMs: Long) {
+		ensureSession()
+		runOnUiThread {
+			val current = enginerBrowser?.currentPosition ?: 0L
+			val duration = enginerBrowser?.duration ?: 0L
+			val newPos = (current + offsetMs).coerceIn(0L, duration)
+			log("SeekBy offset=$offsetMs current=$current new=$newPos")
+			performSeek(newPos)
 		}
 	}
 

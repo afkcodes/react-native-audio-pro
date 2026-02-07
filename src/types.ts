@@ -1,9 +1,9 @@
 import {
-	AudioProTriggerSource,
 	AudioProAmbientEventType,
 	AudioProContentType,
 	AudioProEventType,
 	AudioProState,
+	AudioProTriggerSource,
 } from './values';
 
 // ==============================
@@ -53,6 +53,7 @@ export type AudioProPlayOptions = {
 	autoPlay?: boolean;
 	headers?: AudioProHeaders;
 	startTimeMs?: number;
+	addTrack?: boolean;
 };
 
 // ==============================
@@ -71,6 +72,7 @@ export interface AudioProEvent {
 		error?: string;
 		errorCode?: number;
 		speed?: number;
+		index?: number;
 	};
 }
 

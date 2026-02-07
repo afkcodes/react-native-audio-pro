@@ -43,6 +43,8 @@ export enum AudioProEventType {
 	PROGRESS = 'PROGRESS',
 	/** Track has ended */
 	TRACK_ENDED = 'TRACK_ENDED',
+	/** Track has changed (e.g. auto-advance in queue) */
+	TRACK_CHANGED = 'TRACK_CHANGED',
 	/** Seek operation has completed */
 	SEEK_COMPLETE = 'SEEK_COMPLETE',
 	/** Playback speed has changed */

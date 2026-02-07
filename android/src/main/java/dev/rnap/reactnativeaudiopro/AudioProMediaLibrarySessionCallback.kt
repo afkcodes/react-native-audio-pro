@@ -12,16 +12,18 @@ import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-/** A [MediaLibraryService.MediaLibrarySession.Callback] implementation. */
 @UnstableApi
-open class AudioProMediaLibrarySessionCallback : MediaLibraryService.MediaLibrarySession.Callback {
+open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlaybackService) : MediaLibraryService.MediaLibrarySession.Callback {
 
 	private val nextButton = CommandButton.Builder(CommandButton.ICON_NEXT)
 		.setDisplayName("Next")
 		.setSessionCommand(
 			SessionCommand(
-				CUSTOM_COMMAND_NEXT,
+				Constants.CUSTOM_COMMAND_NEXT,
 				Bundle.EMPTY
 			)
 		)
@@ -31,7 +33,7 @@ open class AudioProMediaLibrarySessionCallback : MediaLibraryService.MediaLibrar
 		.setDisplayName("Previous")
 		.setSessionCommand(
 			SessionCommand(
-				CUSTOM_COMMAND_PREV,
+				Constants.CUSTOM_COMMAND_PREV,
 				Bundle.EMPTY
 			)
 		)
@@ -41,7 +43,7 @@ open class AudioProMediaLibrarySessionCallback : MediaLibraryService.MediaLibrar
 		.setDisplayName("Skip Forward")
 		.setSessionCommand(
 			SessionCommand(
-				CUSTOM_COMMAND_SKIP_FORWARD,
+				Constants.CUSTOM_COMMAND_SKIP_FORWARD,
 				Bundle.EMPTY
 			)
 		)
@@ -51,7 +53,7 @@ open class AudioProMediaLibrarySessionCallback : MediaLibraryService.MediaLibrar
 		.setDisplayName("Skip Backward")
 		.setSessionCommand(
 			SessionCommand(
-				CUSTOM_COMMAND_SKIP_BACKWARD,
+				Constants.CUSTOM_COMMAND_SKIP_BACKWARD,
 				Bundle.EMPTY
 			)
 		)
@@ -75,17 +77,6 @@ open class AudioProMediaLibrarySessionCallback : MediaLibraryService.MediaLibrar
 		return buttons
 	}
 
-	companion object {
-		private const val CUSTOM_COMMAND_NEXT =
-			"dev.rnap.reactnativeaudiopro.NEXT"
-		private const val CUSTOM_COMMAND_PREV =
-			"dev.rnap.reactnativeaudiopro.PREV"
-		private const val CUSTOM_COMMAND_SKIP_FORWARD =
-			"dev.rnap.reactnativeaudiopro.SKIP_FORWARD"
-		private const val CUSTOM_COMMAND_SKIP_BACKWARD =
-			"dev.rnap.reactnativeaudiopro.SKIP_BACKWARD"
-	}
-
 	@OptIn(UnstableApi::class) // MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
 	val mediaNotificationSessionCommands
 		get() = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
@@ -93,14 +84,21 @@ open class AudioProMediaLibrarySessionCallback : MediaLibraryService.MediaLibrar
 				// Add custom commands based on settings
 				if (AudioProController.settingShowNextPrevControls) {
 					// Add next and previous commands
-					builder.add(SessionCommand(CUSTOM_COMMAND_NEXT, Bundle.EMPTY))
-					builder.add(SessionCommand(CUSTOM_COMMAND_PREV, Bundle.EMPTY))
+					builder.add(SessionCommand(Constants.CUSTOM_COMMAND_NEXT, Bundle.EMPTY))
+					builder.add(SessionCommand(Constants.CUSTOM_COMMAND_PREV, Bundle.EMPTY))
 				} else if (AudioProController.settingShowSkipControls) {
 					// Add skip forward and skip backward commands
-					builder.add(SessionCommand(CUSTOM_COMMAND_SKIP_FORWARD, Bundle.EMPTY))
-					builder.add(SessionCommand(CUSTOM_COMMAND_SKIP_BACKWARD, Bundle.EMPTY))
+					builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SKIP_FORWARD, Bundle.EMPTY))
+					builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SKIP_BACKWARD, Bundle.EMPTY))
 				}
-				// If both settings are false, no custom commands are added, only default commands
+				
+				// Add Ambient Commands
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_PLAY, Bundle.EMPTY))
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_STOP, Bundle.EMPTY))
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_PAUSE, Bundle.EMPTY))
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_RESUME, Bundle.EMPTY))
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_SEEK, Bundle.EMPTY))
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_SET_VOLUME, Bundle.EMPTY))
 			}
 			.build()
 
@@ -123,23 +121,61 @@ open class AudioProMediaLibrarySessionCallback : MediaLibraryService.MediaLibrar
 		args: Bundle,
 	): ListenableFuture<SessionResult> {
 		when (customCommand.customAction) {
-			CUSTOM_COMMAND_NEXT -> {
+			Constants.CUSTOM_COMMAND_NEXT -> {
 				AudioProController.emitNext()
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 
-			CUSTOM_COMMAND_PREV -> {
+			Constants.CUSTOM_COMMAND_PREV -> {
 				AudioProController.emitPrev()
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 
-			CUSTOM_COMMAND_SKIP_FORWARD -> {
-				AudioProController.seekForward(AudioProController.settingSkipIntervalMs)
+			Constants.CUSTOM_COMMAND_SKIP_FORWARD -> {
+				CoroutineScope(Dispatchers.Main).launch {
+					AudioProController.seekForward(AudioProController.settingSkipIntervalMs)
+				}
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 
-			CUSTOM_COMMAND_SKIP_BACKWARD -> {
-				AudioProController.seekBack(AudioProController.settingSkipIntervalMs)
+			Constants.CUSTOM_COMMAND_SKIP_BACKWARD -> {
+				CoroutineScope(Dispatchers.Main).launch {
+					AudioProController.seekBack(AudioProController.settingSkipIntervalMs)
+				}
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+			
+			Constants.CUSTOM_COMMAND_AMBIENT_PLAY -> {
+				val url = args.getString("url") ?: return Futures.immediateFuture(SessionResult(SessionError.ERROR_BAD_VALUE))
+				// We also need other options passed in args if available
+				service.handleAmbientPlay(args)
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+			
+			Constants.CUSTOM_COMMAND_AMBIENT_STOP -> {
+				service.handleAmbientStop()
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+
+			Constants.CUSTOM_COMMAND_AMBIENT_PAUSE -> {
+				service.handleAmbientPause()
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+
+			Constants.CUSTOM_COMMAND_AMBIENT_RESUME -> {
+				service.handleAmbientResume()
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+
+			Constants.CUSTOM_COMMAND_AMBIENT_SEEK -> {
+				val pos = args.getLong("position", 0L)
+				service.handleAmbientSeek(pos)
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+
+			Constants.CUSTOM_COMMAND_AMBIENT_SET_VOLUME -> {
+				val vol = args.getFloat("volume", 1.0f)
+				service.handleAmbientSetVolume(vol)
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 		}
