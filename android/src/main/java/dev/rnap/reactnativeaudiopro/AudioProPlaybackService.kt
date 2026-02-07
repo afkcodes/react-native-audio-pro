@@ -36,6 +36,7 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	private lateinit var ambientLibrarySession: MediaLibrarySession
 	private lateinit var player: ExoPlayer
 	private lateinit var ambientPlayer: ExoPlayer
+	private val equalizer = AudioProEqualizer()
 
 	companion object {
 		private const val NOTIFICATION_ID = Constants.NOTIFICATION_ID
@@ -214,6 +215,17 @@ open class AudioProPlaybackService : MediaLibraryService() {
 		player.setHandleAudioBecomingNoisy(true)
 		player.repeatMode = Player.REPEAT_MODE_OFF
 		player.addAnalyticsListener(EventLogger())
+		
+		// Initialize Equalizer with current or future session ID
+		player.addListener(object : Player.Listener {
+			override fun onAudioSessionIdChanged(audioSessionId: Int) {
+				super.onAudioSessionIdChanged(audioSessionId)
+				android.util.Log.i(Constants.LOG_TAG, "Audio Session ID changed: $audioSessionId")
+				if (audioSessionId != C.AUDIO_SESSION_ID_UNSET) {
+					equalizer.initialize(audioSessionId)
+				}
+			}
+		})
 
 		mediaLibrarySession =
 			MediaLibrarySession.Builder(this, player, createLibrarySessionCallback())
@@ -324,5 +336,21 @@ open class AudioProPlaybackService : MediaLibraryService() {
 		if (::ambientPlayer.isInitialized) {
 			ambientPlayer.volume = vol
 		}
+	}
+
+	fun handleSetEqualizer(gains: FloatArray) {
+		// Ensure session is initialized if we have a player
+		if (::player.isInitialized && player.audioSessionId != androidx.media3.common.C.AUDIO_SESSION_ID_UNSET) {
+			equalizer.initialize(player.audioSessionId)
+		}
+		equalizer.setGains(gains)
+	}
+	
+	fun handleSetBassBoost(strength: Int) {
+		// Ensure session is initialized if we have a player
+		if (::player.isInitialized && player.audioSessionId != androidx.media3.common.C.AUDIO_SESSION_ID_UNSET) {
+			equalizer.initialize(player.audioSessionId)
+		}
+		equalizer.setBassBoost(strength)
 	}
 }

@@ -99,6 +99,10 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_RESUME, Bundle.EMPTY))
 				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_SEEK, Bundle.EMPTY))
 				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_SET_VOLUME, Bundle.EMPTY))
+
+				// Add DSP Commands
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_EQUALIZER, Bundle.EMPTY))
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_BASS_BOOST, Bundle.EMPTY))
 			}
 			.build()
 
@@ -120,6 +124,7 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 		customCommand: SessionCommand,
 		args: Bundle,
 	): ListenableFuture<SessionResult> {
+		AudioProController.log("onCustomCommand: ${customCommand.customAction}")
 		when (customCommand.customAction) {
 			Constants.CUSTOM_COMMAND_NEXT -> {
 				AudioProController.emitNext()
@@ -176,6 +181,20 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 			Constants.CUSTOM_COMMAND_AMBIENT_SET_VOLUME -> {
 				val vol = args.getFloat("volume", 1.0f)
 				service.handleAmbientSetVolume(vol)
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+
+			Constants.CUSTOM_COMMAND_SET_EQUALIZER -> {
+				val gains = args.getFloatArray("gains")
+				if (gains != null) {
+					service.handleSetEqualizer(gains)
+				}
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+
+			Constants.CUSTOM_COMMAND_SET_BASS_BOOST -> {
+				val strength = args.getInt("strength", 0)
+				service.handleSetBassBoost(strength)
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 		}

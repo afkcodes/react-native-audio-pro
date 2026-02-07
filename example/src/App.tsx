@@ -13,9 +13,29 @@ import {
 import Slider from '@react-native-community/slider';
 import { AudioPro, AudioProState, type AudioProTrack, useAudioPro } from 'react-native-audio-pro';
 
+import { EqualizerScreen } from './EqualizerScreen';
 import { playlist } from './playlist';
-import { styles } from './styles';
+import { styles as originalStyles } from './styles';
 import { formatTime } from './utils';
+
+const styles = {
+	...originalStyles,
+	eqButton: {
+		backgroundColor: '#1db954',
+		padding: 12,
+		borderRadius: 8,
+		alignItems: 'center',
+		marginVertical: 10,
+	} as const,
+	eqButtonText: {
+		color: '#fff',
+		fontWeight: 'bold',
+		fontSize: 16,
+	} as const,
+	section: {
+		marginBottom: 20,
+	} as const,
+};
 
 export default function App() {
 	const {
@@ -43,6 +63,7 @@ export default function App() {
 	// new loop/shuffle state
 	const [loopMode, setLoopMode] = useState<'OFF' | 'TRACK' | 'QUEUE'>('OFF');
 	const [shuffle, setShuffle] = useState(false);
+	const [showEqualizer, setShowEqualizer] = useState(false);
 
 	// Update needsTrackLoad based on state
 	useEffect(() => {
@@ -318,12 +339,7 @@ export default function App() {
 					<View style={styles.stopRow}>
 						<TouchableOpacity
 							onPress={() => {
-								const nextIndex = (queueIndex + 1) % playlist.length;
-								const track1 = playlist[nextIndex];
-								const track2 = playlist[(nextIndex + 1) % playlist.length];
-
-								AudioPro.addToQueue([track1, track2] as AudioProTrack[]);
-								console.log('Added 2 tracks to queue');
+								AudioPro.addToQueue(playlist as AudioProTrack[]);
 							}}
 						>
 							<Text style={styles.controlText}>+2 Tracks</Text>
@@ -340,14 +356,12 @@ export default function App() {
 							onPress={async () => {
 								const q = await AudioPro.getQueue();
 								console.log('Queue:', q);
-								// Simple alert via console for now
 							}}
 						>
 							<Text style={styles.controlText}>LogQ</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							onPress={() => {
-								// Remove the next track in the queue (if any)
 								const nextIndex = queueIndex + 1;
 								AudioPro.removeTrack(nextIndex);
 								console.log('Removed track at index:', nextIndex);
@@ -379,6 +393,19 @@ export default function App() {
 						</TouchableOpacity>
 					</View>
 				</View>
+
+				<View style={styles.section}>
+					<TouchableOpacity
+						style={styles.eqButton}
+						onPress={() => setShowEqualizer(!showEqualizer)}
+					>
+						<Text style={styles.eqButtonText}>
+							{showEqualizer ? 'Hide Equalizer' : 'Show Equalizer'}
+						</Text>
+					</TouchableOpacity>
+				</View>
+
+				{showEqualizer && <EqualizerScreen />}
 
 				{error && (
 					<View style={styles.errorContainer}>

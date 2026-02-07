@@ -6,6 +6,14 @@ import {
 	AudioProTriggerSource,
 } from './values';
 
+export {
+	AudioProAmbientEventType,
+	AudioProContentType,
+	AudioProEventType,
+	AudioProState,
+	AudioProTriggerSource,
+};
+
 // ==============================
 // TRACK
 // ==============================
@@ -21,6 +29,20 @@ export type AudioProTrack = {
 	artist?: string;
 	[key: string]: unknown; // custom properties
 };
+
+export type AudioProEqualizerBand = {
+	frequency: number;
+	label: string;
+};
+
+export type AudioProEqualizerPreset = {
+	name: string;
+	id: string;
+	gains: number[];
+	description?: string;
+};
+
+// ==============================
 
 // ==============================
 // CONFIGURE OPTIONS

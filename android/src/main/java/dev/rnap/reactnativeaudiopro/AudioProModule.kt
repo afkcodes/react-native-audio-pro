@@ -173,6 +173,20 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
+	fun setEqualizer(gains: com.facebook.react.bridge.ReadableArray) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setEqualizer(gains)
+		}
+	}
+
+	@ReactMethod
+	fun setBassBoost(strength: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setBassBoost(strength.toInt())
+		}
+	}
+
+	@ReactMethod
 	fun clear() {
 		AudioProController.clear()
 	}

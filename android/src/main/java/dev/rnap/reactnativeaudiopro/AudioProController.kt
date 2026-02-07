@@ -13,8 +13,10 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.media3.session.SessionCommand
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
@@ -387,16 +389,7 @@ object AudioProController {
 			}
 		}
 	}
-			if (enginerBrowser != null) {
-				if (index >= 0 && index < enginerBrowser!!.mediaItemCount) {
-					enginerBrowser?.seekToDefaultPosition(index)
-					log("Skipped to index: $index")
-				} else {
-					log("Invalid skip index: $index")
-				}
-			}
-		}
-	}
+	
 
 	suspend fun playNext() {
 		ensureSession()
@@ -440,6 +433,38 @@ object AudioProController {
 			} else {
 				log("playPrevious: Browser is null")
 			}
+		}
+	}
+
+	suspend fun setEqualizer(gains: ReadableArray) {
+		ensureSession()
+		runOnUiThread {
+			val bundle = android.os.Bundle()
+			val floatArray = FloatArray(gains.size())
+			for (i in 0 until gains.size()) {
+				floatArray[i] = gains.getDouble(i).toFloat()
+			}
+			bundle.putFloatArray("gains", floatArray)
+			
+			enginerBrowser?.sendCustomCommand(
+				SessionCommand(Constants.CUSTOM_COMMAND_SET_EQUALIZER, android.os.Bundle.EMPTY),
+				bundle
+			)
+			log("Sent setEqualizer command: ${floatArray.joinToString()}")
+		}
+	}
+
+	suspend fun setBassBoost(strength: Int) {
+		ensureSession()
+		runOnUiThread {
+			val bundle = android.os.Bundle()
+			bundle.putInt("strength", strength)
+			
+			enginerBrowser?.sendCustomCommand(
+				SessionCommand(Constants.CUSTOM_COMMAND_SET_BASS_BOOST, android.os.Bundle.EMPTY),
+				bundle
+			)
+			log("Sent setBassBoost command: $strength")
 		}
 	}
 	

@@ -19,4 +19,8 @@ object Constants {
     const val CUSTOM_COMMAND_AMBIENT_RESUME = "dev.rnap.reactnativeaudiopro.AMBIENT_RESUME"
     const val CUSTOM_COMMAND_AMBIENT_SEEK = "dev.rnap.reactnativeaudiopro.AMBIENT_SEEK"
     const val CUSTOM_COMMAND_AMBIENT_SET_VOLUME = "dev.rnap.reactnativeaudiopro.AMBIENT_SET_VOLUME"
+
+    // DSP Commands
+    const val CUSTOM_COMMAND_SET_EQUALIZER = "dev.rnap.reactnativeaudiopro.SET_EQUALIZER"
+    const val CUSTOM_COMMAND_SET_BASS_BOOST = "dev.rnap.reactnativeaudiopro.SET_BASS_BOOST"
 }

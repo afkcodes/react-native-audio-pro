@@ -346,6 +346,24 @@ export const AudioPro = {
 	},
 
 	/**
+	 * Set equalizer gains
+	 * @param gains - Array of gain values in decibels (-10 to 10 usually)
+	 */
+	setEqualizer(gains: number[]) {
+		logDebug('AudioPro: setEqualizer()', gains);
+		NativeAudioPro.setEqualizer(gains);
+	},
+
+	/**
+	 * Set bass boost strength
+	 * @param strength - Strength of bass boost (0 to 1000)
+	 */
+	setBassBoost(strength: number) {
+		logDebug('AudioPro: setBassBoost()', strength);
+		NativeAudioPro.setBassBoost(strength);
+	},
+
+	/**
 	 * Get the current playback volume
 	 *
 	 * @returns Current volume level (0.0 to 1.0)

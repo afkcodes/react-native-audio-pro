@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
 		backgroundColor: '#222',
 	},
 	scrollContent: {
-		flex: 1,
+		flexGrow: 1,
 		alignItems: 'center',
 		justifyContent: 'center',
 		padding: needsSmallerUI ? 12 : 20,
