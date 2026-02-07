@@ -56,8 +56,6 @@ export type {
 	AudioProTrack,
 	/** Payload for track ended events */
 	AudioProTrackEndedPayload,
-	/** Source that triggered an action */
-	AudioProTriggerSource,
 } from './types';
 
 /**
@@ -73,6 +71,8 @@ export {
 	AudioProEventType,
 	/** Possible states of the audio player */
 	AudioProState,
+	/** Source that triggered an action */
+	AudioProTriggerSource,
 } from './values';
 
 /**

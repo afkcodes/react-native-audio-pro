@@ -2,17 +2,12 @@ import {
 	AudioProAmbientEventType,
 	AudioProContentType,
 	AudioProEventType,
+	AudioProRepeatMode,
 	AudioProState,
 	AudioProTriggerSource,
 } from './values';
 
-export {
-	AudioProAmbientEventType,
-	AudioProContentType,
-	AudioProEventType,
-	AudioProState,
-	AudioProTriggerSource,
-};
+// Re-exports removed to avoid duplicate identifier errors
 
 // ==============================
 // TRACK
@@ -56,10 +51,16 @@ export type AudioProConfigureOptions = {
 	showNextPrevControls?: boolean;
 	showSkipControls?: boolean;
 	skipIntervalMs?: number;
+
 	/**
-	 * @deprecated use skipIntervalMs instead
+	 * Default repeat mode
 	 */
-	skipInterval?: number;
+	repeatMode?: AudioProRepeatMode;
+
+	/**
+	 * Default shuffle mode
+	 */
+	shuffleMode?: boolean;
 };
 
 // ==============================

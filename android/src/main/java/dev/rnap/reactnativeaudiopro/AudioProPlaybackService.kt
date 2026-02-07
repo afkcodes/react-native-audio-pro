@@ -353,4 +353,21 @@ open class AudioProPlaybackService : MediaLibraryService() {
 		}
 		equalizer.setBassBoost(strength)
 	}
+
+	fun handleSetRepeatMode(mode: String) {
+		if (::player.isInitialized) {
+			val repeatMode = when (mode) {
+				"ONE" -> Player.REPEAT_MODE_ONE
+				"ALL" -> Player.REPEAT_MODE_ALL
+				else -> Player.REPEAT_MODE_OFF
+			}
+			player.repeatMode = repeatMode
+		}
+	}
+
+	fun handleSetShuffleMode(enabled: Boolean) {
+		if (::player.isInitialized) {
+			player.shuffleModeEnabled = enabled
+		}
+	}
 }

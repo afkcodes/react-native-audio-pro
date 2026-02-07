@@ -467,6 +467,34 @@ object AudioProController {
 			log("Sent setBassBoost command: $strength")
 		}
 	}
+
+	suspend fun setRepeatMode(mode: String) {
+		ensureSession()
+		runOnUiThread {
+			val bundle = android.os.Bundle()
+			bundle.putString("mode", mode)
+			
+			enginerBrowser?.sendCustomCommand(
+				SessionCommand(Constants.CUSTOM_COMMAND_SET_REPEAT_MODE, android.os.Bundle.EMPTY),
+				bundle
+			)
+			log("Sent setRepeatMode command: $mode")
+		}
+	}
+
+	suspend fun setShuffleMode(enabled: Boolean) {
+		ensureSession()
+		runOnUiThread {
+			val bundle = android.os.Bundle()
+			bundle.putBoolean("enabled", enabled)
+			
+			enginerBrowser?.sendCustomCommand(
+				SessionCommand(Constants.CUSTOM_COMMAND_SET_SHUFFLE_MODE, android.os.Bundle.EMPTY),
+				bundle
+			)
+			log("Sent setShuffleMode command: $enabled")
+		}
+	}
 	
 	suspend fun getQueue(): com.facebook.react.bridge.WritableArray {
 		ensureSession()
@@ -797,6 +825,38 @@ object AudioProController {
 		detachPlayerListener()
 
 		enginePlayerListener = object : Player.Listener {
+			override fun onRepeatModeChanged(repeatMode: Int) {
+				val modeStr = when (repeatMode) {
+					Player.REPEAT_MODE_ONE -> "ONE"
+					Player.REPEAT_MODE_ALL -> "ALL"
+					else -> "OFF"
+				}
+				log("onRepeatModeChanged: $modeStr")
+				
+				val params = Arguments.createMap()
+				params.putString("mode", modeStr)
+				
+				emitEvent(
+					AudioProModule.EVENT_TYPE_REPEAT_MODE_CHANGED,
+					activeTrack,
+					params,
+					"onRepeatModeChanged"
+				)
+			}
+
+			override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+				log("onShuffleModeEnabledChanged: $shuffleModeEnabled")
+				
+				val params = Arguments.createMap()
+				params.putBoolean("shuffleMode", shuffleModeEnabled)
+				
+				emitEvent(
+					AudioProModule.EVENT_TYPE_SHUFFLE_MODE_CHANGED,
+					activeTrack,
+					params,
+					"onShuffleModeEnabledChanged"
+				)
+			}
 
 			override fun onIsPlayingChanged(isPlaying: Boolean) {
 				log("onIsPlayingChanged", "isPlaying=", isPlaying)
@@ -1195,6 +1255,15 @@ object AudioProController {
 		emitEvent(AudioProModule.EVENT_TYPE_REMOTE_PREV, activeTrack, payload, reason)
 	}
 
+	private fun emitEventToJS(event: WritableMap) {
+		val context = reactContext
+		if (context is ReactApplicationContext && context.hasActiveCatalystInstance()) {
+			context
+				.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+				.emit(AudioProModule.EVENT_NAME, event)
+		}
+	}
+
 	suspend fun setPlaybackSpeed(speed: Float) {
 		ensureSession()
 		activePlaybackSpeed = speed
@@ -1223,28 +1292,6 @@ object AudioProController {
 		}
 	}
 
-	suspend fun setRepeatMode(mode: String) {
-		ensureSession()
-		runOnUiThread {
-			log("Setting repeat mode to", mode)
-			enginerBrowser?.let { player ->
-				val repeatMode = when (mode) {
-					"SINGLE", "TRACK" -> Player.REPEAT_MODE_ONE
-					"QUEUE" -> Player.REPEAT_MODE_ALL
-					else -> Player.REPEAT_MODE_OFF
-				}
-				player.repeatMode = repeatMode
-			}
-		}
-	}
-
-	suspend fun setShuffleMode(enabled: Boolean) {
-		ensureSession()
-		runOnUiThread {
-			log("Setting shuffle mode to", enabled)
-			enginerBrowser?.shuffleModeEnabled = enabled
-		}
-	}
 
 	suspend fun seekBy(offsetMs: Long) {
 		ensureSession()

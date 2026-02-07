@@ -23,4 +23,8 @@ object Constants {
     // DSP Commands
     const val CUSTOM_COMMAND_SET_EQUALIZER = "dev.rnap.reactnativeaudiopro.SET_EQUALIZER"
     const val CUSTOM_COMMAND_SET_BASS_BOOST = "dev.rnap.reactnativeaudiopro.SET_BASS_BOOST"
+
+    // Playlist Commands
+    const val CUSTOM_COMMAND_SET_REPEAT_MODE = "dev.rnap.reactnativeaudiopro.SET_REPEAT_MODE"
+    const val CUSTOM_COMMAND_SET_SHUFFLE_MODE = "dev.rnap.reactnativeaudiopro.SET_SHUFFLE_MODE"
 }

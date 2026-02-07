@@ -16,6 +16,18 @@ export enum AudioProContentType {
 }
 
 /**
+ * Repeat mode for playback
+ */
+export enum AudioProRepeatMode {
+	/** No repeat */
+	OFF = 'OFF',
+	/** Repeat the entire queue */
+	ALL = 'ALL',
+	/** Repeat the current track */
+	ONE = 'ONE',
+}
+
+/**
  * Possible states of the audio player
  */
 export enum AudioProState {
@@ -98,6 +110,5 @@ export const DEFAULT_CONFIG: AudioProConfigureOptions = {
 	showNextPrevControls: true,
 	/** Whether to show skip forward/back controls in notification */
 	showSkipControls: false,
-	/** Interval in milliseconds for skip forward/back actions */
 	skipIntervalMs: DEFAULT_SKIP_INTERVAL_MS,
 };

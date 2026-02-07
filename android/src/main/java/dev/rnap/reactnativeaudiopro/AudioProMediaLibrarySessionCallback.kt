@@ -103,6 +103,10 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 				// Add DSP Commands
 				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_EQUALIZER, Bundle.EMPTY))
 				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_BASS_BOOST, Bundle.EMPTY))
+
+				// Add Playlist Commands
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_REPEAT_MODE, Bundle.EMPTY))
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_SHUFFLE_MODE, Bundle.EMPTY))
 			}
 			.build()
 
@@ -195,6 +199,18 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 			Constants.CUSTOM_COMMAND_SET_BASS_BOOST -> {
 				val strength = args.getInt("strength", 0)
 				service.handleSetBassBoost(strength)
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+
+			Constants.CUSTOM_COMMAND_SET_REPEAT_MODE -> {
+				val mode = args.getString("mode", "OFF")
+				service.handleSetRepeatMode(mode)
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+
+			Constants.CUSTOM_COMMAND_SET_SHUFFLE_MODE -> {
+				val enabled = args.getBoolean("enabled", false)
+				service.handleSetShuffleMode(enabled)
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 		}

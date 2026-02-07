@@ -76,15 +76,6 @@ export const AudioPro = {
 			);
 			config = { ...config, showSkipControls: false };
 		}
-		if (config.skipInterval) {
-			// Warn if deprecated skipInterval configuration was used
-			console.warn(
-				'[react-native-audio-pro]: skipInterval is deprecated and will be removed in a future release. Use `skipIntervalMs` instead.',
-			);
-			// Remove deprecated skipInterval property, and transform to value in milliseconds
-			const { skipInterval: skipIntervalDeprecated, ...fixedConfig } = config;
-			config = { ...fixedConfig, skipIntervalMs: skipIntervalDeprecated * 1000 };
-		}
 		setConfigureOptions(config);
 		setDebug(!!options.debug);
 		setDebugIncludesProgress(options.debugIncludesProgress ?? false);
