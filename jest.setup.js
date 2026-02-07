@@ -29,6 +29,7 @@ jest.mock('react-native', () => ({
 			removeTrack: jest.fn(),
 			setRepeatMode: jest.fn(),
 			setShuffleMode: jest.fn(),
+			setNotificationButtons: jest.fn(),
 			getQueue: jest.fn().mockResolvedValue([]),
 		},
 	},

@@ -13,8 +13,6 @@ export function setupAudioPro(): void {
 		debug: true,
 		debugIncludesProgress: false,
 		progressIntervalMs: 1000,
-		showNextPrevControls: true,
-		showSkipControls: false,
 		skipIntervalMs: 30000,
 	});
 

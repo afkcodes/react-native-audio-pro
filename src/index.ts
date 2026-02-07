@@ -33,6 +33,9 @@ export type {
 	AudioProAmbientEvent,
 	/** Callback function type for ambient audio events */
 	AudioProAmbientEventCallback,
+	// Configuration types
+	/** Configuration options for the audio player */
+	AudioProConfigureOptions,
 	// Equalizer types
 	/** Configuration for an equalizer band */
 	AudioProEqualizerBand,
@@ -42,6 +45,8 @@ export type {
 	AudioProEvent,
 	/** Callback function type for audio events */
 	AudioProEventCallback,
+	/** Type of notification button */
+	AudioProNotificationButton,
 	/** Payload for playback error events */
 	AudioProPlaybackErrorPayload,
 	/** Payload for playback speed change events */
@@ -69,6 +74,8 @@ export {
 	AudioProContentType,
 	/** Types of events that can be emitted */
 	AudioProEventType,
+	/** Repeat modes for playback */
+	AudioProRepeatMode,
 	/** Possible states of the audio player */
 	AudioProState,
 	/** Source that triggered an action */

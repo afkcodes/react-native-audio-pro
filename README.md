@@ -140,27 +140,27 @@ React Native Audio Pro supports various audio file formats including MP3, AAC, a
 
 ### 🛠 Methods
 
-| Method | Description | Return Value |
-| --- | --- | --- |
-| **play(track: AudioProTrack, options?: AudioProPlayOptions)** | Loads and starts playing the specified track. | `void` |
-| **pause()** | Pauses the current playback. | `void` |
-| **resume()** | Resumes playback if paused. | `void` |
-| **stop()** | Stops playback and resets position to `0` while keeping the current track loaded; use `clear()` to unload it. | `void` |
-| **clear()** | Fully resets the player to the `IDLE` state and tears down the native player instance. | `void` |
-| **seekTo(positionMs: number)** | Seeks to a specific position (in milliseconds). | `void` |
-| **seekForward(amountMs?: number)** | Seeks forward by the specified milliseconds (default: 30 seconds). | `void` |
-| **seekBack(amountMs?: number)** | Seeks backward by the specified milliseconds (default: 30 seconds). | `void` |
-| **configure(options: AudioProSetupOptions)** | Sets playback options. Takes effect the next time `play()` is called. | `void` |
-| **setProgressInterval(ms: number)** | Sets the `PROGRESS` event frequency (in ms). Takes effect the next time `play()` is called. | `void` |
-| **getProgressInterval()** | Returns the current progress interval in milliseconds. | `number` |
-| **getTimings()** | Returns the current playback position and total duration in milliseconds. | `{ position: number, duration: number }` |
-| **getState()** | Returns the current playback state. | `AudioProState` |
-| **getPlayingTrack()** | Returns the current track, or `null` if none is loaded. | `AudioProTrack \| null` |
-| **setPlaybackSpeed(speed: number)** | Sets the playback speed rate (0.25 to 2.0). Normal speed is `1.0`. | `void` |
-| **getPlaybackSpeed()** | Returns the current playback speed rate. | `number` |
-| **setVolume(volume: number)** | Sets the playback volume from `0.0` to `1.0`. Does not affect the system volume. | `void` |
-| **getVolume()** | Returns the current relative volume (`0.0` to `1.0`). | `number` |
-| **getError()** | Returns the last error that occurred, or `null` if no error has occurred. | `AudioProPlaybackErrorPayload \| null` |
+| Method                                                        | Description                                                                                                   | Return Value                             |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **play(track: AudioProTrack, options?: AudioProPlayOptions)** | Loads and starts playing the specified track.                                                                 | `void`                                   |
+| **pause()**                                                   | Pauses the current playback.                                                                                  | `void`                                   |
+| **resume()**                                                  | Resumes playback if paused.                                                                                   | `void`                                   |
+| **stop()**                                                    | Stops playback and resets position to `0` while keeping the current track loaded; use `clear()` to unload it. | `void`                                   |
+| **clear()**                                                   | Fully resets the player to the `IDLE` state and tears down the native player instance.                        | `void`                                   |
+| **seekTo(positionMs: number)**                                | Seeks to a specific position (in milliseconds).                                                               | `void`                                   |
+| **seekForward(amountMs?: number)**                            | Seeks forward by the specified milliseconds (default: 30 seconds).                                            | `void`                                   |
+| **seekBack(amountMs?: number)**                               | Seeks backward by the specified milliseconds (default: 30 seconds).                                           | `void`                                   |
+| **configure(options: AudioProSetupOptions)**                  | Sets playback options. Takes effect the next time `play()` is called.                                         | `void`                                   |
+| **setProgressInterval(ms: number)**                           | Sets the `PROGRESS` event frequency (in ms). Takes effect the next time `play()` is called.                   | `void`                                   |
+| **getProgressInterval()**                                     | Returns the current progress interval in milliseconds.                                                        | `number`                                 |
+| **getTimings()**                                              | Returns the current playback position and total duration in milliseconds.                                     | `{ position: number, duration: number }` |
+| **getState()**                                                | Returns the current playback state.                                                                           | `AudioProState`                          |
+| **getPlayingTrack()**                                         | Returns the current track, or `null` if none is loaded.                                                       | `AudioProTrack \| null`                  |
+| **setPlaybackSpeed(speed: number)**                           | Sets the playback speed rate (0.25 to 2.0). Normal speed is `1.0`.                                            | `void`                                   |
+| **getPlaybackSpeed()**                                        | Returns the current playback speed rate.                                                                      | `number`                                 |
+| **setVolume(volume: number)**                                 | Sets the playback volume from `0.0` to `1.0`. Does not affect the system volume.                              | `void`                                   |
+| **getVolume()**                                               | Returns the current relative volume (`0.0` to `1.0`).                                                         | `number`                                 |
+| **getError()**                                                | Returns the last error that occurred, or `null` if no error has occurred.                                     | `AudioProPlaybackErrorPayload \| null`   |
 
 ### ⚡️ React Hook
 
@@ -189,22 +189,22 @@ const playingTrack = useAudioPro((s) => s.playingTrack);
 
 ### 🎧 Event Listeners
 
-| Method | Description | Return Value |
-| --- | --- | --- |
+| Method                                                | Description                                                                       | Return Value                                             |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | **addEventListener(callback: AudioProEventCallback)** | Listens for playback events (e.g., state changes, track ended, errors, progress). | `EmitterSubscription` — call `.remove()` to unsubscribe. |
 
 ### 🧱 Enums
 
 #### AudioProState
 
-| State | Description |
-| --- | --- |
-| `IDLE` | The default state on app launch. Represents a player with no loaded track and fully cleared media sessions. |
+| State     | Description                                                                                                          |
+| --------- | -------------------------------------------------------------------------------------------------------------------- |
+| `IDLE`    | The default state on app launch. Represents a player with no loaded track and fully cleared media sessions.          |
 | `STOPPED` | Playback is stopped but the track remains loaded. Position is reset to 0, and media session controls remain visible. |
-| `LOADING` | A track is being loaded or buffered and is not yet ready for playback. |
-| `PLAYING` | A track is currently playing. |
-| `PAUSED` | Playback is paused at the current position. |
-| `ERROR` | An error occurred during playback. Check `AudioPro.getError()` for details. |
+| `LOADING` | A track is being loaded or buffered and is not yet ready for playback.                                               |
+| `PLAYING` | A track is currently playing.                                                                                        |
+| `PAUSED`  | Playback is paused at the current position.                                                                          |
+| `ERROR`   | An error occurred during playback. Check `AudioPro.getError()` for details.                                          |
 
 #### AudioProEventType
 
@@ -363,7 +363,7 @@ Use `AudioProContentType.SPEECH` for podcasts or audiobooks, `AudioProContentTyp
 
 - `debug`: When set to `true`, enables verbose logging of all audio events. Useful for development and troubleshooting.
 - `debugIncludesProgress`: When set to `true`, includes PROGRESS events in debug logs. PROGRESS events occur every second during playback and can flood the logs, making it harder to see other important events. Defaults to `false`.
-    </details>
+      </details>
 
 <details>
 <summary><b>About progressIntervalMs</b></summary>
@@ -374,7 +374,7 @@ Use `AudioProContentType.SPEECH` for podcasts or audiobooks, `AudioProContentTyp
 - Can be set via `configure()` or `setProgressInterval()`
 - Changes take effect on the next call to `play()`
 - Useful for making the UI more responsive for short or high-precision audio playback
-    </details>
+      </details>
 
 ### Handling Remote Events
 

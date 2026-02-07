@@ -61,7 +61,7 @@ export default function App() {
 	const [needsTrackLoad, setNeedsTrackLoad] = useState(true);
 
 	// new loop/shuffle state
-	const [loopMode, setLoopMode] = useState<'OFF' | 'TRACK' | 'QUEUE'>('OFF');
+	const [loopMode, setLoopMode] = useState<'OFF' | 'ONE' | 'ALL'>('OFF');
 	const [shuffle, setShuffle] = useState(false);
 	const [showEqualizer, setShowEqualizer] = useState(false);
 
@@ -79,6 +79,33 @@ export default function App() {
 
 	// Set up ambient audio event listeners
 	useEffect(() => {
+		// Configure notification buttons with custom actions
+		AudioPro.setNotificationButtons(['LIKE', 'PREV', 'NEXT']);
+
+		// Add main audio event listener for custom actions
+		const mainListener = AudioPro.addEventListener((event) => {
+			if (event.type === 'CUSTOM_ACTION') {
+				console.log('Custom action triggered:', event.payload?.action);
+				// Handle custom actions
+				switch (event.payload?.action) {
+					case 'LIKE':
+						console.log('User liked the track!');
+						// Add your like logic here
+						break;
+					case 'SAVE':
+						console.log('User saved the track!');
+						// Add your save logic here
+						break;
+					case 'REWIND_30':
+						console.log('User rewound 30 seconds');
+						break;
+					case 'FORWARD_30':
+						console.log('User forwarded 30 seconds');
+						break;
+				}
+			}
+		});
+
 		// Add ambient audio event listeners
 		const ambientListener = AudioPro.addAmbientListener((event) => {
 			console.log('Ambient audio event:', event.type);
@@ -104,6 +131,7 @@ export default function App() {
 
 		// Clean up listeners when component unmounts
 		return () => {
+			mainListener.remove();
 			ambientListener.remove();
 			logListener.remove();
 		};
@@ -281,7 +309,7 @@ export default function App() {
 				<View style={[styles.speedRow, { marginTop: 10 }]}>
 					<TouchableOpacity
 						onPress={() => {
-							const modes: ('OFF' | 'TRACK' | 'QUEUE')[] = ['OFF', 'TRACK', 'QUEUE'];
+							const modes: ('OFF' | 'ONE' | 'ALL')[] = ['OFF', 'ONE', 'ALL'];
 							const currentIndex = modes.indexOf(loopMode);
 							const nextIndex = (currentIndex + 1) % modes.length;
 							const next = modes[nextIndex] || 'OFF';

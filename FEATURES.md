@@ -62,7 +62,6 @@ React Native Audio Pro is intentionally minimal and focused. Rather than trying 
 
 If your use case exceeds the scope of this library, you are welcome to fork it or compose your own logic around it.
 
-
 ---
 
 ## 🗒 Consolidated Inventory of Capabilities
@@ -70,60 +69,75 @@ If your use case exceeds the scope of this library, you are welcome to fork it o
 Below is a comprehensive list of all features and functionality exposed by React Native Audio Pro across its TypeScript, iOS, and Android layers:
 
 1. **Playback Control**
-   - `play(track, options)`
-   - `pause()`
-   - `resume()`
-   - `stop()` (resets position to 0)
-   - `clear()` (full teardown to IDLE)
+
+    - `play(track, options)`
+    - `pause()`
+    - `resume()`
+    - `stop()` (resets position to 0)
+    - `clear()` (full teardown to IDLE)
 
 2. **Seeking**
-   - `seekTo(positionMs)`
-   - `seekForward(amountMs)`
-   - `seekBack(amountMs)`
+
+    - `seekTo(positionMs)`
+    - `seekForward(amountMs)`
+    - `seekBack(amountMs)`
 
 3. **Position & Progress**
-   - Emits `PROGRESS` events at a configurable interval
+
+    - Emits `PROGRESS` events at a configurable interval
 
 4. **Playback Speed**
-   - `setPlaybackSpeed(speed)`
-   - Emits `PLAYBACK_SPEED_CHANGED` events
+
+    - `setPlaybackSpeed(speed)`
+    - Emits `PLAYBACK_SPEED_CHANGED` events
 
 5. **Volume Control**
-   - `setVolume(volume)`
+
+    - `setVolume(volume)`
 
 6. **Start-Time / Autoplay**
-   - `autoPlay` option
-   - `startTimeMs` pending-seek logic
+
+    - `autoPlay` option
+    - `startTimeMs` pending-seek logic
 
 7. **Custom Headers**
-   - `headers.audio` and `headers.artwork` for HTTP(S) requests
+
+    - `headers.audio` and `headers.artwork` for HTTP(S) requests
 
 8. **Media Session & Lock-Screen Integration**
-   - Android Media3 session & notification controls
-   - iOS MPNowPlayingInfo & MPRemoteCommandCenter
-   - Remote control events: `REMOTE_NEXT`, `REMOTE_PREV`, seek commands
+
+    - Android Media3 session & notification controls
+    - iOS MPNowPlayingInfo & MPRemoteCommandCenter
+    - Remote control events: `REMOTE_NEXT`, `REMOTE_PREV`, seek commands
 
 9. **Artwork Support**
-   - Display artwork via URL (JPEG, PNG, etc.) on lock screen and controls
+
+    - Display artwork via URL (JPEG, PNG, etc.) on lock screen and controls
 
 10. **Content Type Configuration**
+
     - Distinguish `MUSIC` vs `SPEECH` modes for native optimizations
 
 11. **Debug Logging**
+
     - `debug` and `debugIncludesProgress` flags for internal logs
 
 12. **Error Handling**
+
     - `PLAYBACK_ERROR` and `ERROR` events with informative payloads
 
 13. **Ambient Audio (Non-Core)**
+
     - Secondary player API: `ambientPlay`, `ambientPause`, `ambientResume`, `ambientStop`, `ambientSeekTo`
     - `AMBIENT_TRACK_ENDED` and `AMBIENT_ERROR` events
 
 14. **State Events**
+
     - `STATE_CHANGED` events with `{ state, position, duration }`
     - `TRACK_ENDED` notifications
 
 15. **Lifecycle & Session Management**
+
     - Android `MediaBrowser` lifecycle handling
     - iOS AVAudioSession interruption observers
     - Internal timers and cleanup routines

@@ -67,6 +67,12 @@ export enum AudioProEventType {
 	REMOTE_PREV = 'REMOTE_PREV',
 	/** Playback error has occurred */
 	PLAYBACK_ERROR = 'PLAYBACK_ERROR',
+	/** Repeat mode changed */
+	REPEAT_MODE_CHANGED = 'REPEAT_MODE_CHANGED',
+	/** Shuffle mode changed */
+	SHUFFLE_MODE_CHANGED = 'SHUFFLE_MODE_CHANGED',
+	/** Custom notification action button pressed */
+	CUSTOM_ACTION = 'CUSTOM_ACTION',
 }
 
 /**
@@ -106,9 +112,5 @@ export const DEFAULT_CONFIG: AudioProConfigureOptions = {
 	debugIncludesProgress: false,
 	/** Interval in milliseconds for progress events */
 	progressIntervalMs: 1000,
-	/** Whether to show next/previous controls */
-	showNextPrevControls: true,
-	/** Whether to show skip forward/back controls in notification */
-	showSkipControls: false,
 	skipIntervalMs: DEFAULT_SKIP_INTERVAL_MS,
 };

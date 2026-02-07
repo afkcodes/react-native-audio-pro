@@ -36,6 +36,7 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 		const val EVENT_TYPE_PLAYBACK_SPEED_CHANGED = "PLAYBACK_SPEED_CHANGED"
 		const val EVENT_TYPE_REPEAT_MODE_CHANGED = "REPEAT_MODE_CHANGED"
 		const val EVENT_TYPE_SHUFFLE_MODE_CHANGED = "SHUFFLE_MODE_CHANGED"
+		const val EVENT_TYPE_CUSTOM_ACTION = "CUSTOM_ACTION"
 
 		// Trigger sources for seek events
 		const val TRIGGER_SOURCE_USER = "USER"
@@ -158,6 +159,11 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 		CoroutineScope(Dispatchers.Main).launch {
 			AudioProController.setShuffleMode(enabled)
 		}
+	}
+
+	@ReactMethod
+	fun setNotificationButtons(buttons: com.facebook.react.bridge.ReadableArray) {
+		AudioProController.setNotificationButtons(buttons)
 	}
 
 	@ReactMethod

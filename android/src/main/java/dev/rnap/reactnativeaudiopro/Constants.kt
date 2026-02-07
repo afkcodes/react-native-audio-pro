@@ -27,4 +27,12 @@ object Constants {
     // Playlist Commands
     const val CUSTOM_COMMAND_SET_REPEAT_MODE = "dev.rnap.reactnativeaudiopro.SET_REPEAT_MODE"
     const val CUSTOM_COMMAND_SET_SHUFFLE_MODE = "dev.rnap.reactnativeaudiopro.SET_SHUFFLE_MODE"
+    
+    // Custom Notification Action Commands
+    const val CUSTOM_COMMAND_LIKE = "dev.rnap.reactnativeaudiopro.LIKE"
+    const val CUSTOM_COMMAND_DISLIKE = "dev.rnap.reactnativeaudiopro.DISLIKE"
+    const val CUSTOM_COMMAND_SAVE = "dev.rnap.reactnativeaudiopro.SAVE"
+    const val CUSTOM_COMMAND_BOOKMARK = "dev.rnap.reactnativeaudiopro.BOOKMARK"
+    const val CUSTOM_COMMAND_REWIND_30 = "dev.rnap.reactnativeaudiopro.REWIND_30"
+    const val CUSTOM_COMMAND_FORWARD_30 = "dev.rnap.reactnativeaudiopro.FORWARD_30"
 }

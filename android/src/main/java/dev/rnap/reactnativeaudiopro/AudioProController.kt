@@ -63,8 +63,7 @@ object AudioProController {
 	private var settingDebugIncludesProgress: Boolean = false
 	private var settingProgressIntervalMs: Long = 1000
 	var settingAudioContentType: Int = C.AUDIO_CONTENT_TYPE_MUSIC
-	var settingShowNextPrevControls: Boolean = true
-	var settingShowSkipControls: Boolean = false
+	var settingNotificationButtons: List<String> = listOf("PREV", "NEXT")
 	var settingSkipIntervalMs: Long = 30000L
 
 	var headersAudio: Map<String, String>? = null
@@ -191,8 +190,6 @@ object AudioProController {
 		val autoPlay: Boolean,
 		val startTimeMs: Long?,
 		val progressIntervalMs: Long,
-		val showNextPrevControls: Boolean,
-		val showSkipControls: Boolean,
 		val skipIntervalMs: Long,
 		val addTrack: Boolean = false, // If true, adds track to queue instead of replacing
 	)
@@ -216,39 +213,8 @@ object AudioProController {
 		val progressInterval =
 			if (options.hasKey("progressIntervalMs")) options.getDouble("progressIntervalMs")
 				.toLong() else 1000L
-		val showControls =
-			if (options.hasKey("showNextPrevControls")) options.getBoolean("showNextPrevControls") else true
-		val showSkip =
-			if (options.hasKey("showSkipControls")) options.getBoolean("showSkipControls") else true
 		val skipIntervalMs =
 			if (options.hasKey("skipIntervalMs")) options.getDouble("skipIntervalMs").toLong() else 30000L
-
-		// Warn if showNextPrevControls is changed after session initialization
-		if (::engineBrowserFuture.isInitialized && enginerBrowser != null && showControls != settingShowNextPrevControls) {
-			Log.w(
-				Constants.LOG_TAG,
-				"showNextPrevControls changed mid-session; call clear() before changing."
-			)
-		}
-		// Warn if showSkipControls is changed after session initialization
-		if (::engineBrowserFuture.isInitialized && enginerBrowser != null && showSkip != settingShowSkipControls) {
-			Log.w(
-				Constants.LOG_TAG,
-				"showSkipControls changed mid-session; call clear() before changing."
-			)
-		}
-
-		// Enforce mutual exclusivity for session config: only one set of controls is enabled.
-		var resolvedShowNextPrev = showControls
-		var resolvedShowSkip = showSkip
-		if (showControls && showSkip) {
-			// If both are requested, prefer next/prev and log a warning.
-			Log.w(
-				Constants.LOG_TAG,
-				"Both showNextPrevControls and showSkipControls are true; only next/prev controls will be enabled for this session."
-			)
-			resolvedShowSkip = false
-		}
 
 		// Apply to controller state
 		settingDebug = enableDebug
@@ -260,8 +226,6 @@ object AudioProController {
 		activePlaybackSpeed = speed
 		activeVolume = volume
 		settingProgressIntervalMs = progressInterval
-		settingShowNextPrevControls = resolvedShowNextPrev
-		settingShowSkipControls = resolvedShowSkip
 		settingSkipIntervalMs = skipIntervalMs
 
 		return PlaybackOptions(
@@ -273,8 +237,6 @@ object AudioProController {
 			autoPlay,
 			startTimeMs,
 			progressInterval,
-			resolvedShowNextPrev,
-			resolvedShowSkip,
 			skipIntervalMs,
 			addTrack,
 		)
@@ -494,6 +456,37 @@ object AudioProController {
 			)
 			log("Sent setShuffleMode command: $enabled")
 		}
+	}
+
+	fun setNotificationButtons(buttons: ReadableArray) {
+		val buttonList = mutableListOf<String>()
+		for (i in 0 until buttons.size()) {
+			buttons.getString(i)?.let { buttonList.add(it) }
+		}
+		settingNotificationButtons = buttonList
+		log("Notification buttons set to: $buttonList")
+		
+		// Note: Notification buttons will be applied on next session creation
+		// For existing sessions, user should call clear() then configure/play again
+		if (::engineBrowserFuture.isInitialized && enginerBrowser != null) {
+			Log.w(
+				Constants.LOG_TAG,
+				"Notification buttons changed mid-session. Call clear() and restart playback to apply changes."
+			)
+		}
+	}
+
+	fun emitCustomAction(action: String) {
+		log("Custom action triggered: $action")
+		val payload = Arguments.createMap().apply {
+			putString("action", action)
+		}
+		emitEvent(
+			AudioProModule.EVENT_TYPE_CUSTOM_ACTION,
+			activeTrack,
+			payload,
+			"emitCustomAction($action)"
+		)
 	}
 	
 	suspend fun getQueue(): com.facebook.react.bridge.WritableArray {
@@ -947,19 +940,35 @@ object AudioProController {
 					 * - Native must pause the player, seek to position 0, and emit both:
 					 *   - STATE_CHANGED: STOPPED
 					 *   - TRACK_ENDED
-					 */
-					Player.STATE_ENDED -> {
-						stopProgressTimer()
+				 * 
+				 * Note: If repeat mode is enabled (ONE or ALL), Media3 will automatically
+				 * handle the repeat, so we should NOT interfere by pausing/seeking.
+				 */
+				Player.STATE_ENDED -> {
+					stopProgressTimer()
 
-						// Reset error state and last emitted state
-						flowIsInErrorState = false
-						flowLastEmittedState = ""
-						flowLastEmittedPosition = null
-						flowLastEmittedDuration = null
+					// Reset error state and last emitted state
+					flowIsInErrorState = false
+					flowLastEmittedState = ""
+					flowLastEmittedPosition = null
+					flowLastEmittedDuration = null
 
-						// 1. Pause playback to ensure state is correct
-						enginerBrowser?.pause()
+					// Check if repeat mode is enabled - if so, let Media3 handle it
+					val repeatMode = enginerBrowser?.repeatMode ?: Player.REPEAT_MODE_OFF
+					if (repeatMode != Player.REPEAT_MODE_OFF) {
+						// Repeat is enabled - Media3 will automatically restart playback
+						// Don't pause or seek, just emit the track ended event
+						log("STATE_ENDED with repeat mode $repeatMode - letting Media3 handle repeat")
+						emitNotice(
+							AudioProModule.EVENT_TYPE_TRACK_ENDED,
+							dur,
+							dur,
+							"onPlaybackStateChanged(STATE_ENDED, repeat=$repeatMode)"
+						)
+						return
+					}
 
+					// No repeat mode - pause and reset to beginning
 						// 2. Seek to position 0
 						enginerBrowser?.seekTo(0)
 

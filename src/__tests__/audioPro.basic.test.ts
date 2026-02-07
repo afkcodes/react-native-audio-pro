@@ -227,8 +227,8 @@ describe('AudioPro playback modes', () => {
 	});
 
 	it('calls native setRepeatMode', () => {
-		AudioPro.setRepeatMode('TRACK');
-		expect(NativeModules.AudioPro.setRepeatMode).toHaveBeenCalledWith('TRACK');
+		AudioPro.setRepeatMode('ONE');
+		expect(NativeModules.AudioPro.setRepeatMode).toHaveBeenCalledWith('ONE');
 	});
 
 	it('calls native setShuffleMode', () => {

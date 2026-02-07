@@ -8,7 +8,7 @@ For ambient/secondary playback, see `spec-ambient.md`.
 
 - ✅ Static remote URLs (e.g., `https://example.com/audio.mp3`)
 - ✅ Locally downloaded file paths (e.g., `/data/user/0/com.app/files/foo.mp3`)
-  - TS layer automatically prefixes with `file://` if not already present.
+    - TS layer automatically prefixes with `file://` if not already present.
 
 ## 🔊 Playback Features
 

@@ -16,6 +16,7 @@ import type {
 	AudioProAmbientEventCallback,
 	AudioProConfigureOptions,
 	AudioProEventCallback,
+	AudioProNotificationButton,
 	AudioProPlayOptions,
 	AudioProTrack,
 } from './types';
@@ -40,7 +41,7 @@ function isValidPlayerStateForOperation(operation: string): boolean {
 
 export const AudioPro = {
 	/**
-	 * Configure the audio player with the specified options
+	 * Configure the audio player with the specified options.
 	 *
 	 * Note: Configuration changes are stored but only applied when the next `play()` call is made.
 	 * This is by design and applies to all configuration options.
@@ -51,31 +52,11 @@ export const AudioPro = {
 	 * @param options.debugIncludesProgress - Include progress events in debug logs
 	 * @param options.progressIntervalMs - Interval in milliseconds for progress events
 	 * @param options.skipIntervalMs - Interval in milliseconds for skip forward/back actions
-	 * @param options.showNextPrevControls - Whether to show next/previous controls in notification
-	 * @param options.showSkipControls - Whether to show skip forward/back controls in notification
-	 */
-	/**
-	 * Configure the audio player with the specified options.
-	 *
-	 * Note: Configuration changes are stored but only applied when the next `play()` call is made.
-	 * This is by design and applies to all configuration options.
-	 *
-	 * Mutual exclusivity between showNextPrevControls and showSkipControls is enforced here.
-	 * If both are true, showSkipControls will be set to false and a warning logged.
-	 *
-	 * @param options - Configuration options for the audio player
 	 */
 	configure(options: AudioProConfigureOptions): void {
 		const { setConfigureOptions, setDebug, setDebugIncludesProgress } =
 			internalStore.getState();
-		let config: AudioProConfigureOptions = { ...DEFAULT_CONFIG, ...options };
-		if (config.showNextPrevControls === true && config.showSkipControls === true) {
-			// If both are true, showSkipControls must be false.
-			console.warn(
-				'[react-native-audio-pro]: showNextPrevControls and showSkipControls are mutually exclusive. showSkipControls will be set to false.',
-			);
-			config = { ...config, showSkipControls: false };
-		}
+		const config: AudioProConfigureOptions = { ...DEFAULT_CONFIG, ...options };
 		setConfigureOptions(config);
 		setDebug(!!options.debug);
 		setDebugIncludesProgress(options.debugIncludesProgress ?? false);
@@ -206,9 +187,9 @@ export const AudioPro = {
 
 	/**
 	 * Set the repeat mode
-	 * @param mode - "OFF" | "TRACK" | "QUEUE"
+	 * @param mode - "OFF" | "ONE" | "ALL"
 	 */
-	setRepeatMode(mode: 'OFF' | 'TRACK' | 'QUEUE') {
+	setRepeatMode(mode: 'OFF' | 'ONE' | 'ALL') {
 		logDebug('AudioPro: setRepeatMode()', mode);
 		NativeAudioPro.setRepeatMode(mode);
 	},
@@ -223,15 +204,40 @@ export const AudioPro = {
 	},
 
 	/**
-	 * Toggle shuffle mode
-	 * @returns The new shuffle state
+	 * Set custom notification buttons for lock screen and notification controls.
+	 *
+	 * Configures which action buttons appear on the media notification.
+	 * Changes take effect on next playback session. Call clear() first to apply to current session.
+	 *
+	 * Available buttons:
+	 * - PLAY/PAUSE: Automatically included in slot 1
+	 * - PREV: Previous track button
+	 * - NEXT: Next track button
+	 * - LIKE: Like/favorite button (heart icon)
+	 * - DISLIKE: Dislike button (thumbs down icon)
+	 * - SAVE: Save to playlist button
+	 * - BOOKMARK: Bookmark button
+	 * - REWIND_30: Rewind 30 seconds button
+	 * - FORWARD_30: Forward 30 seconds button
+	 *
+	 * @param buttons - Array of button types to display. Max 5 buttons (play/pause counts as 1).
+	 *
+	 * @example
+	 * // Basic playback controls
+	 * AudioPro.setNotificationButtons(['PREV', 'NEXT']);
+	 *
+	 * @example
+	 * // With custom actions
+	 * AudioPro.setNotificationButtons(['LIKE', 'PREV', 'NEXT', 'SAVE']);
+	 *
+	 * @example
+	 * // With seek controls
+	 * AudioPro.setNotificationButtons(['REWIND_30', 'PREV', 'NEXT', 'FORWARD_30']);
 	 */
-	/* 
-	toggleShuffle() {
-		// keeping this might require sync state reading which is async
-		// better handle toggle in UI or store state in JS
-	} 
-	*/
+	setNotificationButtons(buttons: AudioProNotificationButton[]) {
+		logDebug('AudioPro: setNotificationButtons()', buttons);
+		NativeAudioPro.setNotificationButtons(buttons);
+	},
 
 	/**
 	 * Add a listener for audio player events

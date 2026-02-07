@@ -48,8 +48,6 @@ export type AudioProConfigureOptions = {
 	debug?: boolean;
 	debugIncludesProgress?: boolean;
 	progressIntervalMs?: number;
-	showNextPrevControls?: boolean;
-	showSkipControls?: boolean;
 	skipIntervalMs?: number;
 
 	/**
@@ -62,6 +60,22 @@ export type AudioProConfigureOptions = {
 	 */
 	shuffleMode?: boolean;
 };
+
+// ==============================
+// NOTIFICATION BUTTONS
+// ==============================
+
+export type AudioProNotificationButton =
+	| 'PLAY'
+	| 'PAUSE'
+	| 'PREV'
+	| 'NEXT'
+	| 'LIKE'
+	| 'DISLIKE'
+	| 'SAVE'
+	| 'BOOKMARK'
+	| 'REWIND_30'
+	| 'FORWARD_30';
 
 // ==============================
 // PLAY OPTIONS
@@ -96,6 +110,7 @@ export interface AudioProEvent {
 		errorCode?: number;
 		speed?: number;
 		index?: number;
+		action?: string; // For CUSTOM_ACTION events: 'LIKE', 'SAVE', 'REWIND_30', etc.
 	};
 }
 
