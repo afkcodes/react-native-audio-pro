@@ -881,10 +881,14 @@ object AudioProController {
 
 	private fun performSeek(position: Long) {
 		val dur = enginerBrowser?.duration ?: 0L
-		val validPosition = when {
-			position < 0 -> 0L
-			position > dur -> dur
-			else -> position
+		val validPosition = if (dur > 0) {
+			when {
+				position < 0 -> 0L
+				position > dur -> dur
+				else -> position
+			}
+		} else {
+			position.coerceAtLeast(0L)
 		}
 
 		// Set pending seek position
