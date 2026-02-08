@@ -267,6 +267,12 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 				service.handleSetShuffleMode(enabled)
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
+
+			Constants.CUSTOM_COMMAND_SET_SKIP_SILENCE -> {
+				val enabled = args.getBoolean("enabled", false)
+				service.handleSetSkipSilence(enabled)
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
 		}
 
 		return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))

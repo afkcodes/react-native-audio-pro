@@ -78,6 +78,11 @@ export type AudioProConfigureOptions = {
 	 * Note: Changing this requires a session restart (e.g. force quit app or clear() then re-configure) to take full effect on the underlying DataSource construction.
 	 */
 	cacheEnabled?: boolean;
+
+	/**
+	 * Enable or disable silence skipping. Default is false.
+	 */
+	skipSilence?: boolean;
 };
 
 // ==============================

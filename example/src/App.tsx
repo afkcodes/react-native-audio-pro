@@ -66,7 +66,9 @@ export default function App() {
 	const [shuffle, setShuffle] = useState(false);
 	const [showEqualizer, setShowEqualizer] = useState(false);
 	const [cacheSize, setCacheSize] = useState<string>('Checking...');
+
 	const [sleepTimerSeconds, setSleepTimerSeconds] = useState('10');
+	const [skipSilence, setSkipSilence] = useState(false);
 
 	useEffect(() => {
 		checkCache();
@@ -358,6 +360,20 @@ export default function App() {
 					</TouchableOpacity>
 				</View>
 
+				<View style={[styles.speedRow, { marginTop: 10 }]}>
+					<TouchableOpacity
+						onPress={() => {
+							const next = !skipSilence;
+							setSkipSilence(next);
+							AudioPro.setSkipSilence(next);
+						}}
+					>
+						<Text style={styles.controlText}>
+							Skip Silence: {skipSilence ? 'ON' : 'OFF'}
+						</Text>
+					</TouchableOpacity>
+				</View>
+
 				<View style={styles.speedRow}>
 					<TouchableOpacity onPress={handleDecreaseSpeed}>
 						<Text style={styles.controlText}>-</Text>
@@ -507,16 +523,6 @@ export default function App() {
 							{showEqualizer ? 'Hide Equalizer' : 'Show Equalizer'}
 						</Text>
 					</TouchableOpacity>
-					<View style={styles.section}>
-						<TouchableOpacity
-							style={styles.eqButton}
-							onPress={() => setShowEqualizer(!showEqualizer)}
-						>
-							<Text style={styles.eqButtonText}>
-								{showEqualizer ? 'Hide Equalizer' : 'Show Equalizer'}
-							</Text>
-						</TouchableOpacity>
-					</View>
 
 					<View style={styles.ambientSection}>
 						<Text style={styles.sectionTitle}>Cache Management</Text>

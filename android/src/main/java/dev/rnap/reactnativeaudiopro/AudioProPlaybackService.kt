@@ -346,4 +346,13 @@ open class AudioProPlaybackService : MediaLibraryService() {
 			player.shuffleModeEnabled = enabled
 		}
 	}
+
+	fun handleSetSkipSilence(enabled: Boolean) {
+		if (::player.isInitialized) {
+			player.skipSilenceEnabled = enabled
+			// When enabling skip silence, we might want to ensure the parameters are set correctly if needed
+			// But default should work.
+			android.util.Log.d(Constants.LOG_TAG, "Set skip silence enabled: $enabled")
+		}
+	}
 }

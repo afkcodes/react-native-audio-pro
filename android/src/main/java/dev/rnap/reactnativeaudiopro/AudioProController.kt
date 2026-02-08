@@ -477,6 +477,20 @@ object AudioProController {
 		}
 	}
 
+	suspend fun setSkipSilence(enabled: Boolean) {
+		ensureSession()
+		runOnUiThread {
+			val bundle = android.os.Bundle()
+			bundle.putBoolean("enabled", enabled)
+			
+			enginerBrowser?.sendCustomCommand(
+				SessionCommand(Constants.CUSTOM_COMMAND_SET_SKIP_SILENCE, android.os.Bundle.EMPTY),
+				bundle
+			)
+			log("Sent setSkipSilence command: $enabled")
+		}
+	}
+
 	fun startSleepTimer(seconds: Double) {
 		cancelSleepTimer() // Clear any existing timer
 		

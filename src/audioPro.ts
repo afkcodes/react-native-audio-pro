@@ -64,6 +64,11 @@ export const AudioPro = {
 		}
 		setDebug(!!options.debug);
 		setDebugIncludesProgress(options.debugIncludesProgress ?? false);
+
+		if (options.skipSilence !== undefined) {
+			this.setSkipSilence(options.skipSilence);
+		}
+
 		logDebug('AudioPro: configure()', config);
 	},
 
@@ -558,5 +563,14 @@ export const AudioPro = {
 	cancelSleepTimer(): void {
 		logDebug('AudioPro: cancelSleepTimer()');
 		NativeAudioPro.cancelSleepTimer();
+	},
+
+	/**
+	 * Enable or disable silence skipping.
+	 * @param enabled - true to enable, false to disable.
+	 */
+	setSkipSilence(enabled: boolean): void {
+		logDebug('AudioPro: setSkipSilence()', enabled);
+		NativeAudioPro.setSkipSilence(enabled);
 	},
 };

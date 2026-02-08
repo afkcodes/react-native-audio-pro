@@ -279,6 +279,13 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
+	fun setSkipSilence(enabled: Boolean) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setSkipSilence(enabled)
+		}
+	}
+
+	@ReactMethod
 	fun getCacheSize(promise: com.facebook.react.bridge.Promise) {
 		try {
 			// Using Dispatchers.IO for file operations
