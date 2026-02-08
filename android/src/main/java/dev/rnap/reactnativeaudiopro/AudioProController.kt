@@ -491,6 +491,22 @@ object AudioProController {
 		}
 	}
 
+	suspend fun updateTrack(index: Int, track: ReadableMap) {
+		ensureSession()
+		runOnUiThread {
+			enginerBrowser?.let { browser ->
+				if (index >= 0 && index < browser.mediaItemCount) {
+					// vibrancy(track) - Removed unresolved reference
+					val item = toMediaItem(track)
+					browser.replaceMediaItem(index, item)
+					log("UpdateTrack: Replaced item at index $index with ${item.mediaMetadata.title}")
+				} else {
+					log("UpdateTrack: Invalid index $index")
+				}
+			}
+		}
+	}
+
 	fun startSleepTimer(seconds: Double) {
 		cancelSleepTimer() // Clear any existing timer
 		
@@ -1320,9 +1336,11 @@ object AudioProController {
 	 * - Useful for soft errors (e.g., image fetch failed, headers issue, non-fatal network retry)
 	 */
 	private fun emitError(message: String, code: Int, reason: String = "") {
+		val index = enginerBrowser?.currentMediaItemIndex ?: -1
 		val payload = Arguments.createMap().apply {
 			putString("error", message)
 			putInt("errorCode", code)
+			putInt("index", index)
 		}
 		emitEvent(AudioProModule.EVENT_TYPE_PLAYBACK_ERROR, activeTrack, payload, reason)
 	}

@@ -35,15 +35,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/14140973/70390357/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/73/14140973/70390357/*~hmac=189e7d7dec62294c2613e1584179b61054944a0b25c1e55fa1fdf2d8a88f577b',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/14140973/70390357/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/73/14140973/70390357/*~hmac=1be56497281bdc327ad4f9b5940178e2ba96f2ed4df18c7a9c2bf7c2a00248d4',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/14140973/70390357/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/73/14140973/70390357/*~hmac=189e7d7dec62294c2613e1584179b61054944a0b25c1e55fa1fdf2d8a88f577b',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/14140973/70390357/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/73/14140973/70390357/*~hmac=1be56497281bdc327ad4f9b5940178e2ba96f2ed4df18c7a9c2bf7c2a00248d4',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/14140973/70390357/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/73/14140973/70390357/*~hmac=189e7d7dec62294c2613e1584179b61054944a0b25c1e55fa1fdf2d8a88f577b',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/14140973/70390357/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/73/14140973/70390357/*~hmac=1be56497281bdc327ad4f9b5940178e2ba96f2ed4df18c7a9c2bf7c2a00248d4',
 				},
 			],
 			artists: [
@@ -216,15 +216,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/56/13879256/69704746/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/56/13879256/69704746/*~hmac=6cb0109ce5731d31ef7a531a67c192f89591e2f560eafe2d42c6e27abbfa33bd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/56/13879256/69704746/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/56/13879256/69704746/*~hmac=2aac34e98aa74c2f3ef7217e5eb02e2089aa4e97c3372a08daf2b2376d4466fb',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/56/13879256/69704746/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/56/13879256/69704746/*~hmac=6cb0109ce5731d31ef7a531a67c192f89591e2f560eafe2d42c6e27abbfa33bd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/56/13879256/69704746/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/56/13879256/69704746/*~hmac=2aac34e98aa74c2f3ef7217e5eb02e2089aa4e97c3372a08daf2b2376d4466fb',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/56/13879256/69704746/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/56/13879256/69704746/*~hmac=6cb0109ce5731d31ef7a531a67c192f89591e2f560eafe2d42c6e27abbfa33bd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/56/13879256/69704746/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/56/13879256/69704746/*~hmac=2aac34e98aa74c2f3ef7217e5eb02e2089aa4e97c3372a08daf2b2376d4466fb',
 				},
 			],
 			artists: [
@@ -340,15 +340,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942120/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/27/13923727/69942120/*~hmac=34600e4fafc154a5f010746d180f44b96f5ac3671c1e4a3aac002c2beb2fd76e',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942120/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/27/13923727/69942120/*~hmac=2c4df5510d6ffaf10fe1b0c176babc2aff055a6956cb4c7573edf194fb49d832',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942120/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/27/13923727/69942120/*~hmac=34600e4fafc154a5f010746d180f44b96f5ac3671c1e4a3aac002c2beb2fd76e',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942120/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/27/13923727/69942120/*~hmac=2c4df5510d6ffaf10fe1b0c176babc2aff055a6956cb4c7573edf194fb49d832',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942120/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/27/13923727/69942120/*~hmac=34600e4fafc154a5f010746d180f44b96f5ac3671c1e4a3aac002c2beb2fd76e',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942120/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/27/13923727/69942120/*~hmac=2c4df5510d6ffaf10fe1b0c176babc2aff055a6956cb4c7573edf194fb49d832',
 				},
 			],
 			artists: [
@@ -426,15 +426,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910468/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/75/13580975/68910468/*~hmac=6190632a758d7dc86287a9d6ce57df7a3a73acef7a2401f0df897b87289183fd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910468/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/75/13580975/68910468/*~hmac=88998b44f7ee4652d445be0b9b022ab46e3f9fa06355d00287a3475b4c262431',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910468/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/75/13580975/68910468/*~hmac=6190632a758d7dc86287a9d6ce57df7a3a73acef7a2401f0df897b87289183fd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910468/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/75/13580975/68910468/*~hmac=88998b44f7ee4652d445be0b9b022ab46e3f9fa06355d00287a3475b4c262431',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910468/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/75/13580975/68910468/*~hmac=6190632a758d7dc86287a9d6ce57df7a3a73acef7a2401f0df897b87289183fd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910468/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/75/13580975/68910468/*~hmac=88998b44f7ee4652d445be0b9b022ab46e3f9fa06355d00287a3475b4c262431',
 				},
 			],
 			artists: [
@@ -531,15 +531,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/9278205/57400599/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/5/9278205/57400599/*~hmac=fb9156cf50b2a2778ba768d7196d7ac6f453de276893391a0b664d107cb20a3d',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/9278205/57400599/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/5/9278205/57400599/*~hmac=41fdbbf5b57d104e4dc991d62e4e7cf0913b90aefe7cb9acc8f49cec80b5dfc7',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/9278205/57400599/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/5/9278205/57400599/*~hmac=fb9156cf50b2a2778ba768d7196d7ac6f453de276893391a0b664d107cb20a3d',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/9278205/57400599/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/5/9278205/57400599/*~hmac=41fdbbf5b57d104e4dc991d62e4e7cf0913b90aefe7cb9acc8f49cec80b5dfc7',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/9278205/57400599/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/5/9278205/57400599/*~hmac=fb9156cf50b2a2778ba768d7196d7ac6f453de276893391a0b664d107cb20a3d',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/9278205/57400599/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/5/9278205/57400599/*~hmac=41fdbbf5b57d104e4dc991d62e4e7cf0913b90aefe7cb9acc8f49cec80b5dfc7',
 				},
 			],
 			artists: [
@@ -598,15 +598,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/13944826/69898980/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/26/13944826/69898980/*~hmac=97dd6f18d80b71d05315b614d549f24597ab865b86304dc8de9d440ebe5d590a',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/13944826/69898980/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/26/13944826/69898980/*~hmac=772a4b3f69537968fa96f0712a408ab1487e5c1a2505dccafb341795a3cadce9',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/13944826/69898980/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/26/13944826/69898980/*~hmac=97dd6f18d80b71d05315b614d549f24597ab865b86304dc8de9d440ebe5d590a',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/13944826/69898980/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/26/13944826/69898980/*~hmac=772a4b3f69537968fa96f0712a408ab1487e5c1a2505dccafb341795a3cadce9',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/13944826/69898980/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/26/13944826/69898980/*~hmac=97dd6f18d80b71d05315b614d549f24597ab865b86304dc8de9d440ebe5d590a',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/13944826/69898980/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/26/13944826/69898980/*~hmac=772a4b3f69537968fa96f0712a408ab1487e5c1a2505dccafb341795a3cadce9',
 				},
 			],
 			artists: [
@@ -703,15 +703,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/14254226/70690868/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/26/14254226/70690868/*~hmac=e1faadaa12c4d0a385bff66feeb29ada18f410448cf29b4805b86ddca0c50a7f',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/14254226/70690868/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/26/14254226/70690868/*~hmac=e448416c029a51b6e74255f38a1a8e0823e043e9a7ec3eb6e406110cb0d9bdcb',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/14254226/70690868/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/26/14254226/70690868/*~hmac=e1faadaa12c4d0a385bff66feeb29ada18f410448cf29b4805b86ddca0c50a7f',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/14254226/70690868/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/26/14254226/70690868/*~hmac=e448416c029a51b6e74255f38a1a8e0823e043e9a7ec3eb6e406110cb0d9bdcb',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/14254226/70690868/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/26/14254226/70690868/*~hmac=e1faadaa12c4d0a385bff66feeb29ada18f410448cf29b4805b86ddca0c50a7f',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/26/14254226/70690868/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/26/14254226/70690868/*~hmac=e448416c029a51b6e74255f38a1a8e0823e043e9a7ec3eb6e406110cb0d9bdcb',
 				},
 			],
 			artists: [
@@ -842,19 +842,19 @@ const data = {
 			language: 'Hindi',
 			year: '2025',
 			duration: '156',
-			playCount: '3446',
+			playCount: '3445',
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942122/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/27/13923727/69942122/*~hmac=4ac958f5c9475493aafc8288d9525dc9a3e2ad91a68c0826400a5226ac8dcdac',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942122/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/27/13923727/69942122/*~hmac=2c796c9fdae3e5e4f1f52ea27e0f1b7121e18b0129ce2d1906d096606cf53d43',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942122/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/27/13923727/69942122/*~hmac=4ac958f5c9475493aafc8288d9525dc9a3e2ad91a68c0826400a5226ac8dcdac',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942122/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/27/13923727/69942122/*~hmac=2c796c9fdae3e5e4f1f52ea27e0f1b7121e18b0129ce2d1906d096606cf53d43',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942122/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/27/13923727/69942122/*~hmac=4ac958f5c9475493aafc8288d9525dc9a3e2ad91a68c0826400a5226ac8dcdac',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/13923727/69942122/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/27/13923727/69942122/*~hmac=2c796c9fdae3e5e4f1f52ea27e0f1b7121e18b0129ce2d1906d096606cf53d43',
 				},
 			],
 			artists: [
@@ -970,15 +970,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/2148990/23591812/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/90/2148990/23591812/*~hmac=f00103ac2f9865d6b091ef80cf609a4d208fbf5e9801d38e6b41c65355fb42c9',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/2148990/23591812/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/90/2148990/23591812/*~hmac=2fbf1c6bb2e1a7a496860e7838f3fcc61a791db41a1d8688f92553f3d78d86d6',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/2148990/23591812/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/90/2148990/23591812/*~hmac=f00103ac2f9865d6b091ef80cf609a4d208fbf5e9801d38e6b41c65355fb42c9',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/2148990/23591812/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/90/2148990/23591812/*~hmac=2fbf1c6bb2e1a7a496860e7838f3fcc61a791db41a1d8688f92553f3d78d86d6',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/2148990/23591812/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/90/2148990/23591812/*~hmac=f00103ac2f9865d6b091ef80cf609a4d208fbf5e9801d38e6b41c65355fb42c9',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/2148990/23591812/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/90/2148990/23591812/*~hmac=2fbf1c6bb2e1a7a496860e7838f3fcc61a791db41a1d8688f92553f3d78d86d6',
 				},
 			],
 			artists: [
@@ -1094,15 +1094,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/14181890/70491530/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/90/14181890/70491530/*~hmac=9531f4047856a3e56ba05af612fd3099769ec3ea587c70f28c98c711fc2a1108',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/14181890/70491530/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/90/14181890/70491530/*~hmac=96d23cc9df821da3630f3419ceb4af1924bad48509a29071feb90182220960c4',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/14181890/70491530/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/90/14181890/70491530/*~hmac=9531f4047856a3e56ba05af612fd3099769ec3ea587c70f28c98c711fc2a1108',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/14181890/70491530/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/90/14181890/70491530/*~hmac=96d23cc9df821da3630f3419ceb4af1924bad48509a29071feb90182220960c4',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/14181890/70491530/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/90/14181890/70491530/*~hmac=9531f4047856a3e56ba05af612fd3099769ec3ea587c70f28c98c711fc2a1108',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/90/14181890/70491530/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/90/14181890/70491530/*~hmac=96d23cc9df821da3630f3419ceb4af1924bad48509a29071feb90182220960c4',
 				},
 			],
 			artists: [
@@ -1256,15 +1256,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/65/12745465/66783916/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/65/12745465/66783916/*~hmac=8f254c9c4198534546cd2030903e9f9becea4d9986735b87ab960e751152a9bb',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/65/12745465/66783916/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/65/12745465/66783916/*~hmac=dfac37993eedea4e5dd3d4ed9bcd2e3b00c5c3eaaf49b6a1227ae03897d45c6c',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/65/12745465/66783916/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/65/12745465/66783916/*~hmac=8f254c9c4198534546cd2030903e9f9becea4d9986735b87ab960e751152a9bb',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/65/12745465/66783916/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/65/12745465/66783916/*~hmac=dfac37993eedea4e5dd3d4ed9bcd2e3b00c5c3eaaf49b6a1227ae03897d45c6c',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/65/12745465/66783916/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/65/12745465/66783916/*~hmac=8f254c9c4198534546cd2030903e9f9becea4d9986735b87ab960e751152a9bb',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/65/12745465/66783916/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/65/12745465/66783916/*~hmac=dfac37993eedea4e5dd3d4ed9bcd2e3b00c5c3eaaf49b6a1227ae03897d45c6c',
 				},
 			],
 			artists: [
@@ -1319,19 +1319,19 @@ const data = {
 			language: 'Hindi',
 			year: '2017',
 			duration: '370',
-			playCount: '14120',
+			playCount: '14119',
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/11/2002911/22574427/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/11/2002911/22574427/*~hmac=a77d845c41c7cadbd7adb9e8ad416be88d170e29bf9e5a4d90d80d33850616f9',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/11/2002911/22574427/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/11/2002911/22574427/*~hmac=80eb592a5da69bb6859b637f535a1ff4c01469bf491b6d972005253b7de3e392',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/11/2002911/22574427/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/11/2002911/22574427/*~hmac=a77d845c41c7cadbd7adb9e8ad416be88d170e29bf9e5a4d90d80d33850616f9',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/11/2002911/22574427/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/11/2002911/22574427/*~hmac=80eb592a5da69bb6859b637f535a1ff4c01469bf491b6d972005253b7de3e392',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/11/2002911/22574427/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/11/2002911/22574427/*~hmac=a77d845c41c7cadbd7adb9e8ad416be88d170e29bf9e5a4d90d80d33850616f9',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/11/2002911/22574427/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/11/2002911/22574427/*~hmac=80eb592a5da69bb6859b637f535a1ff4c01469bf491b6d972005253b7de3e392',
 				},
 			],
 			artists: [
@@ -1405,19 +1405,19 @@ const data = {
 			language: 'Hindi',
 			year: '2026',
 			duration: '200',
-			playCount: '538',
+			playCount: '537',
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/93/14304593/70837004/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/93/14304593/70837004/*~hmac=e0106f2dc7ebb335babd888f54b423c467c8f19563be31b7616f5395559e8c54',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/93/14304593/70837004/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/93/14304593/70837004/*~hmac=b5239133973487b4d984294c84609cf7270caa8b7eabc09a364cda06bbe2b324',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/93/14304593/70837004/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/93/14304593/70837004/*~hmac=e0106f2dc7ebb335babd888f54b423c467c8f19563be31b7616f5395559e8c54',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/93/14304593/70837004/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/93/14304593/70837004/*~hmac=b5239133973487b4d984294c84609cf7270caa8b7eabc09a364cda06bbe2b324',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/93/14304593/70837004/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/93/14304593/70837004/*~hmac=e0106f2dc7ebb335babd888f54b423c467c8f19563be31b7616f5395559e8c54',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/93/14304593/70837004/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/93/14304593/70837004/*~hmac=b5239133973487b4d984294c84609cf7270caa8b7eabc09a364cda06bbe2b324',
 				},
 			],
 			artists: [
@@ -1533,15 +1533,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/46/12285646/65738731/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/46/12285646/65738731/*~hmac=dc91584991b0a11e12a6f721a805e83720c819f30c709194aa02e4caf68999bf',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/46/12285646/65738731/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/46/12285646/65738731/*~hmac=6414596b0160107c5c5dbd56f3b4823897f00699f474955d012dc6eceb8c9bb3',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/46/12285646/65738731/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/46/12285646/65738731/*~hmac=dc91584991b0a11e12a6f721a805e83720c819f30c709194aa02e4caf68999bf',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/46/12285646/65738731/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/46/12285646/65738731/*~hmac=6414596b0160107c5c5dbd56f3b4823897f00699f474955d012dc6eceb8c9bb3',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/46/12285646/65738731/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/46/12285646/65738731/*~hmac=dc91584991b0a11e12a6f721a805e83720c819f30c709194aa02e4caf68999bf',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/46/12285646/65738731/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/46/12285646/65738731/*~hmac=6414596b0160107c5c5dbd56f3b4823897f00699f474955d012dc6eceb8c9bb3',
 				},
 			],
 			artists: [
@@ -1619,15 +1619,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/9946880/59122417/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/80/9946880/59122417/*~hmac=e9451e8d76407db2916becfc85bbfb3fdbbb3067103fd37ff0f9a56550f06ff3',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/9946880/59122417/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/80/9946880/59122417/*~hmac=f9eb2f647314a5232a6477adcc768890a8f59224a7b8ee3510fc0d4d1c08da2e',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/9946880/59122417/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/80/9946880/59122417/*~hmac=e9451e8d76407db2916becfc85bbfb3fdbbb3067103fd37ff0f9a56550f06ff3',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/9946880/59122417/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/80/9946880/59122417/*~hmac=f9eb2f647314a5232a6477adcc768890a8f59224a7b8ee3510fc0d4d1c08da2e',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/9946880/59122417/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/80/9946880/59122417/*~hmac=e9451e8d76407db2916becfc85bbfb3fdbbb3067103fd37ff0f9a56550f06ff3',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/9946880/59122417/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/80/9946880/59122417/*~hmac=f9eb2f647314a5232a6477adcc768890a8f59224a7b8ee3510fc0d4d1c08da2e',
 				},
 			],
 			artists: [
@@ -1743,15 +1743,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819759/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/95/1416695/14819759/*~hmac=83743f204849da919c789b967c8e9c07df86db3f6610ed344829923afc814aca',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819759/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/95/1416695/14819759/*~hmac=5b058ba7a31f51b7fc897e54bdb81d1f98ae1c08cd9a64891c5ab2e0227a6f86',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819759/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/95/1416695/14819759/*~hmac=83743f204849da919c789b967c8e9c07df86db3f6610ed344829923afc814aca',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819759/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/95/1416695/14819759/*~hmac=5b058ba7a31f51b7fc897e54bdb81d1f98ae1c08cd9a64891c5ab2e0227a6f86',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819759/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/95/1416695/14819759/*~hmac=83743f204849da919c789b967c8e9c07df86db3f6610ed344829923afc814aca',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819759/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/95/1416695/14819759/*~hmac=5b058ba7a31f51b7fc897e54bdb81d1f98ae1c08cd9a64891c5ab2e0227a6f86',
 				},
 			],
 			artists: [
@@ -1848,15 +1848,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/72/5384872/41695812/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/72/5384872/41695812/*~hmac=b2394b814f1422081f9146f8a7b140809494a50562c84f5d315665978bba408b',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/72/5384872/41695812/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/72/5384872/41695812/*~hmac=33960833160d7bbc389eebe25ac79c76674036e522e20c95cc2e9170aa364ca3',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/72/5384872/41695812/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/72/5384872/41695812/*~hmac=b2394b814f1422081f9146f8a7b140809494a50562c84f5d315665978bba408b',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/72/5384872/41695812/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/72/5384872/41695812/*~hmac=33960833160d7bbc389eebe25ac79c76674036e522e20c95cc2e9170aa364ca3',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/72/5384872/41695812/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/72/5384872/41695812/*~hmac=b2394b814f1422081f9146f8a7b140809494a50562c84f5d315665978bba408b',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/72/5384872/41695812/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/72/5384872/41695812/*~hmac=33960833160d7bbc389eebe25ac79c76674036e522e20c95cc2e9170aa364ca3',
 				},
 			],
 			artists: [
@@ -1915,15 +1915,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/30/13266130/68113562/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/30/13266130/68113562/*~hmac=7d27a2390f63b545cb53be0507a2b4c57db5c6137752bb38cf1033dfc2f431b7',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/30/13266130/68113562/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/30/13266130/68113562/*~hmac=67955050ac856a9cb989a618fb90e5456de6dee726a1a85b54ce452b0bbe2414',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/30/13266130/68113562/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/30/13266130/68113562/*~hmac=7d27a2390f63b545cb53be0507a2b4c57db5c6137752bb38cf1033dfc2f431b7',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/30/13266130/68113562/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/30/13266130/68113562/*~hmac=67955050ac856a9cb989a618fb90e5456de6dee726a1a85b54ce452b0bbe2414',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/30/13266130/68113562/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/30/13266130/68113562/*~hmac=7d27a2390f63b545cb53be0507a2b4c57db5c6137752bb38cf1033dfc2f431b7',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/30/13266130/68113562/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/30/13266130/68113562/*~hmac=67955050ac856a9cb989a618fb90e5456de6dee726a1a85b54ce452b0bbe2414',
 				},
 			],
 			artists: [
@@ -2020,15 +2020,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/59440/577914/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/40/59440/577914/*~hmac=1b61e6f77fb61a441663ad09e89611acbcf4bf59bffb1c660be0c7ac95232386',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/59440/577914/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/40/59440/577914/*~hmac=84fd7eca826ff1b35b0e858e8abf5b529d625a07932f7cc46629e0e71f076510',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/59440/577914/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/40/59440/577914/*~hmac=1b61e6f77fb61a441663ad09e89611acbcf4bf59bffb1c660be0c7ac95232386',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/59440/577914/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/40/59440/577914/*~hmac=84fd7eca826ff1b35b0e858e8abf5b529d625a07932f7cc46629e0e71f076510',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/59440/577914/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/40/59440/577914/*~hmac=1b61e6f77fb61a441663ad09e89611acbcf4bf59bffb1c660be0c7ac95232386',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/59440/577914/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/40/59440/577914/*~hmac=84fd7eca826ff1b35b0e858e8abf5b529d625a07932f7cc46629e0e71f076510',
 				},
 			],
 			artists: [
@@ -2087,15 +2087,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/13589476/68931074/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/76/13589476/68931074/*~hmac=b8af19c4400350610aebc8bf2d92f19e2bf457589e62ae4e90a23b76a10140b7',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/13589476/68931074/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/76/13589476/68931074/*~hmac=b21251fdf7e23d6a81cd4d51773d55dbf897c48108f6cf124904382b85a32859',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/13589476/68931074/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/76/13589476/68931074/*~hmac=b8af19c4400350610aebc8bf2d92f19e2bf457589e62ae4e90a23b76a10140b7',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/13589476/68931074/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/76/13589476/68931074/*~hmac=b21251fdf7e23d6a81cd4d51773d55dbf897c48108f6cf124904382b85a32859',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/13589476/68931074/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/76/13589476/68931074/*~hmac=b8af19c4400350610aebc8bf2d92f19e2bf457589e62ae4e90a23b76a10140b7',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/13589476/68931074/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/76/13589476/68931074/*~hmac=b21251fdf7e23d6a81cd4d51773d55dbf897c48108f6cf124904382b85a32859',
 				},
 			],
 			artists: [
@@ -2192,15 +2192,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/11880680/64776835/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/80/11880680/64776835/*~hmac=6de8403c242351e7d4809afd1d0c9da00fec7fe9643cfc29af1c11c9af1c7ddd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/11880680/64776835/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/80/11880680/64776835/*~hmac=758bd53a3e8c372a2fc8f2595b7247318cf495c9adc43649d767bbed687abc60',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/11880680/64776835/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/80/11880680/64776835/*~hmac=6de8403c242351e7d4809afd1d0c9da00fec7fe9643cfc29af1c11c9af1c7ddd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/11880680/64776835/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/80/11880680/64776835/*~hmac=758bd53a3e8c372a2fc8f2595b7247318cf495c9adc43649d767bbed687abc60',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/11880680/64776835/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/80/11880680/64776835/*~hmac=6de8403c242351e7d4809afd1d0c9da00fec7fe9643cfc29af1c11c9af1c7ddd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/80/11880680/64776835/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/80/11880680/64776835/*~hmac=758bd53a3e8c372a2fc8f2595b7247318cf495c9adc43649d767bbed687abc60',
 				},
 			],
 			artists: [
@@ -2316,15 +2316,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/44/12406144/66022452/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/44/12406144/66022452/*~hmac=045cd387c42d0d4cfeb5e0f03811515b04bde34c62612f30c389ad6d0720f617',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/44/12406144/66022452/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/44/12406144/66022452/*~hmac=efcb792dafd801b43d01c37fa6c2adeb7fb5e11627aee2016e311917531f3dcb',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/44/12406144/66022452/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/44/12406144/66022452/*~hmac=045cd387c42d0d4cfeb5e0f03811515b04bde34c62612f30c389ad6d0720f617',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/44/12406144/66022452/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/44/12406144/66022452/*~hmac=efcb792dafd801b43d01c37fa6c2adeb7fb5e11627aee2016e311917531f3dcb',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/44/12406144/66022452/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/44/12406144/66022452/*~hmac=045cd387c42d0d4cfeb5e0f03811515b04bde34c62612f30c389ad6d0720f617',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/44/12406144/66022452/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/44/12406144/66022452/*~hmac=efcb792dafd801b43d01c37fa6c2adeb7fb5e11627aee2016e311917531f3dcb',
 				},
 			],
 			artists: [
@@ -2402,15 +2402,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819760/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/95/1416695/14819760/*~hmac=74ef6314368f018e93e1db65e0da78848d5ff26a84aed48913b247d857339c2c',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819760/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/95/1416695/14819760/*~hmac=e0ef0a7d156adcefc92168ad85a33f65ebb45f29629b972fe4fb0e94747148ff',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819760/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/95/1416695/14819760/*~hmac=74ef6314368f018e93e1db65e0da78848d5ff26a84aed48913b247d857339c2c',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819760/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/95/1416695/14819760/*~hmac=e0ef0a7d156adcefc92168ad85a33f65ebb45f29629b972fe4fb0e94747148ff',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819760/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/95/1416695/14819760/*~hmac=74ef6314368f018e93e1db65e0da78848d5ff26a84aed48913b247d857339c2c',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/95/1416695/14819760/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/95/1416695/14819760/*~hmac=e0ef0a7d156adcefc92168ad85a33f65ebb45f29629b972fe4fb0e94747148ff',
 				},
 			],
 			artists: [
@@ -2469,15 +2469,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/33/13265233/68111318/1/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/33/13265233/68111318/1/*~hmac=42ec70c934f459647a418e5c4e39526a58e2f2ec2f9224c0a85871ed9c696871',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/33/13265233/68111318/1/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/33/13265233/68111318/1/*~hmac=fbcee07d5efc9b5ecf8e3b60575dd2d028ed433d179f03e73f7e899e827b94c8',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/33/13265233/68111318/1/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/33/13265233/68111318/1/*~hmac=42ec70c934f459647a418e5c4e39526a58e2f2ec2f9224c0a85871ed9c696871',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/33/13265233/68111318/1/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/33/13265233/68111318/1/*~hmac=fbcee07d5efc9b5ecf8e3b60575dd2d028ed433d179f03e73f7e899e827b94c8',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/33/13265233/68111318/1/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/33/13265233/68111318/1/*~hmac=42ec70c934f459647a418e5c4e39526a58e2f2ec2f9224c0a85871ed9c696871',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/33/13265233/68111318/1/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/33/13265233/68111318/1/*~hmac=fbcee07d5efc9b5ecf8e3b60575dd2d028ed433d179f03e73f7e899e827b94c8',
 				},
 			],
 			artists: [
@@ -2574,15 +2574,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/1755781/20573167/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/81/1755781/20573167/*~hmac=b7866b8a71f665c076bd44cc51b503a64558c18c6c677800a3e7a4922dc1af82',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/1755781/20573167/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/81/1755781/20573167/*~hmac=f1624e737dc31342378f8b1cf001f179ab1a19bb17a65bef9f3edaccded7df37',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/1755781/20573167/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/81/1755781/20573167/*~hmac=b7866b8a71f665c076bd44cc51b503a64558c18c6c677800a3e7a4922dc1af82',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/1755781/20573167/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/81/1755781/20573167/*~hmac=f1624e737dc31342378f8b1cf001f179ab1a19bb17a65bef9f3edaccded7df37',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/1755781/20573167/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/81/1755781/20573167/*~hmac=b7866b8a71f665c076bd44cc51b503a64558c18c6c677800a3e7a4922dc1af82',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/1755781/20573167/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/81/1755781/20573167/*~hmac=f1624e737dc31342378f8b1cf001f179ab1a19bb17a65bef9f3edaccded7df37',
 				},
 			],
 			artists: [
@@ -2675,19 +2675,19 @@ const data = {
 			language: 'Hindi',
 			year: '2025',
 			duration: '207',
-			playCount: '35773',
+			playCount: '35772',
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/74/10899474/61875738/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/74/10899474/61875738/*~hmac=d8d57e0e88cb1e811c397d86e0853decdd7664211a2384e032606b412bfa4dc3',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/74/10899474/61875738/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/74/10899474/61875738/*~hmac=393c8f5eaedfc5dfd792ff9a946360a36fd541ecad1091c714c9acfb1e3f203d',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/74/10899474/61875738/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/74/10899474/61875738/*~hmac=d8d57e0e88cb1e811c397d86e0853decdd7664211a2384e032606b412bfa4dc3',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/74/10899474/61875738/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/74/10899474/61875738/*~hmac=393c8f5eaedfc5dfd792ff9a946360a36fd541ecad1091c714c9acfb1e3f203d',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/74/10899474/61875738/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/74/10899474/61875738/*~hmac=d8d57e0e88cb1e811c397d86e0853decdd7664211a2384e032606b412bfa4dc3',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/74/10899474/61875738/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/74/10899474/61875738/*~hmac=393c8f5eaedfc5dfd792ff9a946360a36fd541ecad1091c714c9acfb1e3f203d',
 				},
 			],
 			artists: [
@@ -2784,15 +2784,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/14283498/70777413/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/98/14283498/70777413/*~hmac=439d4357302e0879e7a4841edce819563e76ad20de15f3a5007c14f73149f1e8',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/14283498/70777413/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/98/14283498/70777413/*~hmac=f892e606a2ea01065cd4210ce98a9172cbd2a3ddda47671670ad1c04f5c74948',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/14283498/70777413/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/98/14283498/70777413/*~hmac=439d4357302e0879e7a4841edce819563e76ad20de15f3a5007c14f73149f1e8',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/14283498/70777413/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/98/14283498/70777413/*~hmac=f892e606a2ea01065cd4210ce98a9172cbd2a3ddda47671670ad1c04f5c74948',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/14283498/70777413/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/98/14283498/70777413/*~hmac=439d4357302e0879e7a4841edce819563e76ad20de15f3a5007c14f73149f1e8',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/14283498/70777413/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/98/14283498/70777413/*~hmac=f892e606a2ea01065cd4210ce98a9172cbd2a3ddda47671670ad1c04f5c74948',
 				},
 			],
 			artists: [
@@ -2889,15 +2889,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12323605/65826999/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/5/12323605/65826999/*~hmac=3a68bf227712d6ebfea248a9a6d6a3d36da0f8f515b87a7e4eea2e7efe38f152',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12323605/65826999/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/5/12323605/65826999/*~hmac=fb2a282ec87d129aa40b87f635f64bcd3b9cbdacbe7d7c80cc14f70ca173bf2f',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12323605/65826999/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/5/12323605/65826999/*~hmac=3a68bf227712d6ebfea248a9a6d6a3d36da0f8f515b87a7e4eea2e7efe38f152',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12323605/65826999/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/5/12323605/65826999/*~hmac=fb2a282ec87d129aa40b87f635f64bcd3b9cbdacbe7d7c80cc14f70ca173bf2f',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12323605/65826999/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/5/12323605/65826999/*~hmac=3a68bf227712d6ebfea248a9a6d6a3d36da0f8f515b87a7e4eea2e7efe38f152',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12323605/65826999/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/5/12323605/65826999/*~hmac=fb2a282ec87d129aa40b87f635f64bcd3b9cbdacbe7d7c80cc14f70ca173bf2f',
 				},
 			],
 			artists: [
@@ -2995,15 +2995,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/12426950/66074113/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/50/12426950/66074113/*~hmac=8e81afe8ebf8170e882f96d68848a027664286f5025f7bc76fa14ab6c146f4cd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/12426950/66074113/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/50/12426950/66074113/*~hmac=dafd690abb382930c141411db461cd00c26cef33d579cb4070fde71c1cdc7902',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/12426950/66074113/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/50/12426950/66074113/*~hmac=8e81afe8ebf8170e882f96d68848a027664286f5025f7bc76fa14ab6c146f4cd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/12426950/66074113/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/50/12426950/66074113/*~hmac=dafd690abb382930c141411db461cd00c26cef33d579cb4070fde71c1cdc7902',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/12426950/66074113/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/50/12426950/66074113/*~hmac=8e81afe8ebf8170e882f96d68848a027664286f5025f7bc76fa14ab6c146f4cd',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/12426950/66074113/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/50/12426950/66074113/*~hmac=dafd690abb382930c141411db461cd00c26cef33d579cb4070fde71c1cdc7902',
 				},
 			],
 			artists: [
@@ -3139,15 +3139,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/13827381/69555589/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/81/13827381/69555589/*~hmac=e995f0b435731b0fbeb031f86763de7c13d9979243f38b3a363a7301b18d1425',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/13827381/69555589/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/81/13827381/69555589/*~hmac=db43906c0a29dde622f7a7c3bc765042b704f62d8ca9dacf9bee784951b141ef',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/13827381/69555589/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/81/13827381/69555589/*~hmac=e995f0b435731b0fbeb031f86763de7c13d9979243f38b3a363a7301b18d1425',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/13827381/69555589/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/81/13827381/69555589/*~hmac=db43906c0a29dde622f7a7c3bc765042b704f62d8ca9dacf9bee784951b141ef',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/13827381/69555589/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/81/13827381/69555589/*~hmac=e995f0b435731b0fbeb031f86763de7c13d9979243f38b3a363a7301b18d1425',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/81/13827381/69555589/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/81/13827381/69555589/*~hmac=db43906c0a29dde622f7a7c3bc765042b704f62d8ca9dacf9bee784951b141ef',
 				},
 			],
 			artists: [
@@ -3320,15 +3320,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/84/9109884/56906393/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/84/9109884/56906393/*~hmac=d4e85f468d06b1a5df04046b060cce735acb4adbbaef0e1302923b1d45df18cb',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/84/9109884/56906393/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/84/9109884/56906393/*~hmac=43f2aa142829ffb908e9b51060e4e2017c794580ec0ad3cc1e20c96a0372ffd5',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/84/9109884/56906393/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/84/9109884/56906393/*~hmac=d4e85f468d06b1a5df04046b060cce735acb4adbbaef0e1302923b1d45df18cb',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/84/9109884/56906393/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/84/9109884/56906393/*~hmac=43f2aa142829ffb908e9b51060e4e2017c794580ec0ad3cc1e20c96a0372ffd5',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/84/9109884/56906393/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/84/9109884/56906393/*~hmac=d4e85f468d06b1a5df04046b060cce735acb4adbbaef0e1302923b1d45df18cb',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/84/9109884/56906393/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/84/9109884/56906393/*~hmac=43f2aa142829ffb908e9b51060e4e2017c794580ec0ad3cc1e20c96a0372ffd5',
 				},
 			],
 			artists: [
@@ -3425,15 +3425,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12074005/65212048/1/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/5/12074005/65212048/1/*~hmac=58d8089ea275346c37bcaf7855efa1bafafd0f72f8d670445c93e54c87bec311',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12074005/65212048/1/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/5/12074005/65212048/1/*~hmac=7ad05be396921a715888da917d5702f9823f08c95f197b7c72b189a46cd36e46',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12074005/65212048/1/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/5/12074005/65212048/1/*~hmac=58d8089ea275346c37bcaf7855efa1bafafd0f72f8d670445c93e54c87bec311',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12074005/65212048/1/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/5/12074005/65212048/1/*~hmac=7ad05be396921a715888da917d5702f9823f08c95f197b7c72b189a46cd36e46',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12074005/65212048/1/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/5/12074005/65212048/1/*~hmac=58d8089ea275346c37bcaf7855efa1bafafd0f72f8d670445c93e54c87bec311',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/5/12074005/65212048/1/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/5/12074005/65212048/1/*~hmac=7ad05be396921a715888da917d5702f9823f08c95f197b7c72b189a46cd36e46',
 				},
 			],
 			artists: [
@@ -3530,15 +3530,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/57240/554196/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/40/57240/554196/*~hmac=8da04ea7437753be40012c1329b842e9a5c654500782749ecdae0d48df46d9d5',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/57240/554196/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/40/57240/554196/*~hmac=ea417c4b884a848ad5d7b1d5b188e1c968500a086de99e8886992f621e9e74f9',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/57240/554196/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/40/57240/554196/*~hmac=8da04ea7437753be40012c1329b842e9a5c654500782749ecdae0d48df46d9d5',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/57240/554196/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/40/57240/554196/*~hmac=ea417c4b884a848ad5d7b1d5b188e1c968500a086de99e8886992f621e9e74f9',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/57240/554196/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/40/57240/554196/*~hmac=8da04ea7437753be40012c1329b842e9a5c654500782749ecdae0d48df46d9d5',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/40/57240/554196/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/40/57240/554196/*~hmac=ea417c4b884a848ad5d7b1d5b188e1c968500a086de99e8886992f621e9e74f9',
 				},
 			],
 			artists: [
@@ -3654,15 +3654,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/38/10838/76223/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/38/10838/76223/*~hmac=f8c1c76743ab39b2823cade7989c4eb1de5114fd4968f328afd9491c678bbebb',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/38/10838/76223/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/38/10838/76223/*~hmac=4064fd9cbea57bf10ae6dcb6d4752e461ea411b4d2759236616725a7a65540e5',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/38/10838/76223/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/38/10838/76223/*~hmac=f8c1c76743ab39b2823cade7989c4eb1de5114fd4968f328afd9491c678bbebb',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/38/10838/76223/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/38/10838/76223/*~hmac=4064fd9cbea57bf10ae6dcb6d4752e461ea411b4d2759236616725a7a65540e5',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/38/10838/76223/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/38/10838/76223/*~hmac=f8c1c76743ab39b2823cade7989c4eb1de5114fd4968f328afd9491c678bbebb',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/38/10838/76223/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/38/10838/76223/*~hmac=4064fd9cbea57bf10ae6dcb6d4752e461ea411b4d2759236616725a7a65540e5',
 				},
 			],
 			artists: [
@@ -3740,15 +3740,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/114027/1225211/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/27/114027/1225211/*~hmac=6c17c2c93c4dc891082ca667175fb4fcacd1aa11c81c426cdb1a233a924d1b43',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/114027/1225211/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/27/114027/1225211/*~hmac=a4e73476d64bb1f48834416c0b73c2c4b4842fe05792b30dd977406a299344ec',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/114027/1225211/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/27/114027/1225211/*~hmac=6c17c2c93c4dc891082ca667175fb4fcacd1aa11c81c426cdb1a233a924d1b43',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/114027/1225211/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/27/114027/1225211/*~hmac=a4e73476d64bb1f48834416c0b73c2c4b4842fe05792b30dd977406a299344ec',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/114027/1225211/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/27/114027/1225211/*~hmac=6c17c2c93c4dc891082ca667175fb4fcacd1aa11c81c426cdb1a233a924d1b43',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/27/114027/1225211/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/27/114027/1225211/*~hmac=a4e73476d64bb1f48834416c0b73c2c4b4842fe05792b30dd977406a299344ec',
 				},
 			],
 			artists: [
@@ -3826,15 +3826,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/9495676/58069544/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/76/9495676/58069544/*~hmac=29ebd2dc3d6dd86e132e8c25a339748965fc500560a19e2aa2ec5ccd33fa9539',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/9495676/58069544/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/76/9495676/58069544/*~hmac=dc3ffd190671af28a4d57d552644636fe213f1b530cf4e676365cccd3d3f24ad',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/9495676/58069544/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/76/9495676/58069544/*~hmac=29ebd2dc3d6dd86e132e8c25a339748965fc500560a19e2aa2ec5ccd33fa9539',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/9495676/58069544/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/76/9495676/58069544/*~hmac=dc3ffd190671af28a4d57d552644636fe213f1b530cf4e676365cccd3d3f24ad',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/9495676/58069544/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/76/9495676/58069544/*~hmac=29ebd2dc3d6dd86e132e8c25a339748965fc500560a19e2aa2ec5ccd33fa9539',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/76/9495676/58069544/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/76/9495676/58069544/*~hmac=dc3ffd190671af28a4d57d552644636fe213f1b530cf4e676365cccd3d3f24ad',
 				},
 			],
 			artists: [
@@ -3908,19 +3908,19 @@ const data = {
 			language: 'Hindi',
 			year: '2013',
 			duration: '261',
-			playCount: '1987221',
+			playCount: '1987220',
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/17/92317/944286/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/17/92317/944286/*~hmac=c441ded853ae0d5783dcba1277bdcc185766fdf686052393a25549803c1a7b52',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/17/92317/944286/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/17/92317/944286/*~hmac=5473d0fbb6ede07e1ce9d6f7ea5b0b6910ccb5cc0b0336ed5822f9c42c982480',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/17/92317/944286/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/17/92317/944286/*~hmac=c441ded853ae0d5783dcba1277bdcc185766fdf686052393a25549803c1a7b52',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/17/92317/944286/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/17/92317/944286/*~hmac=5473d0fbb6ede07e1ce9d6f7ea5b0b6910ccb5cc0b0336ed5822f9c42c982480',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/17/92317/944286/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/17/92317/944286/*~hmac=c441ded853ae0d5783dcba1277bdcc185766fdf686052393a25549803c1a7b52',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/17/92317/944286/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/17/92317/944286/*~hmac=5473d0fbb6ede07e1ce9d6f7ea5b0b6910ccb5cc0b0336ed5822f9c42c982480',
 				},
 			],
 			artists: [
@@ -3998,15 +3998,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/77/12412577/66037732/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/77/12412577/66037732/*~hmac=6de66f0c8ab699d64840186b9163e9baf031e3566e4daa4d7879f38714ce4b48',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/77/12412577/66037732/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/77/12412577/66037732/*~hmac=1462d23c7acc148b38e9a127b1f3bc20f56aed3b6443f91c233ab8fd90c40226',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/77/12412577/66037732/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/77/12412577/66037732/*~hmac=6de66f0c8ab699d64840186b9163e9baf031e3566e4daa4d7879f38714ce4b48',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/77/12412577/66037732/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/77/12412577/66037732/*~hmac=1462d23c7acc148b38e9a127b1f3bc20f56aed3b6443f91c233ab8fd90c40226',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/77/12412577/66037732/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/77/12412577/66037732/*~hmac=6de66f0c8ab699d64840186b9163e9baf031e3566e4daa4d7879f38714ce4b48',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/77/12412577/66037732/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/77/12412577/66037732/*~hmac=1462d23c7acc148b38e9a127b1f3bc20f56aed3b6443f91c233ab8fd90c40226',
 				},
 			],
 			artists: [
@@ -4103,15 +4103,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/47/1698147/17851306/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/47/1698147/17851306/*~hmac=ecbf8c82138d1372c7d21976b879e78e79ca4c971179fcfa98a8541956afecef',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/47/1698147/17851306/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/47/1698147/17851306/*~hmac=f8c33dab11bed55922a6a537894afeab7880bcecee91a286bee9da53ca595d28',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/47/1698147/17851306/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/47/1698147/17851306/*~hmac=ecbf8c82138d1372c7d21976b879e78e79ca4c971179fcfa98a8541956afecef',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/47/1698147/17851306/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/47/1698147/17851306/*~hmac=f8c33dab11bed55922a6a537894afeab7880bcecee91a286bee9da53ca595d28',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/47/1698147/17851306/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/47/1698147/17851306/*~hmac=ecbf8c82138d1372c7d21976b879e78e79ca4c971179fcfa98a8541956afecef',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/47/1698147/17851306/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/47/1698147/17851306/*~hmac=f8c33dab11bed55922a6a537894afeab7880bcecee91a286bee9da53ca595d28',
 				},
 			],
 			artists: [
@@ -4208,15 +4208,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/97/132697/1470416/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/97/132697/1470416/*~hmac=6bc7df73fd0d3d1c81ed8dabb1656accb0264c244879c1ac002ab5f32f5bb233',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/97/132697/1470416/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/97/132697/1470416/*~hmac=56c7570a1bb6acd220a85f09e69da144d75991cf26689feafbd974b5d8675380',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/97/132697/1470416/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/97/132697/1470416/*~hmac=6bc7df73fd0d3d1c81ed8dabb1656accb0264c244879c1ac002ab5f32f5bb233',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/97/132697/1470416/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/97/132697/1470416/*~hmac=56c7570a1bb6acd220a85f09e69da144d75991cf26689feafbd974b5d8675380',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/97/132697/1470416/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/97/132697/1470416/*~hmac=6bc7df73fd0d3d1c81ed8dabb1656accb0264c244879c1ac002ab5f32f5bb233',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/97/132697/1470416/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/97/132697/1470416/*~hmac=56c7570a1bb6acd220a85f09e69da144d75991cf26689feafbd974b5d8675380',
 				},
 			],
 			artists: [
@@ -4294,15 +4294,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/12051798/65158427/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/98/12051798/65158427/*~hmac=9f9a3b2053af710d73ecfec4bf37875f54e1857505d54a16b52a29040261347e',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/12051798/65158427/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/98/12051798/65158427/*~hmac=c12c2a87f27ea9ab5762797b63295badde907a75914ccb6b0cabd1d44bdccff2',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/12051798/65158427/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/98/12051798/65158427/*~hmac=9f9a3b2053af710d73ecfec4bf37875f54e1857505d54a16b52a29040261347e',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/12051798/65158427/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/98/12051798/65158427/*~hmac=c12c2a87f27ea9ab5762797b63295badde907a75914ccb6b0cabd1d44bdccff2',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/12051798/65158427/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/98/12051798/65158427/*~hmac=9f9a3b2053af710d73ecfec4bf37875f54e1857505d54a16b52a29040261347e',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/98/12051798/65158427/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/98/12051798/65158427/*~hmac=c12c2a87f27ea9ab5762797b63295badde907a75914ccb6b0cabd1d44bdccff2',
 				},
 			],
 			artists: [
@@ -4418,15 +4418,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/94/13288394/68177463/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/94/13288394/68177463/*~hmac=69d8b9bad48eaf812a92431c29fa00f18e3aa827b3a3c2ff1e434338bdc6a445',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/94/13288394/68177463/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/94/13288394/68177463/*~hmac=8dbfc7b4cdec9fa16f48a7ca407b41cfd1089399ac06cc1e6b653314f8cb19ad',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/94/13288394/68177463/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/94/13288394/68177463/*~hmac=69d8b9bad48eaf812a92431c29fa00f18e3aa827b3a3c2ff1e434338bdc6a445',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/94/13288394/68177463/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/94/13288394/68177463/*~hmac=8dbfc7b4cdec9fa16f48a7ca407b41cfd1089399ac06cc1e6b653314f8cb19ad',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/94/13288394/68177463/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/94/13288394/68177463/*~hmac=69d8b9bad48eaf812a92431c29fa00f18e3aa827b3a3c2ff1e434338bdc6a445',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/94/13288394/68177463/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/94/13288394/68177463/*~hmac=8dbfc7b4cdec9fa16f48a7ca407b41cfd1089399ac06cc1e6b653314f8cb19ad',
 				},
 			],
 			artists: [
@@ -4485,15 +4485,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/83/220083/2596984/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/83/220083/2596984/*~hmac=8fa15cce48c8a8a054112ab4c9dae68a7449ea448436c17579a6575ee369f162',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/83/220083/2596984/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/83/220083/2596984/*~hmac=509c576a7645e62d0e251d8ba6bdc5c47fcaf0eb7a6799de1f013a8cb56ddd59',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/83/220083/2596984/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/83/220083/2596984/*~hmac=8fa15cce48c8a8a054112ab4c9dae68a7449ea448436c17579a6575ee369f162',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/83/220083/2596984/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/83/220083/2596984/*~hmac=509c576a7645e62d0e251d8ba6bdc5c47fcaf0eb7a6799de1f013a8cb56ddd59',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/83/220083/2596984/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/83/220083/2596984/*~hmac=8fa15cce48c8a8a054112ab4c9dae68a7449ea448436c17579a6575ee369f162',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/83/220083/2596984/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/83/220083/2596984/*~hmac=509c576a7645e62d0e251d8ba6bdc5c47fcaf0eb7a6799de1f013a8cb56ddd59',
 				},
 			],
 			artists: [
@@ -4609,15 +4609,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/24860/1618364/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/60/24860/1618364/*~hmac=f98342405b7a6be11264256dc55c92fbdd7bbdb9c2eaf7e88758b10e178ced75',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/24860/1618364/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/60/24860/1618364/*~hmac=c842dde59fb96874e917a502cb337f8c65409b28ec129488350df785af4a5fcb',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/24860/1618364/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/60/24860/1618364/*~hmac=f98342405b7a6be11264256dc55c92fbdd7bbdb9c2eaf7e88758b10e178ced75',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/24860/1618364/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/60/24860/1618364/*~hmac=c842dde59fb96874e917a502cb337f8c65409b28ec129488350df785af4a5fcb',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/24860/1618364/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/60/24860/1618364/*~hmac=f98342405b7a6be11264256dc55c92fbdd7bbdb9c2eaf7e88758b10e178ced75',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/24860/1618364/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/60/24860/1618364/*~hmac=c842dde59fb96874e917a502cb337f8c65409b28ec129488350df785af4a5fcb',
 				},
 			],
 			artists: [
@@ -4714,15 +4714,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/89/12889/83382/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/89/12889/83382/*~hmac=29116623d4a7c1f8385fd6de91c4af4145e7239c40bb85e107043aade169a179',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/89/12889/83382/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/89/12889/83382/*~hmac=e34a3010bfae10d33d94a9e8d160051b85f70da7de4a951dcccd5eb6d300a238',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/89/12889/83382/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/89/12889/83382/*~hmac=29116623d4a7c1f8385fd6de91c4af4145e7239c40bb85e107043aade169a179',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/89/12889/83382/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/89/12889/83382/*~hmac=e34a3010bfae10d33d94a9e8d160051b85f70da7de4a951dcccd5eb6d300a238',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/89/12889/83382/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/89/12889/83382/*~hmac=29116623d4a7c1f8385fd6de91c4af4145e7239c40bb85e107043aade169a179',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/89/12889/83382/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/89/12889/83382/*~hmac=e34a3010bfae10d33d94a9e8d160051b85f70da7de4a951dcccd5eb6d300a238',
 				},
 			],
 			artists: [
@@ -4781,15 +4781,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/2043773/22906534/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/73/2043773/22906534/*~hmac=81afeef7cc43ee1dadb12fbf97ccd67d1f44c022a09239903a4538efa3f6147b',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/2043773/22906534/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/73/2043773/22906534/*~hmac=f6dbe1892f2813e81c3543dc866223ddb6e7fec4b32763833c5b5cc6242f4754',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/2043773/22906534/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/73/2043773/22906534/*~hmac=81afeef7cc43ee1dadb12fbf97ccd67d1f44c022a09239903a4538efa3f6147b',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/2043773/22906534/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/73/2043773/22906534/*~hmac=f6dbe1892f2813e81c3543dc866223ddb6e7fec4b32763833c5b5cc6242f4754',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/2043773/22906534/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/73/2043773/22906534/*~hmac=81afeef7cc43ee1dadb12fbf97ccd67d1f44c022a09239903a4538efa3f6147b',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/73/2043773/22906534/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/73/2043773/22906534/*~hmac=f6dbe1892f2813e81c3543dc866223ddb6e7fec4b32763833c5b5cc6242f4754',
 				},
 			],
 			artists: [
@@ -4886,15 +4886,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/13562950/68862003/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/50/13562950/68862003/*~hmac=ef4e5b094c22fd6be6125a2d4b0c5cd035b019c47f3dbc23d706d8b81f6e5fa4',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/13562950/68862003/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/50/13562950/68862003/*~hmac=69d82536ab4d52b9213424814b6e3d6e3866284cce3a7b0f1fe94009ae310aac',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/13562950/68862003/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/50/13562950/68862003/*~hmac=ef4e5b094c22fd6be6125a2d4b0c5cd035b019c47f3dbc23d706d8b81f6e5fa4',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/13562950/68862003/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/50/13562950/68862003/*~hmac=69d82536ab4d52b9213424814b6e3d6e3866284cce3a7b0f1fe94009ae310aac',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/13562950/68862003/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/50/13562950/68862003/*~hmac=ef4e5b094c22fd6be6125a2d4b0c5cd035b019c47f3dbc23d706d8b81f6e5fa4',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/50/13562950/68862003/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/50/13562950/68862003/*~hmac=69d82536ab4d52b9213424814b6e3d6e3866284cce3a7b0f1fe94009ae310aac',
 				},
 			],
 			artists: [
@@ -4991,15 +4991,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/12613760/66478965/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/60/12613760/66478965/*~hmac=a58217304066830b97da791069ffdfcbbb9503ac1592f3279e9d8a909bb17ee0',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/12613760/66478965/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/60/12613760/66478965/*~hmac=bef8c69ed1e15bf262e1742955f6b6c322a282ae4bc8c74da1bf2d755f1bacb1',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/12613760/66478965/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/60/12613760/66478965/*~hmac=a58217304066830b97da791069ffdfcbbb9503ac1592f3279e9d8a909bb17ee0',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/12613760/66478965/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/60/12613760/66478965/*~hmac=bef8c69ed1e15bf262e1742955f6b6c322a282ae4bc8c74da1bf2d755f1bacb1',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/12613760/66478965/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/60/12613760/66478965/*~hmac=a58217304066830b97da791069ffdfcbbb9503ac1592f3279e9d8a909bb17ee0',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/60/12613760/66478965/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/60/12613760/66478965/*~hmac=bef8c69ed1e15bf262e1742955f6b6c322a282ae4bc8c74da1bf2d755f1bacb1',
 				},
 			],
 			artists: [
@@ -5115,15 +5115,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/39/13232439/68023431/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/39/13232439/68023431/*~hmac=adcd853c6fac5f45806b1589c5f0573e2be22e5895d1b479030064345ff0fef7',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/39/13232439/68023431/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/39/13232439/68023431/*~hmac=3968c9e2e45e8ba938700beef33e97f06c6a9f1cdd9e064eebd75a802d6d781d',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/39/13232439/68023431/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/39/13232439/68023431/*~hmac=adcd853c6fac5f45806b1589c5f0573e2be22e5895d1b479030064345ff0fef7',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/39/13232439/68023431/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/39/13232439/68023431/*~hmac=3968c9e2e45e8ba938700beef33e97f06c6a9f1cdd9e064eebd75a802d6d781d',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/39/13232439/68023431/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/39/13232439/68023431/*~hmac=adcd853c6fac5f45806b1589c5f0573e2be22e5895d1b479030064345ff0fef7',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/39/13232439/68023431/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/39/13232439/68023431/*~hmac=3968c9e2e45e8ba938700beef33e97f06c6a9f1cdd9e064eebd75a802d6d781d',
 				},
 			],
 			artists: [
@@ -5220,15 +5220,15 @@ const data = {
 			mediaUrls: [
 				{
 					quality: 'medium',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910469/64.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/75/13580975/68910469/*~hmac=6022023964a2eee2e5dbeb6c52da53e8701fde923cd4e334055e3f158c6b3a01',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910469/64.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/75/13580975/68910469/*~hmac=f5dd1095e5acabc92051847a1c27987fb1a2cda0dc552cc3e59eebc0d3e70193',
 				},
 				{
 					quality: 'high',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910469/128.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/75/13580975/68910469/*~hmac=6022023964a2eee2e5dbeb6c52da53e8701fde923cd4e334055e3f158c6b3a01',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910469/128.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/75/13580975/68910469/*~hmac=f5dd1095e5acabc92051847a1c27987fb1a2cda0dc552cc3e59eebc0d3e70193',
 				},
 				{
 					quality: 'auto',
-					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910469/f.mp4.master.m3u8?hdnts=st=1770547009~exp=1770561409~acl=/hls/75/13580975/68910469/*~hmac=6022023964a2eee2e5dbeb6c52da53e8701fde923cd4e334055e3f158c6b3a01',
+					link: 'https://vodhlsgaana-ebw.akamaized.net/hls/75/13580975/68910469/f.mp4.master.m3u8?hdnts=st=1770530760~exp=1770545160~acl=/hls/75/13580975/68910469/*~hmac=f5dd1095e5acabc92051847a1c27987fb1a2cda0dc552cc3e59eebc0d3e70193',
 				},
 			],
 			artists: [

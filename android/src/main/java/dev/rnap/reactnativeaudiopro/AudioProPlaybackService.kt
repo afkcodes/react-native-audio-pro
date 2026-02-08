@@ -355,4 +355,5 @@ open class AudioProPlaybackService : MediaLibraryService() {
 			android.util.Log.d(Constants.LOG_TAG, "Set skip silence enabled: $enabled")
 		}
 	}
+
 }

@@ -286,6 +286,13 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
+	fun updateTrack(index: Double, track: ReadableMap) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.updateTrack(index.toInt(), track)
+		}
+	}
+
+	@ReactMethod
 	fun getCacheSize(promise: com.facebook.react.bridge.Promise) {
 		try {
 			// Using Dispatchers.IO for file operations

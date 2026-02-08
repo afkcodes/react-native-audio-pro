@@ -273,6 +273,8 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 				service.handleSetSkipSilence(enabled)
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
+
+
 		}
 
 		return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))

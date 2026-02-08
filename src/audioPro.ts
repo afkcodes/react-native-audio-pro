@@ -573,4 +573,23 @@ export const AudioPro = {
 		logDebug('AudioPro: setSkipSilence()', enabled);
 		NativeAudioPro.setSkipSilence(enabled);
 	},
+
+	/**
+	 * Update a track in the queue with new details (e.g. fresh URL).
+	 * @param index - Index of the track to update.
+	 * @param track - The new track object.
+	 */
+	updateTrack(index: number, track: AudioProTrack): void {
+		const validatedTrack = { ...track };
+		validateFilePath(validatedTrack.url);
+		validateFilePath(validatedTrack.artwork);
+
+		if (!validateTrack(validatedTrack)) {
+			console.warn('[react-native-audio-pro]: Invalid track provided to updateTrack().');
+			return;
+		}
+
+		logDebug('AudioPro: updateTrack()', index, validatedTrack.title);
+		NativeAudioPro.updateTrack(index, validatedTrack);
+	},
 };
