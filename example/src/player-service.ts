@@ -14,6 +14,8 @@ export function setupAudioPro(): void {
 		debugIncludesProgress: false,
 		progressIntervalMs: 1000,
 		skipIntervalMs: 30000,
+		cacheEnabled: true,
+		maxCacheSize: 1024,
 	});
 
 	// Set up event listeners that persist for the app's lifetime

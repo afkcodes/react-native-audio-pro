@@ -263,6 +263,39 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 		super.onCatalystInstanceDestroy()
 	}
 
+	@ReactMethod
+	fun getCacheSize(promise: com.facebook.react.bridge.Promise) {
+		try {
+			// Using Dispatchers.IO for file operations
+			CoroutineScope(Dispatchers.IO).launch {
+				try {
+					val size = AudioProCache.getCacheSize(reactApplicationContext)
+					promise.resolve(size.toDouble())
+				} catch (e: Exception) {
+					promise.reject("CACHE_ERROR", "Failed to get cache size", e)
+				}
+			}
+		} catch (e: Exception) {
+			promise.reject("CACHE_ERROR", "Failed to launch coroutine", e)
+		}
+	}
+
+	@ReactMethod
+	fun clearCache(promise: com.facebook.react.bridge.Promise) {
+		try {
+			CoroutineScope(Dispatchers.IO).launch {
+				try {
+					AudioProCache.clearCache(reactApplicationContext)
+					promise.resolve(true)
+				} catch (e: Exception) {
+					promise.reject("CACHE_ERROR", "Failed to clear cache", e)
+				}
+			}
+		} catch (e: Exception) {
+			promise.reject("CACHE_ERROR", "Failed to launch coroutine", e)
+		}
+	}
+
 	override fun onHostResume() {}
 
 	override fun onHostPause() {}

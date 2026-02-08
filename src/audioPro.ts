@@ -58,6 +58,10 @@ export const AudioPro = {
 			internalStore.getState();
 		const config: AudioProConfigureOptions = { ...DEFAULT_CONFIG, ...options };
 		setConfigureOptions(config);
+		if (options.maxCacheSize) {
+			// TODO: Pass this to native side if dynamic cache size configuration is supported
+			logDebug('AudioPro: Configuring maxCacheSize', options.maxCacheSize);
+		}
 		setDebug(!!options.debug);
 		setDebugIncludesProgress(options.debugIncludesProgress ?? false);
 		logDebug('AudioPro: configure()', config);
@@ -519,5 +523,23 @@ export const AudioPro = {
 	 */
 	addAmbientListener(callback: AudioProAmbientEventCallback) {
 		return ambientEmitter.addListener('AudioProAmbientEvent', callback);
+	},
+
+	/**
+	 * Get the current cache size in bytes.
+	 * @returns Promise resolving to the size in bytes.
+	 */
+	getCacheSize(): Promise<number> {
+		logDebug('AudioPro: getCacheSize()');
+		return NativeAudioPro.getCacheSize();
+	},
+
+	/**
+	 * Clear the cache.
+	 * @returns Promise resolving to true if successful.
+	 */
+	clearCache(): Promise<boolean> {
+		logDebug('AudioPro: clearCache()');
+		return NativeAudioPro.clearCache();
 	},
 };

@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.MimeTypes
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -65,6 +66,7 @@ object AudioProController {
 	var settingAudioContentType: Int = C.AUDIO_CONTENT_TYPE_MUSIC
 	var settingNotificationButtons: List<String> = listOf("PREV", "NEXT")
 	var settingSkipIntervalMs: Long = 30000L
+	var settingCacheEnabled: Boolean = true
 
 	var headersAudio: Map<String, String>? = null
 	var headersArtwork: Map<String, String>? = null
@@ -210,11 +212,13 @@ object AudioProController {
 		val autoPlay = if (options.hasKey("autoPlay")) options.getBoolean("autoPlay") else true
 		val startTimeMs =
 			if (options.hasKey("startTimeMs")) options.getDouble("startTimeMs").toLong() else null
+			if (options.hasKey("startTimeMs")) options.getDouble("startTimeMs").toLong() else null
 		val progressInterval =
 			if (options.hasKey("progressIntervalMs")) options.getDouble("progressIntervalMs")
 				.toLong() else 1000L
 		val skipIntervalMs =
 			if (options.hasKey("skipIntervalMs")) options.getDouble("skipIntervalMs").toLong() else 30000L
+		val cacheEnabled = if (options.hasKey("cacheEnabled")) options.getBoolean("cacheEnabled") else true
 
 		// Apply to controller state
 		settingDebug = enableDebug
@@ -227,6 +231,10 @@ object AudioProController {
 		activeVolume = volume
 		settingProgressIntervalMs = progressInterval
 		settingSkipIntervalMs = skipIntervalMs
+		if (settingCacheEnabled != cacheEnabled) {
+			log("Cache enabled setting changed to: $cacheEnabled. Requires session restart to take effect.")
+		}
+		settingCacheEnabled = cacheEnabled
 
 		return PlaybackOptions(
 			contentType,
@@ -287,11 +295,17 @@ object AudioProController {
 		metadataBuilder.setExtras(extras)
 
 		val uri = url.toUri()
-		return MediaItem.Builder()
+		val builder = MediaItem.Builder()
 			.setUri(uri)
 			.setMediaId(track.getString("id") ?: "track_${System.currentTimeMillis()}")
 			.setMediaMetadata(metadataBuilder.build())
-			.build()
+
+		if (url.contains(".m3u8") || track.getString("type") == "hls") {
+			builder.setMimeType(MimeTypes.APPLICATION_M3U8)
+			log("Detected HLS content for url: $url")
+		}
+
+		return builder.build()
 	}
 
 
@@ -1087,6 +1101,18 @@ object AudioProController {
 					log("Already in error state, ignoring additional error: ${error.message}")
 					return
 				}
+
+				// Enhanced error logging for debugging
+				val errorDetails = StringBuilder()
+				errorDetails.append("PlaybackException: ${error.message}")
+				errorDetails.append(" | Error code: ${error.errorCode}")
+				errorDetails.append(" | Error code name: ${error.errorCodeName}")
+				
+				error.cause?.let { cause ->
+					errorDetails.append(" | Cause: ${cause.javaClass.simpleName}: ${cause.message}")
+				}
+				
+				android.util.Log.e(Constants.LOG_TAG, errorDetails.toString(), error)
 
 				val message = error.message ?: "Unknown error"
 				// First, emit PLAYBACK_ERROR event with error details

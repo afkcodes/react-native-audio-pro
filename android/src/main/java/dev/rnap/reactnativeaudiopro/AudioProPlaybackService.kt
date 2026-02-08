@@ -180,6 +180,8 @@ open class AudioProPlaybackService : MediaLibraryService() {
 			override fun createDataSource(): DataSource {
 				// Create HTTP data source factory with custom headers if available
 				val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+					.setAllowCrossProtocolRedirects(true)
+					.setUserAgent("AudioPro/1.0")
 
 				// Apply custom headers if they exist
 				AudioProController.headersAudio?.let { headers ->
@@ -194,8 +196,15 @@ open class AudioProPlaybackService : MediaLibraryService() {
 
 				// Create a DefaultDataSource that will handle both HTTP and file URIs
 				// It will delegate to FileDataSource for file:// URIs and to HttpDataSource for http(s):// URIs
-				return DefaultDataSource.Factory(applicationContext, httpDataSourceFactory)
-					.createDataSource()
+				val upstreamFactory = DefaultDataSource.Factory(applicationContext, httpDataSourceFactory)
+
+				// Wrap with CacheDataSource only if enabled
+				if (AudioProController.settingCacheEnabled) {
+					return AudioProCache.createDataSourceFactory(applicationContext, upstreamFactory)
+						.createDataSource()
+				} else {
+					return upstreamFactory.createDataSource()
+				}
 			}
 		}
 

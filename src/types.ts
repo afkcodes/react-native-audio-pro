@@ -58,7 +58,26 @@ export type AudioProConfigureOptions = {
 	/**
 	 * Default shuffle mode
 	 */
+	/**
+	 * Default shuffle mode
+	 */
 	shuffleMode?: boolean;
+
+	/**
+	 * Maximum cache size in bytes. Default is 500MB.
+	 * Note: this is a global setting and might only take effect on first initialization.
+	 */
+	/**
+	 * Maximum cache size in bytes. Default is 500MB.
+	 * Note: this is a global setting and might only take effect on first initialization.
+	 */
+	maxCacheSize?: number;
+
+	/**
+	 * Enable or disable cache. Default is true.
+	 * Note: Changing this requires a session restart (e.g. force quit app or clear() then re-configure) to take full effect on the underlying DataSource construction.
+	 */
+	cacheEnabled?: boolean;
 };
 
 // ==============================
