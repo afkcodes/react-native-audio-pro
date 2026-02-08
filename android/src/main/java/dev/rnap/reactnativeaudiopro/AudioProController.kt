@@ -387,7 +387,6 @@ object AudioProController {
 		runOnUiThread {
 			if (index >= 0 && index < (enginerBrowser?.mediaItemCount ?: 0)) {
 				enginerBrowser?.seekToDefaultPosition(index)
-				enginerBrowser?.play()
 				log("Skipped to index $index")
 			}
 		}
