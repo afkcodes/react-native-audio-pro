@@ -37,6 +37,7 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 		const val EVENT_TYPE_REPEAT_MODE_CHANGED = "REPEAT_MODE_CHANGED"
 		const val EVENT_TYPE_SHUFFLE_MODE_CHANGED = "SHUFFLE_MODE_CHANGED"
 		const val EVENT_TYPE_CUSTOM_ACTION = "CUSTOM_ACTION"
+		const val EVENT_TYPE_SLEEP_TIMER_COMPLETE = "SLEEP_TIMER_COMPLETE"
 
 		// Trigger sources for seek events
 		const val TRIGGER_SOURCE_USER = "USER"
@@ -261,6 +262,20 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 			Log.e("AudioProModule", "Error removing lifecycle listener", e)
 		}
 		super.onCatalystInstanceDestroy()
+	}
+
+	@ReactMethod
+	fun startSleepTimer(seconds: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.startSleepTimer(seconds)
+		}
+	}
+
+	@ReactMethod
+	fun cancelSleepTimer() {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.cancelSleepTimer()
+		}
 	}
 
 	@ReactMethod

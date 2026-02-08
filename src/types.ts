@@ -130,6 +130,7 @@ export interface AudioProEvent {
 		speed?: number;
 		index?: number;
 		action?: string; // For CUSTOM_ACTION events: 'LIKE', 'SAVE', 'REWIND_30', etc.
+		timerDuration?: number; // For SLEEP_TIMER events
 	};
 }
 

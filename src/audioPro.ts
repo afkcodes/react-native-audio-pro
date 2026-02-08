@@ -542,4 +542,21 @@ export const AudioPro = {
 		logDebug('AudioPro: clearCache()');
 		return NativeAudioPro.clearCache();
 	},
+
+	/**
+	 * Start the sleep timer to pause playback after a specified duration.
+	 * @param seconds - Duration in seconds before pausing playback.
+	 */
+	startSleepTimer(seconds: number): void {
+		logDebug('AudioPro: startSleepTimer()', seconds);
+		NativeAudioPro.startSleepTimer(seconds);
+	},
+
+	/**
+	 * Cancel the active sleep timer.
+	 */
+	cancelSleepTimer(): void {
+		logDebug('AudioPro: cancelSleepTimer()');
+		NativeAudioPro.cancelSleepTimer();
+	},
 };

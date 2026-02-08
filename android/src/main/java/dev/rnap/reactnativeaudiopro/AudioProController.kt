@@ -41,6 +41,11 @@ object AudioProController {
 	private var engineProgressHandler: Handler? = null
 	private var engineProgressRunnable: Runnable? = null
 	private var enginePlayerListener: Player.Listener? = null
+	
+	// Sleep Timer
+	private var sleepTimerHandler: Handler? = null
+	private var sleepTimerRunnable: Runnable? = null
+	
 	private val engineBrowserConnectionListener =
 		object : MediaBrowser.Listener {
 			override fun onDisconnected(controller: MediaController) {
@@ -470,6 +475,38 @@ object AudioProController {
 			)
 			log("Sent setShuffleMode command: $enabled")
 		}
+	}
+
+	fun startSleepTimer(seconds: Double) {
+		cancelSleepTimer() // Clear any existing timer
+		
+		val durationMs = (seconds * 1000).toLong()
+		log("Starting sleep timer for $seconds seconds ($durationMs ms)")
+		
+		sleepTimerHandler = Handler(Looper.getMainLooper())
+		sleepTimerRunnable = Runnable {
+			log("Sleep timer triggered. Pausing playback.")
+			CoroutineScope(Dispatchers.Main).launch {
+				pause()
+				emitEvent(
+					AudioProModule.EVENT_TYPE_SLEEP_TIMER_COMPLETE,
+					activeTrack,
+					null,
+					"sleepTimerComplete"
+				)
+			}
+		}
+		
+		sleepTimerHandler?.postDelayed(sleepTimerRunnable!!, durationMs)
+	}
+	
+	fun cancelSleepTimer() {
+		sleepTimerRunnable?.let {
+			sleepTimerHandler?.removeCallbacks(it)
+			log("Sleep timer canceled")
+		}
+		sleepTimerHandler = null
+		sleepTimerRunnable = null
 	}
 
 	fun setNotificationButtons(buttons: ReadableArray) {

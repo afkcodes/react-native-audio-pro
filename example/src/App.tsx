@@ -6,6 +6,7 @@ import {
 	SafeAreaView,
 	ScrollView,
 	Text,
+	TextInput,
 	TouchableOpacity,
 	View,
 } from 'react-native';
@@ -64,6 +65,32 @@ export default function App() {
 	const [loopMode, setLoopMode] = useState<'OFF' | 'ONE' | 'ALL'>('OFF');
 	const [shuffle, setShuffle] = useState(false);
 	const [showEqualizer, setShowEqualizer] = useState(false);
+	const [cacheSize, setCacheSize] = useState<string>('Checking...');
+	const [sleepTimerSeconds, setSleepTimerSeconds] = useState('10');
+
+	useEffect(() => {
+		checkCache();
+	}, []);
+
+	const checkCache = async () => {
+		try {
+			const size = await AudioPro.getCacheSize();
+			const mb = (size / (1024 * 1024)).toFixed(2);
+			setCacheSize(`${mb} MB`);
+		} catch (e) {
+			console.error('Failed to get cache size', e);
+			setCacheSize('Error');
+		}
+	};
+
+	const handleClearCache = async () => {
+		try {
+			await AudioPro.clearCache();
+			checkCache();
+		} catch (e) {
+			console.error('Failed to clear cache', e);
+		}
+	};
 
 	// Update needsTrackLoad based on state
 	useEffect(() => {
@@ -401,6 +428,55 @@ export default function App() {
 				</View>
 
 				<View style={styles.ambientSection}>
+					<Text style={styles.sectionTitle}>Sleep Timer</Text>
+					<View
+						style={{
+							flexDirection: 'row',
+							alignItems: 'center',
+							justifyContent: 'center',
+							marginBottom: 10,
+						}}
+					>
+						<Text style={{ color: '#fff', marginRight: 10 }}>Seconds:</Text>
+						<TextInput
+							style={{
+								backgroundColor: '#333',
+								color: '#fff',
+								padding: 5,
+								width: 60,
+								borderRadius: 4,
+								textAlign: 'center',
+							}}
+							value={sleepTimerSeconds}
+							onChangeText={setSleepTimerSeconds}
+							keyboardType="numeric"
+						/>
+					</View>
+
+					<View style={styles.stopRow}>
+						<TouchableOpacity
+							onPress={() => {
+								const sec = parseInt(sleepTimerSeconds, 10);
+								if (!isNaN(sec) && sec > 0) {
+									AudioPro.startSleepTimer(sec);
+									console.log('Started sleep timer for', sec);
+								}
+							}}
+						>
+							<Text style={styles.controlText}>Start ({sleepTimerSeconds}s)</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={() => {
+								AudioPro.cancelSleepTimer();
+								console.log('Canceled sleep timer');
+							}}
+						>
+							<Text style={styles.controlText}>Cancel</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+
+				<View style={styles.ambientSection}>
 					<Text style={styles.sectionTitle}>Ambient Audio</Text>
 					<View style={styles.stopRow}>
 						{ambientState === 'stopped' ? (
@@ -431,6 +507,31 @@ export default function App() {
 							{showEqualizer ? 'Hide Equalizer' : 'Show Equalizer'}
 						</Text>
 					</TouchableOpacity>
+					<View style={styles.section}>
+						<TouchableOpacity
+							style={styles.eqButton}
+							onPress={() => setShowEqualizer(!showEqualizer)}
+						>
+							<Text style={styles.eqButtonText}>
+								{showEqualizer ? 'Hide Equalizer' : 'Show Equalizer'}
+							</Text>
+						</TouchableOpacity>
+					</View>
+
+					<View style={styles.ambientSection}>
+						<Text style={styles.sectionTitle}>Cache Management</Text>
+						<Text style={[styles.timeText, { textAlign: 'center', marginBottom: 10 }]}>
+							Size: {cacheSize}
+						</Text>
+						<View style={styles.stopRow}>
+							<TouchableOpacity onPress={checkCache}>
+								<Text style={styles.controlText}>Refresh</Text>
+							</TouchableOpacity>
+							<TouchableOpacity onPress={handleClearCache}>
+								<Text style={styles.controlText}>Clear Cache</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
 				</View>
 
 				{showEqualizer && <EqualizerScreen />}
