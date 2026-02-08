@@ -1,5 +1,8 @@
 # React Native Audio Pro
 
+> [!IMPORTANT]
+> This repository contains custom modifications tailored for specific application needs. These changes are currently **Android-only** and are **not intended to be merged** back into the original fork.
+
 Modern, background-capable audio playback for React Native — built for podcasts, audiobooks, and long-form media. 
 
 **Now with Advanced Features:**
