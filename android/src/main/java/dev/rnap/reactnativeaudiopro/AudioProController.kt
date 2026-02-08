@@ -98,9 +98,10 @@ object AudioProController {
 			log("Configured maxCacheSize: $size bytes")
 		}
 		if (options.hasKey("skipSilence")) {
-			// Also call the player specific setter if player is initialized? 
-			// But for now just storing the setting is fine, player init uses it.
-			// Actually setSkipSilence is exposed separately but good to have here too.
+			val enabled = options.getBoolean("skipSilence")
+			CoroutineScope(Dispatchers.Main).launch {
+				setSkipSilence(enabled)
+			}
 		}
 		
 		log("Configured AudioPro: debug=$settingDebug, cache=$settingCacheEnabled")
