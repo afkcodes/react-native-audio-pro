@@ -137,6 +137,30 @@ npx pod-install
 ### 🤖 Android Installation
 Ensure `compileSdkVersion` and `targetSdkVersion` are **35** in `android/build.gradle`.
 
+## 🛠️ Configuration
+
+Initialize the player early in your app's lifecycle (e.g., `index.js` or `App.tsx`).
+
+```typescript
+import { AudioPro, AudioProContentType } from 'react-native-audio-pro';
+
+AudioPro.configure({
+  // Audio Focus & Content Type
+  contentType: AudioProContentType.MUSIC, // or SPEECH
+
+  // Cache Settings
+  cacheEnabled: true,
+  maxCacheSize: 1024 * 1024 * 500, // 500MB
+
+  // Features
+  skipSilence: false, // Enable android silence skipping
+  
+  // Debugging
+  debug: true,
+  debugIncludesProgress: false,
+});
+```
+
 ## 📚 API Overview
 
 ### 🎮 Player Controls
