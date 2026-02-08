@@ -15,7 +15,11 @@ object AudioProCache {
     private var databaseProvider: StandaloneDatabaseProvider? = null
     
     // Default cache size: 500MB
-    private const val DEFAULT_MAX_CACHE_SIZE = 500 * 1024 * 1024L
+    private var maxCacheSize = 500 * 1024 * 1024L
+
+    fun setMaxCacheSize(size: Long) {
+        maxCacheSize = size
+    }
 
     @Synchronized
     fun getInstance(context: Context): SimpleCache {
@@ -28,7 +32,7 @@ object AudioProCache {
             databaseProvider = StandaloneDatabaseProvider(context)
             
             // We use a simple LRU evictor
-            val evictor = LeastRecentlyUsedCacheEvictor(DEFAULT_MAX_CACHE_SIZE)
+            val evictor = LeastRecentlyUsedCacheEvictor(maxCacheSize)
             
             simpleCache = SimpleCache(cacheDir, evictor, databaseProvider!!)
         }
