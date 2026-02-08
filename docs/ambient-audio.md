@@ -42,15 +42,15 @@ subscription.remove();
 
 > 🧠 Ambient playback is designed to be stateless, simple, and minimal for background sounds, ambient loops, or lightweight audio tasks.
 
-| Method | Description | Return Value |
-| --- | --- | --- |
-| **ambientPlay(options: AmbientAudioPlayOptions)** | Plays a lightweight ambient audio track, isolated from the main player. Accepts a remote or local `url` and an optional `loop` flag (default: `true`). | `void` |
-| **ambientStop()** | Stops the ambient audio playback. | `void` |
-| **ambientPause()** | Pauses ambient audio playback (no-op if already paused or not playing). | `void` |
-| **ambientResume()** | Resumes ambient audio playback if paused (no-op if already playing or no active track). | `void` |
-| **ambientSeekTo(positionMs: number)** | Seeks to the specified position (in milliseconds) in the ambient track (if supported). Silently ignored if unsupported or if no active ambient track. | `void` |
-| **ambientSetVolume(volume: number)** | Sets the volume of ambient audio playback from `0.0` (mute) to `1.0` (full output). | `void` |
-| **addAmbientListener(callback: AudioProAmbientEventCallback)** | Listens for ambient audio events (e.g., track ended, errors). | `EmitterSubscription` — call `.remove()` to unsubscribe. |
+| Method                                                         | Description                                                                                                                                            | Return Value                                             |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| **ambientPlay(options: AmbientAudioPlayOptions)**              | Plays a lightweight ambient audio track, isolated from the main player. Accepts a remote or local `url` and an optional `loop` flag (default: `true`). | `void`                                                   |
+| **ambientStop()**                                              | Stops the ambient audio playback.                                                                                                                      | `void`                                                   |
+| **ambientPause()**                                             | Pauses ambient audio playback (no-op if already paused or not playing).                                                                                | `void`                                                   |
+| **ambientResume()**                                            | Resumes ambient audio playback if paused (no-op if already playing or no active track).                                                                | `void`                                                   |
+| **ambientSeekTo(positionMs: number)**                          | Seeks to the specified position (in milliseconds) in the ambient track (if supported). Silently ignored if unsupported or if no active ambient track.  | `void`                                                   |
+| **ambientSetVolume(volume: number)**                           | Sets the volume of ambient audio playback from `0.0` (mute) to `1.0` (full output).                                                                    | `void`                                                   |
+| **addAmbientListener(callback: AudioProAmbientEventCallback)** | Listens for ambient audio events (e.g., track ended, errors).                                                                                          | `EmitterSubscription` — call `.remove()` to unsubscribe. |
 
 ## Key Features
 
@@ -67,10 +67,10 @@ subscription.remove();
 
 ### AudioProAmbientEventType
 
-| Event | Description |
-| --- | --- |
+| Event                 | Description                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------- |
 | `AMBIENT_TRACK_ENDED` | Emitted when an ambient track completes playback naturally (when `loop` is set to `false`). |
-| `AMBIENT_ERROR` | Emitted when an error occurs during ambient audio playback. |
+| `AMBIENT_ERROR`       | Emitted when an error occurs during ambient audio playback.                                 |
 
 ### Ambient Audio Types
 

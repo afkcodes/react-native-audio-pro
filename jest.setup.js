@@ -14,12 +14,23 @@ jest.mock('react-native', () => ({
 			ambientStop: jest.fn(),
 			ambientPause: jest.fn(),
 			ambientResume: jest.fn(),
+
 			seekTo: jest.fn(),
-			seekForward: jest.fn(),
-			seekBack: jest.fn(),
+			seekBy: jest.fn(),
 			setPlaybackSpeed: jest.fn(),
 			setVolume: jest.fn(),
 			clear: jest.fn(),
+			// New methods
+			addToQueue: jest.fn(),
+			clearQueue: jest.fn(),
+			playNext: jest.fn(),
+			playPrevious: jest.fn(),
+			skipTo: jest.fn(),
+			removeTrack: jest.fn(),
+			setRepeatMode: jest.fn(),
+			setShuffleMode: jest.fn(),
+			setNotificationButtons: jest.fn(),
+			getQueue: jest.fn().mockResolvedValue([]),
 		},
 	},
 	NativeEventEmitter: jest.fn().mockImplementation(() => ({
@@ -29,12 +40,13 @@ jest.mock('react-native', () => ({
 }));
 
 const mockState = {
-	playerState: 'PLAYING',
+	playerState: 'IDLE',
 	position: 0,
 	duration: 0,
-	trackPlaying: { url: 'https://example.com/audio.mp3' },
+	trackPlaying: null,
 	volume: 1.0,
 	playbackSpeed: 1.0,
+	activeTrackIndex: -1,
 	configureOptions: {
 		progressIntervalMs: 1000,
 	},
@@ -56,12 +68,15 @@ const mockActions = {
 
 function createInternalStoreMock(modulePath) {
 	jest.mock(modulePath, () => {
-		const internalStore = jest.fn((selector) => selector(mockState));
-		internalStore.getState = () => ({
-			...mockState,
-			...mockActions,
-		});
-		internalStore.setState = jest.fn();
+		let currentState = { ...mockState, ...mockActions };
+
+		const internalStore = jest.fn((selector) =>
+			selector ? selector(currentState) : currentState,
+		);
+		internalStore.getState = () => currentState;
+		internalStore.setState = (update) => {
+			currentState = { ...currentState, ...update };
+		};
 		internalStore.subscribe = jest.fn();
 		return { internalStore };
 	});
@@ -81,7 +96,4 @@ function createEmitterMock(modulePath) {
 }
 
 createInternalStoreMock('./src/internalStore');
-createInternalStoreMock('./.conductor/hong-kong/src/internalStore');
-
 createEmitterMock('./src/emitter');
-createEmitterMock('./.conductor/hong-kong/src/emitter');

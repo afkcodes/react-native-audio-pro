@@ -24,34 +24,43 @@ export { useAudioPro } from './useAudioPro';
  * @see {@link ./types}
  */
 export type {
-	/** Represents an audio track with its properties */
-	AudioProTrack,
-	/** Callback function type for audio events */
-	AudioProEventCallback,
+	// Ambient audio types
+	/** Options for ambient audio playback */
+	AmbientAudioPlayOptions,
+	/** Payload for ambient audio error events */
+	AudioProAmbientErrorPayload,
+	/** Type of ambient audio events that can be emitted */
+	AudioProAmbientEvent,
+	/** Callback function type for ambient audio events */
+	AudioProAmbientEventCallback,
+	// Configuration types
+	/** Configuration options for the audio player */
+	AudioProConfigureOptions,
+	// Equalizer types
+	/** Configuration for an equalizer band */
+	AudioProEqualizerBand,
+	/** Configuration for an equalizer preset */
+	AudioProEqualizerPreset,
 	/** Type of audio events that can be emitted */
 	AudioProEvent,
-	/** Payload for state change events */
-	AudioProStateChangedPayload,
-	/** Payload for track ended events */
-	AudioProTrackEndedPayload,
+	/** Callback function type for audio events */
+	AudioProEventCallback,
+	/** Type of notification button */
+	AudioProNotificationButton,
 	/** Payload for playback error events */
 	AudioProPlaybackErrorPayload,
+	/** Payload for playback speed change events */
+	AudioProPlaybackSpeedChangedPayload,
 	/** Payload for progress update events */
 	AudioProProgressPayload,
 	/** Payload for seek completion events */
 	AudioProSeekCompletePayload,
-	/** Payload for playback speed change events */
-	AudioProPlaybackSpeedChangedPayload,
-
-	// Ambient audio types
-	/** Options for ambient audio playback */
-	AmbientAudioPlayOptions,
-	/** Callback function type for ambient audio events */
-	AudioProAmbientEventCallback,
-	/** Type of ambient audio events that can be emitted */
-	AudioProAmbientEvent,
-	/** Payload for ambient audio error events */
-	AudioProAmbientErrorPayload,
+	/** Payload for state change events */
+	AudioProStateChangedPayload,
+	/** Represents an audio track with its properties */
+	AudioProTrack,
+	/** Payload for track ended events */
+	AudioProTrackEndedPayload,
 } from './types';
 
 /**
@@ -59,12 +68,26 @@ export type {
  * @see {@link ./values}
  */
 export {
-	/** Possible states of the audio player */
-	AudioProState,
-	/** Types of events that can be emitted */
-	AudioProEventType,
-	/** Types of audio content supported */
-	AudioProContentType,
 	/** Types of ambient audio events */
 	AudioProAmbientEventType,
+	/** Types of audio content supported */
+	AudioProContentType,
+	/** Types of events that can be emitted */
+	AudioProEventType,
+	/** Repeat modes for playback */
+	AudioProRepeatMode,
+	/** Possible states of the audio player */
+	AudioProState,
+	/** Source that triggered an action */
+	AudioProTriggerSource,
 } from './values';
+
+/**
+ * Equalizer constants
+ * @see {@link ./constants/equalizer}
+ */
+export {
+	EQUALIZER_ADVANCED_PRESETS,
+	EQUALIZER_BANDS,
+	EQUALIZER_PRESETS,
+} from './constants/equalizer';

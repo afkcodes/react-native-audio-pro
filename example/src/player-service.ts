@@ -1,9 +1,4 @@
-import {
-	AudioProContentType,
-	type AudioProEvent,
-	AudioProEventType,
-	type AudioProTrack,
-} from 'react-native-audio-pro';
+import { AudioProContentType, type AudioProEvent, AudioProEventType } from 'react-native-audio-pro';
 
 import { playlist } from './playlist';
 import { AudioPro } from '../../src/audioPro';
@@ -18,9 +13,9 @@ export function setupAudioPro(): void {
 		debug: true,
 		debugIncludesProgress: false,
 		progressIntervalMs: 1000,
-		showNextPrevControls: true,
-		showSkipControls: false,
 		skipIntervalMs: 30000,
+		cacheEnabled: true,
+		maxCacheSize: 1024,
 	});
 
 	// Set up event listeners that persist for the app's lifetime
@@ -52,18 +47,22 @@ function playNextTrack(autoPlay: boolean = true): void {
 	if (playlist.length === 0) return;
 
 	currentIndex = (currentIndex + 1) % playlist.length;
-	const nextTrack = playlist[currentIndex];
-
-	AudioPro.play(nextTrack as AudioProTrack, { autoPlay });
+	// We are using native queue now, so we can just skip to index
+	AudioPro.skipTo(currentIndex);
+	if (autoPlay) {
+		AudioPro.play();
+	}
 }
 
 function playPreviousTrack(autoPlay: boolean = true): void {
 	if (playlist.length === 0) return;
 
 	currentIndex = currentIndex > 0 ? currentIndex - 1 : playlist.length - 1;
-	const prevTrack = playlist[currentIndex];
-
-	AudioPro.play(prevTrack as AudioProTrack, { autoPlay });
+	// We are using native queue now, so we can just skip to index
+	AudioPro.skipTo(currentIndex);
+	if (autoPlay) {
+		AudioPro.play();
+	}
 }
 
 export function getCurrentTrackIndex(): number {

@@ -1,10 +1,13 @@
 import {
-	AudioProTriggerSource,
 	AudioProAmbientEventType,
 	AudioProContentType,
 	AudioProEventType,
+	AudioProRepeatMode,
 	AudioProState,
+	AudioProTriggerSource,
 } from './values';
+
+// Re-exports removed to avoid duplicate identifier errors
 
 // ==============================
 // TRACK
@@ -22,6 +25,20 @@ export type AudioProTrack = {
 	[key: string]: unknown; // custom properties
 };
 
+export type AudioProEqualizerBand = {
+	frequency: number;
+	label: string;
+};
+
+export type AudioProEqualizerPreset = {
+	name: string;
+	id: string;
+	gains: number[];
+	description?: string;
+};
+
+// ==============================
+
 // ==============================
 // CONFIGURE OPTIONS
 // ==============================
@@ -31,14 +48,58 @@ export type AudioProConfigureOptions = {
 	debug?: boolean;
 	debugIncludesProgress?: boolean;
 	progressIntervalMs?: number;
-	showNextPrevControls?: boolean;
-	showSkipControls?: boolean;
 	skipIntervalMs?: number;
+
 	/**
-	 * @deprecated use skipIntervalMs instead
+	 * Default repeat mode
 	 */
-	skipInterval?: number;
+	repeatMode?: AudioProRepeatMode;
+
+	/**
+	 * Default shuffle mode
+	 */
+	/**
+	 * Default shuffle mode
+	 */
+	shuffleMode?: boolean;
+
+	/**
+	 * Maximum cache size in bytes. Default is 500MB.
+	 * Note: this is a global setting and might only take effect on first initialization.
+	 */
+	/**
+	 * Maximum cache size in bytes. Default is 500MB.
+	 * Note: this is a global setting and might only take effect on first initialization.
+	 */
+	maxCacheSize?: number;
+
+	/**
+	 * Enable or disable cache. Default is true.
+	 * Note: Changing this requires a session restart (e.g. force quit app or clear() then re-configure) to take full effect on the underlying DataSource construction.
+	 */
+	cacheEnabled?: boolean;
+
+	/**
+	 * Enable or disable silence skipping. Default is false.
+	 */
+	skipSilence?: boolean;
 };
+
+// ==============================
+// NOTIFICATION BUTTONS
+// ==============================
+
+export type AudioProNotificationButton =
+	| 'PLAY'
+	| 'PAUSE'
+	| 'PREV'
+	| 'NEXT'
+	| 'LIKE'
+	| 'DISLIKE'
+	| 'SAVE'
+	| 'BOOKMARK'
+	| 'REWIND_30'
+	| 'FORWARD_30';
 
 // ==============================
 // PLAY OPTIONS
@@ -53,6 +114,7 @@ export type AudioProPlayOptions = {
 	autoPlay?: boolean;
 	headers?: AudioProHeaders;
 	startTimeMs?: number;
+	addTrack?: boolean;
 };
 
 // ==============================
@@ -71,6 +133,9 @@ export interface AudioProEvent {
 		error?: string;
 		errorCode?: number;
 		speed?: number;
+		index?: number;
+		action?: string; // For CUSTOM_ACTION events: 'LIKE', 'SAVE', 'REWIND_30', etc.
+		timerDuration?: number; // For SLEEP_TIMER events
 	};
 }
 

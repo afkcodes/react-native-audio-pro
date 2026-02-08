@@ -27,12 +27,17 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 
 		const val EVENT_TYPE_STATE_CHANGED = "STATE_CHANGED"
 		const val EVENT_TYPE_TRACK_ENDED = "TRACK_ENDED"
+		const val EVENT_TYPE_TRACK_CHANGED = "TRACK_CHANGED"
 		const val EVENT_TYPE_PLAYBACK_ERROR = "PLAYBACK_ERROR"
 		const val EVENT_TYPE_PROGRESS = "PROGRESS"
 		const val EVENT_TYPE_SEEK_COMPLETE = "SEEK_COMPLETE"
 		const val EVENT_TYPE_REMOTE_NEXT = "REMOTE_NEXT"
 		const val EVENT_TYPE_REMOTE_PREV = "REMOTE_PREV"
 		const val EVENT_TYPE_PLAYBACK_SPEED_CHANGED = "PLAYBACK_SPEED_CHANGED"
+		const val EVENT_TYPE_REPEAT_MODE_CHANGED = "REPEAT_MODE_CHANGED"
+		const val EVENT_TYPE_SHUFFLE_MODE_CHANGED = "SHUFFLE_MODE_CHANGED"
+		const val EVENT_TYPE_CUSTOM_ACTION = "CUSTOM_ACTION"
+		const val EVENT_TYPE_SLEEP_TIMER_COMPLETE = "SLEEP_TIMER_COMPLETE"
 
 		// Trigger sources for seek events
 		const val TRIGGER_SOURCE_USER = "USER"
@@ -46,50 +51,148 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
-	fun play(track: ReadableMap, options: ReadableMap) {
+	fun play(track: ReadableMap?, options: ReadableMap?) {
 		CoroutineScope(Dispatchers.Main).launch {
 			AudioProController.play(track, options)
 		}
 	}
 
 	@ReactMethod
+	fun addToQueue(tracks: com.facebook.react.bridge.ReadableArray) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.addToQueue(tracks)
+		}
+	}
+
+	@ReactMethod
+	fun clearQueue() {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.clearQueue()
+		}
+	}
+
+	@ReactMethod
+	fun skipTo(index: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.skipTo(index.toInt())
+		}
+	}
+
+	@ReactMethod
+	fun removeTrack(index: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.removeTrack(index.toInt())
+		}
+	}
+
+
+	
+	@ReactMethod
+	fun getQueue(promise: com.facebook.react.bridge.Promise) {
+		CoroutineScope(Dispatchers.Main).launch {
+			try {
+				val queue = AudioProController.getQueue()
+				promise.resolve(queue)
+			} catch (e: Exception) {
+				promise.reject("GET_QUEUE_ERROR", e)
+			}
+		}
+	}
+
+	@ReactMethod
 	fun pause() {
-		AudioProController.pause()
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.pause()
+		}
 	}
 
 	@ReactMethod
 	fun resume() {
-		AudioProController.resume()
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.resume()
+		}
 	}
 
 	@ReactMethod
 	fun stop() {
-		AudioProController.stop()
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.stop()
+		}
 	}
 
 	@ReactMethod
 	fun seekTo(position: Double) {
-		AudioProController.seekTo(position.toLong())
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.seekTo(position.toLong())
+		}
 	}
 
 	@ReactMethod
-	fun seekForward(amount: Double) {
-		AudioProController.seekForward(amount.toLong())
+	fun seekBy(offset: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.seekBy(offset.toLong())
+		}
 	}
 
 	@ReactMethod
-	fun seekBack(amount: Double) {
-		AudioProController.seekBack(amount.toLong())
+	fun playNext() {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.playNext()
+		}
+	}
+	
+	@ReactMethod
+	fun playPrevious() {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.playPrevious()
+		}
+	}
+
+	@ReactMethod
+	fun setRepeatMode(mode: String) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setRepeatMode(mode)
+		}
+	}
+	
+	@ReactMethod
+	fun setShuffleMode(enabled: Boolean) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setShuffleMode(enabled)
+		}
+	}
+
+	@ReactMethod
+	fun setNotificationButtons(buttons: com.facebook.react.bridge.ReadableArray) {
+		AudioProController.setNotificationButtons(buttons)
 	}
 
 	@ReactMethod
 	fun setPlaybackSpeed(speed: Double) {
-		AudioProController.setPlaybackSpeed(speed.toFloat())
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setPlaybackSpeed(speed.toFloat())
+		}
 	}
 
 	@ReactMethod
 	fun setVolume(volume: Double) {
-		AudioProController.setVolume(volume.toFloat())
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setVolume(volume.toFloat())
+		}
+	}
+
+	@ReactMethod
+	fun setEqualizer(gains: com.facebook.react.bridge.ReadableArray) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setEqualizer(gains)
+		}
+	}
+
+	@ReactMethod
+	fun setBassBoost(strength: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setBassBoost(strength.toInt())
+		}
 	}
 
 	@ReactMethod
@@ -138,7 +241,7 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 
 	override fun onHostDestroy() {
 		if (!reactContext.hasActiveCatalystInstance()) {
-			Log.d("[react-native-audio-pro]", "App is being destroyed, clearing playback")
+			Log.d(Constants.LOG_TAG, "App is being destroyed, clearing playback")
 			AudioProController.clear()
 			AudioProAmbientController.ambientStop()
 		}
@@ -159,6 +262,67 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 			Log.e("AudioProModule", "Error removing lifecycle listener", e)
 		}
 		super.onCatalystInstanceDestroy()
+	}
+
+	@ReactMethod
+	fun startSleepTimer(seconds: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.startSleepTimer(seconds)
+		}
+	}
+
+	@ReactMethod
+	fun cancelSleepTimer() {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.cancelSleepTimer()
+		}
+	}
+
+	@ReactMethod
+	fun setSkipSilence(enabled: Boolean) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setSkipSilence(enabled)
+		}
+	}
+
+	@ReactMethod
+	fun updateTrack(index: Double, track: ReadableMap) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.updateTrack(index.toInt(), track)
+		}
+	}
+
+	@ReactMethod
+	fun getCacheSize(promise: com.facebook.react.bridge.Promise) {
+		try {
+			// Using Dispatchers.IO for file operations
+			CoroutineScope(Dispatchers.IO).launch {
+				try {
+					val size = AudioProCache.getCacheSize(reactApplicationContext)
+					promise.resolve(size.toDouble())
+				} catch (e: Exception) {
+					promise.reject("CACHE_ERROR", "Failed to get cache size", e)
+				}
+			}
+		} catch (e: Exception) {
+			promise.reject("CACHE_ERROR", "Failed to launch coroutine", e)
+		}
+	}
+
+	@ReactMethod
+	fun clearCache(promise: com.facebook.react.bridge.Promise) {
+		try {
+			CoroutineScope(Dispatchers.IO).launch {
+				try {
+					AudioProCache.clearCache(reactApplicationContext)
+					promise.resolve(true)
+				} catch (e: Exception) {
+					promise.reject("CACHE_ERROR", "Failed to clear cache", e)
+				}
+			}
+		} catch (e: Exception) {
+			promise.reject("CACHE_ERROR", "Failed to launch coroutine", e)
+		}
 	}
 
 	override fun onHostResume() {}

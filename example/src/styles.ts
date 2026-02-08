@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
 		backgroundColor: '#222',
 	},
 	scrollContent: {
-		flex: 1,
+		flexGrow: 1,
 		alignItems: 'center',
 		justifyContent: 'center',
 		padding: needsSmallerUI ? 12 : 20,
@@ -222,5 +222,27 @@ export const styles = StyleSheet.create({
 		fontWeight: 'bold',
 		color: '#1EB1FC',
 		marginBottom: needsSmallerUI ? 10 : 15,
+	},
+	controlIcon: {
+		width: 35 * scale,
+		height: 35 * scale,
+		tintColor: '#fff',
+	},
+	playPauseButton: {
+		backgroundColor: '#1EB1FC',
+		borderRadius: 50,
+		padding: 15,
+		alignItems: 'center',
+		justifyContent: 'center',
+		elevation: 5,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 3,
+	},
+	playPauseIcon: {
+		width: 30 * scale,
+		height: 30 * scale,
+		tintColor: '#fff',
 	},
 });

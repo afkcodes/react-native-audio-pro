@@ -16,6 +16,18 @@ export enum AudioProContentType {
 }
 
 /**
+ * Repeat mode for playback
+ */
+export enum AudioProRepeatMode {
+	/** No repeat */
+	OFF = 'OFF',
+	/** Repeat the entire queue */
+	ALL = 'ALL',
+	/** Repeat the current track */
+	ONE = 'ONE',
+}
+
+/**
  * Possible states of the audio player
  */
 export enum AudioProState {
@@ -43,6 +55,8 @@ export enum AudioProEventType {
 	PROGRESS = 'PROGRESS',
 	/** Track has ended */
 	TRACK_ENDED = 'TRACK_ENDED',
+	/** Track has changed (e.g. auto-advance in queue) */
+	TRACK_CHANGED = 'TRACK_CHANGED',
 	/** Seek operation has completed */
 	SEEK_COMPLETE = 'SEEK_COMPLETE',
 	/** Playback speed has changed */
@@ -53,6 +67,12 @@ export enum AudioProEventType {
 	REMOTE_PREV = 'REMOTE_PREV',
 	/** Playback error has occurred */
 	PLAYBACK_ERROR = 'PLAYBACK_ERROR',
+	/** Repeat mode changed */
+	REPEAT_MODE_CHANGED = 'REPEAT_MODE_CHANGED',
+	/** Shuffle mode changed */
+	SHUFFLE_MODE_CHANGED = 'SHUFFLE_MODE_CHANGED',
+	/** Custom notification action button pressed */
+	CUSTOM_ACTION = 'CUSTOM_ACTION',
 }
 
 /**
@@ -92,10 +112,5 @@ export const DEFAULT_CONFIG: AudioProConfigureOptions = {
 	debugIncludesProgress: false,
 	/** Interval in milliseconds for progress events */
 	progressIntervalMs: 1000,
-	/** Whether to show next/previous controls */
-	showNextPrevControls: true,
-	/** Whether to show skip forward/back controls in notification */
-	showSkipControls: false,
-	/** Interval in milliseconds for skip forward/back actions */
 	skipIntervalMs: DEFAULT_SKIP_INTERVAL_MS,
 };

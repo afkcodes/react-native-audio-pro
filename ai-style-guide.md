@@ -11,29 +11,29 @@ This guide defines code style and clarity conventions for AI agents working on t
 
 - ✅ **If you're removing functionality**, delete the code completely.
 - ❌ **Do not** comment out code that’s no longer needed.
-  - Example of what *not* to do:
-    ```swift
-    // currentTrack = nil
-    ```
-  - Instead:
-    ```swift
-    // Note: currentTrack is retained after stop for resume and lock screen metadata
-    ```
+    - Example of what _not_ to do:
+        ```swift
+        // currentTrack = nil
+        ```
+    - Instead:
+        ```swift
+        // Note: currentTrack is retained after stop for resume and lock screen metadata
+        ```
 
 ---
 
 ## 💬 Comments
 
 - Write comments that explain **why**, not what.
-  - ✅ `// Ensure state is only emitted once per transition`
-  - ❌ `// Set state`
+    - ✅ `// Ensure state is only emitted once per transition`
+    - ❌ `// Set state`
 - Do not leave dead code or ambiguous comments like `// maybe needed later`
 - Use consistent comment headers to mark logical sections in Swift or Kotlin:
-  ```swift
-  ////////////////////////////////////////////////////////////
-  // MARK: - Playback Events
-  ////////////////////////////////////////////////////////////
-  ```
+    ```swift
+    ////////////////////////////////////////////////////////////
+    // MARK: - Playback Events
+    ////////////////////////////////////////////////////////////
+    ```
 
 ---
 
@@ -63,19 +63,19 @@ This guide defines code style and clarity conventions for AI agents working on t
 ## 📄 Documentation Comments
 
 - For exported methods or modules, leave a brief JSDoc or Swift/Kotlin docstring.
-  ```swift
-  /// Pauses the current track and emits a PAUSED state
-  @objc func pause() { ... }
-  ```
+    ```swift
+    /// Pauses the current track and emits a PAUSED state
+    @objc func pause() { ... }
+    ```
 
 ---
 
 ## ✅ Summary
 
-| Do | Don’t |
-|----|-------|
-| Delete code that’s being removed | Leave it commented out |
-| Explain *why*, not *what* | Write vague or obvious comments |
-| Use clean, consistent formatting | Introduce new formatting styles |
-| Mark logic sections clearly | Leave unrelated logic mixed together |
+| Do                                | Don’t                                |
+| --------------------------------- | ------------------------------------ |
+| Delete code that’s being removed  | Leave it commented out               |
+| Explain _why_, not _what_         | Write vague or obvious comments      |
+| Use clean, consistent formatting  | Introduce new formatting styles      |
+| Mark logic sections clearly       | Leave unrelated logic mixed together |
 | Follow the contract in `logic.md` | Assume your own state or event rules |

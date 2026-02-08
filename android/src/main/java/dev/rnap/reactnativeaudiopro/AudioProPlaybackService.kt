@@ -26,25 +26,25 @@ import androidx.media3.session.MediaConstants
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.ControllerInfo
+import androidx.media3.common.MediaItem
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.Futures
 
 open class AudioProPlaybackService : MediaLibraryService() {
 
 	private lateinit var mediaLibrarySession: MediaLibrarySession
+	private lateinit var ambientLibrarySession: MediaLibrarySession
 	private lateinit var player: ExoPlayer
+	private lateinit var ambientPlayer: ExoPlayer
+	private val equalizer = AudioProEqualizer()
 
 	companion object {
-		private const val NOTIFICATION_ID = 789
-		private const val CHANNEL_ID = "audio_pro_notification_channel_id"
+		private const val NOTIFICATION_ID = Constants.NOTIFICATION_ID
+		private const val CHANNEL_ID = Constants.NOTIFICATION_CHANNEL_ID
 	}
 
 	/**
 	 * Brings app to foreground when notification or session is tapped.
-	 *
-	 * This method is used by the notification and session to provide an intent that brings the app
-	 * to the foreground. Typically, this intent will launch the main activity with appropriate flags
-	 * to avoid creating multiple instances.
-	 *
-	 * If null is returned, [MediaSession.setSessionActivity] is not set by the service.
 	 */
 	fun getSessionActivityIntent(): PendingIntent? {
 		val launchIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
@@ -56,7 +56,7 @@ open class AudioProPlaybackService : MediaLibraryService() {
 		return launchIntent?.let {
 			PendingIntent.getActivity(
 				this,
-				0,
+				Constants.PENDING_INTENT_REQUEST_CODE,
 				it,
 				PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 			)
@@ -71,116 +71,106 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	 */
 	@OptIn(UnstableApi::class)
 	protected open fun createLibrarySessionCallback(): MediaLibrarySession.Callback {
-		return AudioProMediaLibrarySessionCallback()
+		return AudioProMediaLibrarySessionCallback(this)
+	}
+	
+	private fun createAmbientLibrarySessionCallback(): MediaLibrarySession.Callback {
+		return object : MediaLibrarySession.Callback {
+			override fun onAddMediaItems(
+				mediaSession: MediaSession,
+				controller: ControllerInfo,
+				mediaItems: MutableList<MediaItem>
+			): ListenableFuture<List<MediaItem>> {
+				return com.google.common.util.concurrent.Futures.immediateFuture(mediaItems)
+			}
+		}
 	}
 
 	@OptIn(UnstableApi::class) // MediaSessionService.setListener
 	override fun onCreate() {
 		super.onCreate()
-		setListener(MediaSessionServiceListener())
+		// Use the new Media3 standard notification provider
+		setMediaNotificationProvider(AudioProNotificationProvider(this))
+		
 		initializeSessionAndPlayer()
 	}
 
-	override fun onGetSession(controllerInfo: ControllerInfo): MediaLibrarySession {
+	override fun onGetSession(controllerInfo: ControllerInfo): MediaLibrarySession? {
+		val hints = controllerInfo.connectionHints
+		if (hints.getString("type") == "ambient") {
+			return ambientLibrarySession
+		}
 		return mediaLibrarySession
 	}
 
-	private val playbackListener = object : Player.Listener {
-		override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-			if (::player.isInitialized) {
-				updateForegroundState(player)
-			}
-		}
-
-		override fun onPlaybackStateChanged(playbackState: Int) {
-			if (::player.isInitialized) {
-				updateForegroundState(player)
-			}
-		}
-	}
+	// Legacy listener removed as MediaSessionService handles foreground/background automatically
+	// with the notification provider.
 
 	/**
 	 * Called when the task is removed from the recent tasks list
 	 * This happens when the user swipes away the app from the recent apps list
 	 */
 	override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-		android.util.Log.d("AudioProPlaybackService", "Task removed, stopping service")
+		android.util.Log.d(Constants.LOG_TAG, "Task removed, stopping service")
 
 		// Force stop playback and release resources
 		try {
+			// Main Session
 			val hasSession = ::mediaLibrarySession.isInitialized
 			if (hasSession) {
 				mediaLibrarySession.player.stop()
-			}
-			if (::player.isInitialized) {
-				player.removeListener(playbackListener)
-				player.release()
-			}
-			if (hasSession) {
 				mediaLibrarySession.release()
 			}
+			if (::player.isInitialized) {
+				player.release()
+			}
+			
+			// Ambient Session
+			if (::ambientLibrarySession.isInitialized) {
+				ambientLibrarySession.player.stop()
+				ambientLibrarySession.release()
+			}
+			if (::ambientPlayer.isInitialized) {
+				ambientPlayer.release()
+			}
 		} catch (e: Exception) {
-			android.util.Log.e("AudioProPlaybackService", "Error stopping playback", e)
+			android.util.Log.e(Constants.LOG_TAG, "Error stopping playback", e)
 		}
 
-		// Remove notification and stop service
-		removeNotificationAndStopService()
+		stopSelf()
 
 		super.onTaskRemoved(rootIntent)
 	}
 
-	// MediaSession.setSessionActivity
-	// MediaSessionService.clearListener
 	@OptIn(UnstableApi::class)
 	override fun onDestroy() {
-		android.util.Log.d("AudioProPlaybackService", "Service being destroyed")
+		android.util.Log.d(Constants.LOG_TAG, "Service being destroyed")
 
 		// Make sure to release all resources
 		try {
+			// Main Session
 			val hasSession = ::mediaLibrarySession.isInitialized
 			if (hasSession) {
-				// Stop playback first
 				mediaLibrarySession.player.stop()
-			}
-			if (::player.isInitialized) {
-				player.removeListener(playbackListener)
-				player.release()
-			}
-			if (hasSession) {
-				// Release session after tearing down the player
 				mediaLibrarySession.release()
 			}
-			clearListener()
+			if (::player.isInitialized) {
+				player.release()
+			}
+			
+			// Ambient Session
+			if (::ambientLibrarySession.isInitialized) {
+				ambientLibrarySession.player.stop()
+				ambientLibrarySession.release()
+			}
+			if (::ambientPlayer.isInitialized) {
+				ambientPlayer.release()
+			}
 		} catch (e: Exception) {
-			android.util.Log.e("AudioProPlaybackService", "Error during service destruction", e)
+			android.util.Log.e(Constants.LOG_TAG, "Error during service destruction", e)
 		}
-
-		// Remove notification
-		removeNotificationAndStopService()
 
 		super.onDestroy()
-	}
-
-	/**
-	 * Helper method to remove notification and stop the service
-	 * Centralizes the notification removal and service stopping logic
-	 */
-	private fun removeNotificationAndStopService() {
-		try {
-			// Remove notification directly
-			val notificationManager =
-				getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
-			notificationManager.cancel(NOTIFICATION_ID)
-			lastNotificationOngoing = null
-
-			// Stop foreground service - handle API level differences
-			stopForegroundAndRemove()
-
-			// Stop the service
-			stopSelf()
-		} catch (e: Exception) {
-			android.util.Log.e("AudioProPlaybackService", "Error stopping service", e)
-		}
 	}
 
 	@OptIn(UnstableApi::class)
@@ -190,13 +180,15 @@ open class AudioProPlaybackService : MediaLibraryService() {
 			override fun createDataSource(): DataSource {
 				// Create HTTP data source factory with custom headers if available
 				val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+					.setAllowCrossProtocolRedirects(true)
+					.setUserAgent("AudioPro/1.0")
 
 				// Apply custom headers if they exist
 				AudioProController.headersAudio?.let { headers ->
 					if (headers.isNotEmpty()) {
 						httpDataSourceFactory.setDefaultRequestProperties(headers)
 						android.util.Log.d(
-							"AudioProPlaybackService",
+							Constants.LOG_TAG,
 							"Applied custom headers: $headers"
 						)
 					}
@@ -204,8 +196,15 @@ open class AudioProPlaybackService : MediaLibraryService() {
 
 				// Create a DefaultDataSource that will handle both HTTP and file URIs
 				// It will delegate to FileDataSource for file:// URIs and to HttpDataSource for http(s):// URIs
-				return DefaultDataSource.Factory(applicationContext, httpDataSourceFactory)
-					.createDataSource()
+				val upstreamFactory = DefaultDataSource.Factory(applicationContext, httpDataSourceFactory)
+
+				// Wrap with CacheDataSource only if enabled
+				if (AudioProController.settingCacheEnabled) {
+					return AudioProCache.createDataSourceFactory(applicationContext, upstreamFactory)
+						.createDataSource()
+				} else {
+					return upstreamFactory.createDataSource()
+				}
 			}
 		}
 
@@ -225,214 +224,136 @@ open class AudioProPlaybackService : MediaLibraryService() {
 		player.setHandleAudioBecomingNoisy(true)
 		player.repeatMode = Player.REPEAT_MODE_OFF
 		player.addAnalyticsListener(EventLogger())
-		player.addListener(playbackListener)
+		
+		// Initialize Equalizer with current or future session ID
+		player.addListener(object : Player.Listener {
+			override fun onAudioSessionIdChanged(audioSessionId: Int) {
+				super.onAudioSessionIdChanged(audioSessionId)
+				android.util.Log.i(Constants.LOG_TAG, "Audio Session ID changed: $audioSessionId")
+				if (audioSessionId != C.AUDIO_SESSION_ID_UNSET) {
+					equalizer.initialize(audioSessionId)
+				}
+			}
+		})
 
 		mediaLibrarySession =
 			MediaLibrarySession.Builder(this, player, createLibrarySessionCallback())
 				.also { builder -> getSessionActivityIntent()?.let { builder.setSessionActivity(it) } }
 				.build()
-				.also { mediaLibrarySession ->
-					// Reserve only one set of controls per session: next/prev or skip, not both.
-					// If both are true, prefer next/prev and log a warning.
-					val extras = mutableMapOf<String, Boolean>()
-					val showNextPrev = AudioProController.settingShowNextPrevControls
-					val showSkip = AudioProController.settingShowSkipControls
-					if (showNextPrev && showSkip) {
-						android.util.Log.w(
-							"AudioProPlaybackService",
-							"Both settingShowNextPrevControls and settingShowSkipControls are true; only next/prev controls will be enabled for this session."
-						)
-					}
-					// Only one set of controls can be active at a time.
-					if (showNextPrev) {
-						// Reserve next/prev (seek) slots and advertise only next/prev commands.
-						extras[MediaConstants.EXTRAS_KEY_SLOT_RESERVATION_SEEK_TO_PREV] = true
-						extras[MediaConstants.EXTRAS_KEY_SLOT_RESERVATION_SEEK_TO_NEXT] = true
-					} else if (showSkip) {
-						// Reserve skip/seek slots and advertise only fast forward/back commands.
-						extras[MediaConstants.EXTRAS_KEY_SLOT_RESERVATION_SEEK_TO_PREV] = true
-						extras[MediaConstants.EXTRAS_KEY_SLOT_RESERVATION_SEEK_TO_NEXT] = true
-					}
-					// If neither, explicitly clear all session extras to remove notification control slots.
-					// This ensures that when neither next/prev nor skip controls are enabled,
-					// no control slots are reserved and only play/pause is advertised.
-					if (extras.isNotEmpty()) {
-						mediaLibrarySession.setSessionExtras(bundleOf(*extras.entries.map { it.key to it.value }
-							.toTypedArray()))
-					} else {
-						// Explicitly clear extras.
-						mediaLibrarySession.setSessionExtras(bundleOf())
-					}
-				}
-
-		updateForegroundState(player)
-	}
-
-	@OptIn(UnstableApi::class) // MediaSessionService.Listener
-	private inner class MediaSessionServiceListener : Listener {
-
-		/**
-		 * This method is only required to be implemented on Android 12 or above when an attempt is made
-		 * by a media controller to resume playback when the {@link MediaSessionService} is in the
-		 * background.
-		 */
-		@RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-		override fun onForegroundServiceStartNotAllowedException() {
-			if (
-				Build.VERSION.SDK_INT >= 33 &&
-				checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
-				PackageManager.PERMISSION_GRANTED
-			) {
-				// Notification permission is required but not granted
-				return
-			}
-			showBackgroundNotification()
-		}
-	}
-
-	private fun ensureNotificationChannel(notificationManagerCompat: NotificationManagerCompat) {
-		val channel =
-			NotificationChannel(
-				CHANNEL_ID,
-				"audio_pro_notification_channel",
-				NotificationManager.IMPORTANCE_DEFAULT,
+				
+		// Initialize Ambient Player
+		ambientPlayer = ExoPlayer.Builder(this)
+			.setAudioAttributes(
+				AudioAttributes.Builder()
+					.setUsage(C.USAGE_MEDIA)
+					.setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+					.build(),
+				true
 			)
-		notificationManagerCompat.createNotificationChannel(channel)
-	}
-
-	private fun updateForegroundState(currentPlayer: Player) {
-		if (currentPlayer.currentMediaItem == null) {
-			if (isForegroundRunning) {
-				detachForeground()
-			}
-			if (lastNotificationOngoing != null) {
-				NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID)
-				lastNotificationOngoing = null
-			}
-			return
-		}
-
-		val shouldBeForeground =
-			currentPlayer.playWhenReady &&
-				(currentPlayer.playbackState == Player.STATE_BUFFERING ||
-					currentPlayer.playbackState == Player.STATE_READY)
-
-		if (shouldBeForeground) {
-			if (!isForegroundRunning) {
-				promoteToForeground(currentPlayer)
-			} else {
-				postNotification(currentPlayer, ongoing = true)
-			}
-		} else {
-			if (isForegroundRunning) {
-				detachForeground()
-				postNotification(currentPlayer, ongoing = false)
-			} else {
-				postNotification(currentPlayer, ongoing = false)
-			}
-		}
-	}
-
-	private fun promoteToForeground(currentPlayer: Player) {
-		val notificationManagerCompat = NotificationManagerCompat.from(this)
-		ensureNotificationChannel(notificationManagerCompat)
-		val notification = buildPlaybackNotification(currentPlayer, ongoing = true)
-		try {
-			startForeground(NOTIFICATION_ID, notification)
-			isForegroundRunning = true
-			lastNotificationOngoing = true
-		} catch (exception: ForegroundServiceStartNotAllowedException) {
-			android.util.Log.w(
-				"AudioProPlaybackService",
-				"Foreground start blocked; posting fallback notification",
-				exception
-			)
-			postNotification(currentPlayer, ongoing = false)
-		} catch (exception: Exception) {
-			android.util.Log.e(
-				"AudioProPlaybackService",
-				"Unable to promote to foreground; posting fallback notification",
-				exception
-			)
-			postNotification(currentPlayer, ongoing = false)
-		}
-	}
-
-	private fun showBackgroundNotification() {
-		val currentPlayer = if (::player.isInitialized) player else null
-		postNotification(currentPlayer, ongoing = false)
-	}
-
-	private fun postNotification(currentPlayer: Player?, ongoing: Boolean) {
-		val notificationManagerCompat = NotificationManagerCompat.from(this)
-		ensureNotificationChannel(notificationManagerCompat)
-		notificationManagerCompat.notify(
-			NOTIFICATION_ID,
-			buildPlaybackNotification(currentPlayer, ongoing)
-		)
-		lastNotificationOngoing = ongoing
-	}
-
-	private fun detachForeground() {
-		if (!isForegroundRunning) {
-			return
-		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			stopForeground(STOP_FOREGROUND_DETACH)
-		} else {
-			@Suppress("DEPRECATION")
-			stopForeground(false)
-		}
-		isForegroundRunning = false
-	}
-
-	private fun stopForegroundAndRemove() {
-		if (!isForegroundRunning) {
-			return
-		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-			stopForeground(STOP_FOREGROUND_REMOVE)
-		} else {
-			@Suppress("DEPRECATION")
-			stopForeground(true)
-		}
-		isForegroundRunning = false
-		lastNotificationOngoing = null
-	}
-
-	private fun buildPlaybackNotification(
-		currentPlayer: Player?,
-		ongoing: Boolean,
-	): android.app.Notification {
-		val metadata = currentPlayer?.mediaMetadata
-		val title =
-			metadata?.title?.toString()?.takeIf { it.isNotBlank() } ?: "Audio"
-		val artist = metadata?.artist?.toString()
-		val contentText = when {
-			!artist.isNullOrBlank() -> artist
-			currentPlayer == null -> if (ongoing) "Playing..." else "Playback ready"
-			currentPlayer.playbackState == Player.STATE_BUFFERING -> "Buffering..."
-			currentPlayer.playbackState == Player.STATE_READY && currentPlayer.playWhenReady -> "Playing..."
-			currentPlayer.playbackState == Player.STATE_ENDED -> "Playback ended"
-			else -> "Paused"
-		}
-
-		return NotificationCompat.Builder(this, CHANNEL_ID)
-			.setSmallIcon(
-				if (ongoing) android.R.drawable.ic_media_play else android.R.drawable.ic_dialog_info
-			)
-			.setContentTitle(title)
-			.setContentText(contentText)
-			.setOnlyAlertOnce(true)
-			.setPriority(
-				if (ongoing) NotificationCompat.PRIORITY_MAX else NotificationCompat.PRIORITY_DEFAULT
-			)
-			.setOngoing(ongoing)
-			.setAutoCancel(!ongoing)
-			.also { builder -> getSessionActivityIntent()?.let { builder.setContentIntent(it) } }
 			.build()
+		ambientPlayer.repeatMode = Player.REPEAT_MODE_ONE // Default loop for ambient? Controller sets it anyway.
+		
+		ambientLibrarySession = MediaLibrarySession.Builder(this, ambientPlayer, createAmbientLibrarySessionCallback())
+			.setId("AmbientSession")
+			.build()
+			
+		addSession(mediaLibrarySession)
+		addSession(ambientLibrarySession)
 	}
 
-	private var isForegroundRunning: Boolean = false
-	private var lastNotificationOngoing: Boolean? = null
+	fun handleAmbientPlay(args: android.os.Bundle) {
+		val url = args.getString("url") ?: return
+		val loop = if (args.containsKey("loop")) args.getBoolean("loop") else true
+		val vol = args.getFloat("volume", 1.0f)
+		
+		android.util.Log.d(Constants.LOG_TAG, "Service: ambientPlay url=$url loop=$loop vol=$vol")
+		
+		val uri = android.net.Uri.parse(url)
+		val mediaItem = MediaItem.Builder().setUri(uri).build()
+		
+		ambientPlayer.setMediaItem(mediaItem)
+		ambientPlayer.repeatMode = if (loop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+		ambientPlayer.volume = vol
+		ambientPlayer.prepare()
+		ambientPlayer.play()
+	}
+	
+	fun handleAmbientStop() {
+		android.util.Log.d(Constants.LOG_TAG, "Service: ambientStop")
+		if (::ambientPlayer.isInitialized) {
+			ambientPlayer.stop()
+			ambientPlayer.clearMediaItems()
+		}
+	}
+	
+	fun handleAmbientPause() {
+		android.util.Log.d(Constants.LOG_TAG, "Service: ambientPause")
+		if (::ambientPlayer.isInitialized) {
+			ambientPlayer.pause()
+		}
+	}
+	
+	fun handleAmbientResume() {
+		android.util.Log.d(Constants.LOG_TAG, "Service: ambientResume")
+		if (::ambientPlayer.isInitialized) {
+			ambientPlayer.play()
+		}
+	}
+	
+	fun handleAmbientSeek(pos: Long) {
+		android.util.Log.d(Constants.LOG_TAG, "Service: ambientSeek to $pos")
+		if (::ambientPlayer.isInitialized) {
+			ambientPlayer.seekTo(pos)
+		}
+	}
+	
+	fun handleAmbientSetVolume(vol: Float) {
+		android.util.Log.d(Constants.LOG_TAG, "Service: ambientSetVolume to $vol")
+		if (::ambientPlayer.isInitialized) {
+			ambientPlayer.volume = vol
+		}
+	}
+
+	fun handleSetEqualizer(gains: FloatArray) {
+		// Ensure session is initialized if we have a player
+		if (::player.isInitialized && player.audioSessionId != androidx.media3.common.C.AUDIO_SESSION_ID_UNSET) {
+			equalizer.initialize(player.audioSessionId)
+		}
+		equalizer.setGains(gains)
+	}
+	
+	fun handleSetBassBoost(strength: Int) {
+		// Ensure session is initialized if we have a player
+		if (::player.isInitialized && player.audioSessionId != androidx.media3.common.C.AUDIO_SESSION_ID_UNSET) {
+			equalizer.initialize(player.audioSessionId)
+		}
+		equalizer.setBassBoost(strength)
+	}
+
+	fun handleSetRepeatMode(mode: String) {
+		if (::player.isInitialized) {
+			val repeatMode = when (mode) {
+				"ONE" -> Player.REPEAT_MODE_ONE
+				"ALL" -> Player.REPEAT_MODE_ALL
+				else -> Player.REPEAT_MODE_OFF
+			}
+			player.repeatMode = repeatMode
+		}
+	}
+
+	fun handleSetShuffleMode(enabled: Boolean) {
+		if (::player.isInitialized) {
+			player.shuffleModeEnabled = enabled
+		}
+	}
+
+	fun handleSetSkipSilence(enabled: Boolean) {
+		if (::player.isInitialized) {
+			player.skipSilenceEnabled = enabled
+			// When enabling skip silence, we might want to ensure the parameters are set correctly if needed
+			// But default should work.
+			android.util.Log.d(Constants.LOG_TAG, "Set skip silence enabled: $enabled")
+		}
+	}
+
 }
