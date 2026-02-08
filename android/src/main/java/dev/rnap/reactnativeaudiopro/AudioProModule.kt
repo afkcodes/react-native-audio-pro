@@ -58,6 +58,11 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
+	fun configure(options: ReadableMap) {
+		AudioProController.configure(options)
+	}
+
+	@ReactMethod
 	fun addToQueue(tracks: com.facebook.react.bridge.ReadableArray) {
 		CoroutineScope(Dispatchers.Main).launch {
 			AudioProController.addToQueue(tracks)

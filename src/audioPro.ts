@@ -58,8 +58,11 @@ export const AudioPro = {
 			internalStore.getState();
 		const config: AudioProConfigureOptions = { ...DEFAULT_CONFIG, ...options };
 		setConfigureOptions(config);
+
+		// Pass configuration to native side
+		NativeAudioPro.configure(config);
+
 		if (options.maxCacheSize) {
-			// TODO: Pass this to native side if dynamic cache size configuration is supported
 			logDebug('AudioPro: Configuring maxCacheSize', options.maxCacheSize);
 		}
 		setDebug(!!options.debug);

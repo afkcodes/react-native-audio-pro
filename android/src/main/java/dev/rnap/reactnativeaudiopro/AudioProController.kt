@@ -73,6 +73,40 @@ object AudioProController {
 	var settingSkipIntervalMs: Long = 30000L
 	var settingCacheEnabled: Boolean = true
 
+	fun configure(options: ReadableMap) {
+		if (options.hasKey("debug")) {
+			settingDebug = options.getBoolean("debug")
+		}
+		if (options.hasKey("debugIncludesProgress")) {
+			settingDebugIncludesProgress = options.getBoolean("debugIncludesProgress")
+		}
+		if (options.hasKey("progressIntervalMs")) {
+			settingProgressIntervalMs = options.getDouble("progressIntervalMs").toLong()
+		}
+		if (options.hasKey("audioContentType")) {
+			settingAudioContentType = options.getInt("audioContentType")
+		}
+		if (options.hasKey("skipIntervalMs")) {
+			settingSkipIntervalMs = options.getDouble("skipIntervalMs").toLong()
+		}
+		if (options.hasKey("cacheEnabled")) {
+			settingCacheEnabled = options.getBoolean("cacheEnabled")
+		}
+		if (options.hasKey("maxCacheSize")) {
+			val size = options.getDouble("maxCacheSize").toLong()
+			AudioProCache.setMaxCacheSize(size)
+			log("Configured maxCacheSize: $size bytes")
+		}
+		if (options.hasKey("skipSilence")) {
+			val enabled = options.getBoolean("skipSilence")
+			CoroutineScope(Dispatchers.Main).launch {
+				setSkipSilence(enabled)
+			}
+		}
+		
+		log("Configured AudioPro: debug=$settingDebug, cache=$settingCacheEnabled")
+	}
+
 	var headersAudio: Map<String, String>? = null
 	var headersArtwork: Map<String, String>? = null
 
