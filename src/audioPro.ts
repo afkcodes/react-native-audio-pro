@@ -166,6 +166,17 @@ export const AudioPro = {
 	},
 
 	/**
+	 * Skip to a specific index in the queue with a pending seek position
+	 * The seek will happen when the track is ready (STATE_READY)
+	 * @param index - The index to skip to (0-based)
+	 * @param positionMs - Position in milliseconds to seek to once track is ready
+	 */
+	skipToWithSeek(index: number, positionMs: number): void {
+		logDebug('AudioPro: skipToWithSeek()', index, positionMs);
+		NativeAudioPro.skipToWithSeek(index, positionMs);
+	},
+
+	/**
 	 * Remove a track from the queue at the specified index
 	 * @param index - Index of the track to remove (0-based)
 	 */
@@ -183,6 +194,10 @@ export const AudioPro = {
 		logDebug('AudioPro: seekTo()', positionMs);
 		if (!isValidPlayerStateForOperation('seekTo()')) return;
 		if (positionMs < 0) return;
+
+		// Optimistic update for UI snappiness
+		internalStore.setState({ position: positionMs });
+
 		NativeAudioPro.seekTo(positionMs);
 	},
 

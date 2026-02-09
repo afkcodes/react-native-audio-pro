@@ -84,6 +84,13 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
+	fun skipToWithSeek(index: Double, position: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.skipToWithSeek(index.toInt(), position.toLong())
+		}
+	}
+
+	@ReactMethod
 	fun removeTrack(index: Double) {
 		CoroutineScope(Dispatchers.Main).launch {
 			AudioProController.removeTrack(index.toInt())

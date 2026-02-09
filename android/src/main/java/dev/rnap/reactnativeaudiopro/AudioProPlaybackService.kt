@@ -107,38 +107,35 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	// with the notification provider.
 
 	/**
-	 * Called when the task is removed from the recent tasks list
-	 * This happens when the user swipes away the app from the recent apps list
+	 * Called when the task is removed from the recent tasks list.
+	 *
+	 * Behavior: Stop playback and release the service.
+	 * The last-known queue, track index, and position are already persisted
+	 * in MMKV on the JS side, so the next cold start will restore them.
 	 */
 	override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-		android.util.Log.d(Constants.LOG_TAG, "Task removed, stopping service")
+		android.util.Log.i(Constants.LOG_TAG, "[TASK_REMOVED] App swiped from recents – stopping service")
 
-		// Force stop playback and release resources
 		try {
-			// Main Session
-			val hasSession = ::mediaLibrarySession.isInitialized
-			if (hasSession) {
-				mediaLibrarySession.player.stop()
-				mediaLibrarySession.release()
-			}
 			if (::player.isInitialized) {
-				player.release()
-			}
-			
-			// Ambient Session
-			if (::ambientLibrarySession.isInitialized) {
-				ambientLibrarySession.player.stop()
-				ambientLibrarySession.release()
+				player.stop()
+				player.clearMediaItems()
 			}
 			if (::ambientPlayer.isInitialized) {
-				ambientPlayer.release()
+				ambientPlayer.stop()
+				ambientPlayer.clearMediaItems()
+			}
+			if (::mediaLibrarySession.isInitialized) {
+				mediaLibrarySession.release()
+			}
+			if (::ambientLibrarySession.isInitialized) {
+				ambientLibrarySession.release()
 			}
 		} catch (e: Exception) {
-			android.util.Log.e(Constants.LOG_TAG, "Error stopping playback", e)
+			android.util.Log.e(Constants.LOG_TAG, "[TASK_REMOVED] Error during cleanup", e)
 		}
 
 		stopSelf()
-
 		super.onTaskRemoved(rootIntent)
 	}
 
@@ -220,6 +217,8 @@ open class AudioProPlaybackService : MediaLibraryService() {
 						.build(),
 					/* handleAudioFocus = */ true
 				)
+				.setSeekBackIncrementMs(30000)
+				.setSeekForwardIncrementMs(30000)
 				.build()
 		player.setHandleAudioBecomingNoisy(true)
 		player.repeatMode = Player.REPEAT_MODE_OFF

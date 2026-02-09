@@ -26,14 +26,15 @@ export function setupAudioPro(): void {
 				playNextTrack();
 				break;
 
+			// REMOTE_NEXT and REMOTE_PREV are now handled natively on Android
+			// (the library calls playNext/playPrevious automatically).
+			// These events are still emitted for informational purposes.
 			case AudioProEventType.REMOTE_NEXT:
-				// Handle next button press from lock screen/notification
-				playNextTrack();
+				console.log('Remote next pressed (handled natively)');
 				break;
 
 			case AudioProEventType.REMOTE_PREV:
-				// Handle previous button press from lock screen/notification
-				playPreviousTrack();
+				console.log('Remote prev pressed (handled natively)');
 				break;
 
 			case AudioProEventType.PLAYBACK_ERROR:

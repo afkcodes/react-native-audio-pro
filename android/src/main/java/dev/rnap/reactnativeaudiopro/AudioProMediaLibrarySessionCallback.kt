@@ -3,6 +3,7 @@ package dev.rnap.reactnativeaudiopro
 import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaLibraryService
@@ -32,12 +33,12 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 			val button = when (buttonType) {
 				"PREV" -> CommandButton.Builder(CommandButton.ICON_PREVIOUS)
 					.setDisplayName("Previous")
-					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_PREV, Bundle.EMPTY))
+					.setPlayerCommand(Player.COMMAND_SEEK_TO_PREVIOUS)
 					.build()
 
 				"NEXT" -> CommandButton.Builder(CommandButton.ICON_NEXT)
 					.setDisplayName("Next")
-					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_NEXT, Bundle.EMPTY))
+					.setPlayerCommand(Player.COMMAND_SEEK_TO_NEXT)
 					.build()
 
 				"LIKE" -> CommandButton.Builder(CommandButton.ICON_HEART_UNFILLED)
@@ -62,12 +63,12 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 
 				"REWIND_30" -> CommandButton.Builder(CommandButton.ICON_SKIP_BACK)
 					.setDisplayName("Rewind 30s")
-					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_REWIND_30, Bundle.EMPTY))
+					.setPlayerCommand(Player.COMMAND_SEEK_BACK)
 					.build()
 
 				"FORWARD_30" -> CommandButton.Builder(CommandButton.ICON_SKIP_FORWARD)
 					.setDisplayName("Forward 30s")
-					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_FORWARD_30, Bundle.EMPTY))
+					.setPlayerCommand(Player.COMMAND_SEEK_FORWARD)
 					.build()
 
 				else -> {
@@ -87,25 +88,17 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 	val mediaNotificationSessionCommands
 		get() = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
 			.also { builder ->
-				// Add custom commands based on button configuration
+				// Add custom commands (excluding standard navigation handled by player commands)
 				val buttonConfig = AudioProController.settingNotificationButtons
 				
 				for (buttonType in buttonConfig) {
 					when (buttonType) {
-						"PREV" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_PREV, Bundle.EMPTY))
-						"NEXT" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_NEXT, Bundle.EMPTY))
 						"LIKE" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_LIKE, Bundle.EMPTY))
 						"DISLIKE" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_DISLIKE, Bundle.EMPTY))
 						"SAVE" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SAVE, Bundle.EMPTY))
 						"BOOKMARK" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_BOOKMARK, Bundle.EMPTY))
-						"REWIND_30" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_REWIND_30, Bundle.EMPTY))
-						"FORWARD_30" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_FORWARD_30, Bundle.EMPTY))
 					}
 				}
-				
-				// Always add skip forward/backward commands
-				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SKIP_FORWARD, Bundle.EMPTY))
-				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SKIP_BACKWARD, Bundle.EMPTY))
 				
 				// Add Ambient Commands
 				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_PLAY, Bundle.EMPTY))
@@ -145,30 +138,6 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 	): ListenableFuture<SessionResult> {
 		AudioProController.log("onCustomCommand: ${customCommand.customAction}")
 		when (customCommand.customAction) {
-			Constants.CUSTOM_COMMAND_NEXT -> {
-				AudioProController.emitNext()
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_PREV -> {
-				AudioProController.emitPrev()
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_SKIP_FORWARD -> {
-				CoroutineScope(Dispatchers.Main).launch {
-					AudioProController.seekForward(AudioProController.settingSkipIntervalMs)
-				}
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_SKIP_BACKWARD -> {
-				CoroutineScope(Dispatchers.Main).launch {
-					AudioProController.seekBack(AudioProController.settingSkipIntervalMs)
-				}
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
 			// Custom notification actions
 			Constants.CUSTOM_COMMAND_LIKE -> {
 				AudioProController.emitCustomAction("LIKE")
@@ -187,24 +156,6 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 
 			Constants.CUSTOM_COMMAND_BOOKMARK -> {
 				AudioProController.emitCustomAction("BOOKMARK")
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_REWIND_30 -> {
-				CoroutineScope(Dispatchers.Main).launch {
-					AudioProController.seekBack(30000L)
-				}
-				// Also emit as custom action so JS can respond if needed
-				AudioProController.emitCustomAction("REWIND_30")
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_FORWARD_30 -> {
-				CoroutineScope(Dispatchers.Main).launch {
-					AudioProController.seekForward(30000L)
-				}
-				// Also emit as custom action so JS can respond if needed
-				AudioProController.emitCustomAction("FORWARD_30")
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 			
