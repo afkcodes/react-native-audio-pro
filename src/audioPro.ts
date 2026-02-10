@@ -195,8 +195,9 @@ export const AudioPro = {
 		if (!isValidPlayerStateForOperation('seekTo()')) return;
 		if (positionMs < 0) return;
 
-		// Optimistic update for UI snappiness
-		internalStore.setState({ position: positionMs });
+		// Optimistic update for UI snappiness + set seeking flag to
+		// suppress transient PAUSED/LOADING states from native during seek
+		internalStore.setState({ position: positionMs, isSeeking: true });
 
 		NativeAudioPro.seekTo(positionMs);
 	},
@@ -209,6 +210,7 @@ export const AudioPro = {
 		if (!guardTrackPlaying('seekBy')) return;
 		logDebug('AudioPro: seekBy()', offsetMs);
 		if (!isValidPlayerStateForOperation('seekBy()')) return;
+		internalStore.setState({ isSeeking: true });
 		NativeAudioPro.seekBy(offsetMs);
 	},
 

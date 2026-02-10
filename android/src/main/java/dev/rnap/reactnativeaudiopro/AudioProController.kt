@@ -79,6 +79,7 @@ object AudioProController {
 	private var flowLastStateEmittedTimeMs: Long = 0L
 	private var flowPendingSeekPosition: Long? = null
 	private var flowIsRestorationSeek: Boolean = false
+	private var flowPendingSeekIndex: Int? = null // For deferred seeks when queue is loading
 
 	private var settingDebug: Boolean = false
 	private var settingDebugIncludesProgress: Boolean = false
@@ -402,10 +403,11 @@ object AudioProController {
 			engineBrowser?.let { player ->
 				if (index >= 0 && index < player.mediaItemCount) {
 					player.seekToDefaultPosition(index)
-					if (player.playbackState == Player.STATE_IDLE) {
-						player.prepare()
-					}
-					log("Skipped to index $index")
+					log("skipTo: Switching to track at index $index")
+				} else {
+					log("skipTo: Index $index out of bounds (count=${player.mediaItemCount}), deferring seek")
+					flowPendingSeekIndex = index
+					flowPendingSeekPosition = null // reset specific position if just skipTo
 				}
 			}
 		}
@@ -416,21 +418,14 @@ object AudioProController {
 		runOnUiThread {
 			engineBrowser?.let { player ->
 				if (index >= 0 && index < player.mediaItemCount) {
-					// Always log restoration attempts (production + debug)
-					Log.i(Constants.LOG_TAG, "[RESTORE] skipToWithSeek: index=$index, position=$position, playerState=${player.playbackState}, mediaItemCount=${player.mediaItemCount}")
-					log("skipToWithSeek: index=$index, position=$position, playerState=${player.playbackState}, mediaItemCount=${player.mediaItemCount}")
+					// Existing logic for valid index
+					log("skipToWithSeek: Switching to track at index $index")
 					
-					// Mark as restoration seek so onPositionDiscontinuity doesn't
-					// consume flowPendingSeekPosition before STATE_READY fires
 					flowIsRestorationSeek = true
 					flowPendingSeekPosition = position
-					
-					// Switch to the track (this triggers onMediaItemTransition -> TRACK_CHANGED)
-					log("skipToWithSeek: Switching to track at index $index")
+
 					player.seekToDefaultPosition(index)
-					
-					// If player is already in STATE_READY (e.g., session persisted from background),
-					// perform the seek immediately since STATE_READY won't fire again
+
 					if (player.playbackState == Player.STATE_READY) {
 						Log.i(Constants.LOG_TAG, "[RESTORE] Player already READY, performing immediate seek to $position")
 						log("skipToWithSeek: Player already READY, performing immediate seek to $position")
@@ -440,34 +435,21 @@ object AudioProController {
 						val dur = safeDuration()
 						val isPlaying = player.isPlaying
 						
-						Log.i(Constants.LOG_TAG, "[RESTORE] Emitting state: duration=$dur, position=$position, isPlaying=$isPlaying")
-						log("skipToWithSeek(immediate): duration=$dur, position=$position, isPlaying=$isPlaying")
-						
-						// Emit PROGRESS to update UI position/duration immediately
 						emitNotice(AudioProModule.EVENT_TYPE_PROGRESS, position, dur, "skipToWithSeek(immediate)")
-						
-						// Emit STATE_CHANGED so internalStore syncs properly
 						val state = if (isPlaying) AudioProModule.STATE_PLAYING else AudioProModule.STATE_PAUSED
-						log("skipToWithSeek(immediate): Emitting state=$state")
 						emitState(state, position, dur, "skipToWithSeek(immediate, state=$state)")
-						
-						// flowPendingSeekPosition will be cleared by onPositionDiscontinuity
 					} else if (player.playbackState == Player.STATE_IDLE) {
 						Log.i(Constants.LOG_TAG, "[RESTORE] Player IDLE, emitting LOADING state and calling prepare()")
 						log("skipToWithSeek: Player IDLE, emitting LOADING state and calling prepare()")
 						
-						// Emit LOADING state so UI shows proper loading indicator
 						emitState(AudioProModule.STATE_LOADING, 0L, 0L, "skipToWithSeek(prepare)")
-						
-						// Prepare will trigger STATE_READY callback which handles the pending seek
 						player.prepare()
-					} else {
-						Log.i(Constants.LOG_TAG, "[RESTORE] Player in state ${player.playbackState}, waiting for STATE_READY")
-						log("skipToWithSeek: Player in state ${player.playbackState}, waiting for STATE_READY")
 					}
 				} else {
-					Log.w(Constants.LOG_TAG, "[RESTORE] Invalid index=$index, mediaItemCount=${player.mediaItemCount}")
-					log("skipToWithSeek: Invalid index=$index, mediaItemCount=${player.mediaItemCount}")
+					log("skipToWithSeek: Index $index out of bounds (count=${player.mediaItemCount}), deferring seek")
+					flowPendingSeekIndex = index
+					flowPendingSeekPosition = position
+					flowIsRestorationSeek = true // Mark as restoration seek
 				}
 			}
 		}
@@ -484,6 +466,8 @@ object AudioProController {
 			}
 		}
 	}
+	
+
 	
 
 	suspend fun playNext() {
@@ -1026,6 +1010,39 @@ object AudioProController {
 		detachPlayerListener()
 
 		enginePlayerListener = object : Player.Listener {
+			override fun onTimelineChanged(timeline: androidx.media3.common.Timeline, reason: Int) {
+				super.onTimelineChanged(timeline, reason)
+				log("onTimelineChanged: reason=$reason, windowCount=${timeline.windowCount}")
+
+				// Handle deferred seek (e.g. restoration where addToQueue hasn't finished yet)
+				flowPendingSeekIndex?.let { index ->
+					if (index >= 0 && index < timeline.windowCount) {
+						log("onTimelineChanged: Found pending seek to index $index, executing now")
+						
+						val position = flowPendingSeekPosition
+						flowPendingSeekIndex = null // Clear pending index
+						
+						if (position != null) {
+							// Was a skipToWithSeek
+							// We can just re-call skipToWithSeek (it's safe as we're on UI thread)
+							// Execute logic directly:
+							engineBrowser?.let { player ->
+								flowIsRestorationSeek = true
+								player.seekToDefaultPosition(index)
+								
+								if (player.playbackState == Player.STATE_IDLE) {
+									player.prepare()
+								}
+								// STATE_READY listener will handle the pending position seek
+							}
+						} else {
+							// Was a normal skipTo
+							engineBrowser?.seekToDefaultPosition(index)
+						}
+					}
+				}
+			}
+
 			override fun onRepeatModeChanged(repeatMode: Int) {
 				val modeStr = when (repeatMode) {
 					Player.REPEAT_MODE_ONE -> "ONE"
@@ -1065,16 +1082,30 @@ object AudioProController {
 					"onIsPlayingChanged -> currentPosition=",
 					engineBrowser?.currentPosition,
 					"duration=",
-					engineBrowser?.duration
+					engineBrowser?.duration,
+					"pendingSeek=",
+					flowPendingSeekPosition
 				)
-				val pos = engineBrowser?.currentPosition ?: 0L
+				// Use pending seek position if available to prevent UI jumping back
+				val pos = flowPendingSeekPosition ?: engineBrowser?.currentPosition ?: 0L
 				val dur = safeDuration()
 
 				if (isPlaying) {
 					emitState(AudioProModule.STATE_PLAYING, pos, dur, "onIsPlayingChanged(true)")
 					startProgressTimer()
 				} else {
-					emitState(AudioProModule.STATE_PAUSED, pos, dur, "onIsPlayingChanged(false)")
+					// During a seek, Media3 briefly sets isPlaying=false while it
+					// rebuffers at the new position. Emitting PAUSED here would
+					// cause the UI play/pause icon to flicker. Suppress it when a
+					// seek is in-flight (flowPendingSeekPosition != null) AND the
+					// player still intends to play (playWhenReady=true).
+					val isSeeking = flowPendingSeekPosition != null
+					val playIntended = engineBrowser?.playWhenReady == true
+					if (isSeeking && playIntended) {
+						log("onIsPlayingChanged(false) suppressed — seek in progress with playWhenReady=true")
+					} else {
+						emitState(AudioProModule.STATE_PAUSED, pos, dur, "onIsPlayingChanged(false)")
+					}
 					stopProgressTimer()
 				}
 			}
@@ -1089,14 +1120,24 @@ object AudioProController {
 					"isPlaying=",
 					engineBrowser?.isPlaying
 				)
-				val pos = engineBrowser?.currentPosition ?: 0L
+				// Use pending seek position if available to prevent UI jumping back
+				val pos = flowPendingSeekPosition ?: engineBrowser?.currentPosition ?: 0L
 				val dur = safeDuration()
 				val isPlayIntended = engineBrowser?.playWhenReady == true
 				val isActuallyPlaying = engineBrowser?.isPlaying == true
 
+				// Track whether a user-initiated seek is in-flight so we can
+				// suppress transient state emissions that cause UI flicker.
+				val isSeeking = flowPendingSeekPosition != null
+
 				when (state) {
 					Player.STATE_BUFFERING -> {
-						if (isPlayIntended) {
+						// During a seek, Media3 transitions through BUFFERING briefly.
+						// Emitting LOADING here would flash the UI; suppress it when a
+						// seek is in-flight and the player still intends to play.
+						if (isSeeking && isPlayIntended) {
+							log("STATE_BUFFERING suppressed — seek in progress with playWhenReady=true")
+						} else if (isPlayIntended) {
 							emitState(
 								AudioProModule.STATE_LOADING,
 								pos,
@@ -1148,6 +1189,11 @@ object AudioProController {
 								"onPlaybackStateChanged(STATE_READY, isPlaying=true)"
 							)
 							startProgressTimer()
+						} else if (isSeeking && isPlayIntended) {
+							// During a seek, STATE_READY may fire while isPlaying is
+							// still false (Media3 hasn't resumed yet). Don't emit
+							// PAUSED — onIsPlayingChanged(true) will follow shortly.
+							log("STATE_READY(isPlaying=false) suppressed — seek in progress with playWhenReady=true")
 						} else {
 							emitState(
 								AudioProModule.STATE_PAUSED,
@@ -1241,7 +1287,7 @@ object AudioProController {
 				reason: Int
 			) {
 				if (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
-					log("onPositionDiscontinuity: position=${newPosition.positionMs}, reason=$reason, isRestoration=$flowIsRestorationSeek, pendingSeek=$flowPendingSeekPosition")
+					log("onPositionDiscontinuity: oldPos=${oldPosition.positionMs}, newPos=${newPosition.positionMs}, reason=$reason, isRestoration=$flowIsRestorationSeek, pendingSeek=$flowPendingSeekPosition")
 					
 					// During restoration, the seekToDefaultPosition(index) fires a discontinuity
 					// BEFORE STATE_READY. Don't consume the pending seek here — let STATE_READY handle it.
@@ -1258,7 +1304,10 @@ object AudioProController {
 						AudioProModule.TRIGGER_SOURCE_SYSTEM
 					}
 
-					val pos = flowPendingSeekPosition ?: newPosition.positionMs
+					// Use the actual new position from the discontinuity event
+					val pos = newPosition.positionMs
+					
+					// Clear the pending seek position BEFORE emitting events to prevent race conditions
 					flowPendingSeekPosition = null
 
 					val payload = Arguments.createMap().apply {
@@ -1363,7 +1412,8 @@ object AudioProController {
 		engineProgressHandler = Handler(Looper.getMainLooper())
 		engineProgressRunnable = object : Runnable {
 			override fun run() {
-				val pos = engineBrowser?.currentPosition ?: 0L
+				// Use pending seek position if available to prevent UI jumping back
+				val pos = flowPendingSeekPosition ?: (engineBrowser?.currentPosition ?: 0L)
 				val dur = safeDuration()
 				emitNotice(AudioProModule.EVENT_TYPE_PROGRESS, pos, dur, "progressTimer")
 				engineProgressHandler?.postDelayed(this, settingProgressIntervalMs)

@@ -114,10 +114,18 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	 * in MMKV on the JS side, so the next cold start will restore them.
 	 */
 	override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-		android.util.Log.i(Constants.LOG_TAG, "[TASK_REMOVED] App swiped from recents – stopping service")
+		android.util.Log.i(Constants.LOG_TAG, "[TASK_REMOVED] App swiped from recents – stopping playback")
 
+		// We stop playback to respect user intent (swipe away = stop),
+		// but we do NOT call stopSelf() or release().
+		// Media3's default behavior will handle service lifecycle:
+		// - If playing: Service stays alive (we are stopping, so it won't be playing)
+		// - If not playing: Service eventually stops
+		
 		try {
 			if (::player.isInitialized) {
+				// Stop playback and seek to 0. This puts player in IDLE/STOPPED state.
+				// MediaSessionService will eventually unbind if no controllers are attached.
 				player.stop()
 				player.clearMediaItems()
 			}
@@ -125,17 +133,11 @@ open class AudioProPlaybackService : MediaLibraryService() {
 				ambientPlayer.stop()
 				ambientPlayer.clearMediaItems()
 			}
-			if (::mediaLibrarySession.isInitialized) {
-				mediaLibrarySession.release()
-			}
-			if (::ambientLibrarySession.isInitialized) {
-				ambientLibrarySession.release()
-			}
+			// Do NOT release sessions here. Let onDestroy handle it.
 		} catch (e: Exception) {
 			android.util.Log.e(Constants.LOG_TAG, "[TASK_REMOVED] Error during cleanup", e)
 		}
 
-		stopSelf()
 		super.onTaskRemoved(rootIntent)
 	}
 

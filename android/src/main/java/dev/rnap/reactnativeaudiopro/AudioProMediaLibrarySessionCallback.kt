@@ -31,6 +31,7 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 
 		for ((index, buttonType) in buttonConfig.withIndex()) {
 			val button = when (buttonType) {
+				// Standard Media3 Player commands for navigation
 				"PREV" -> CommandButton.Builder(CommandButton.ICON_PREVIOUS)
 					.setDisplayName("Previous")
 					.setPlayerCommand(Player.COMMAND_SEEK_TO_PREVIOUS)
@@ -88,7 +89,8 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 	val mediaNotificationSessionCommands
 		get() = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
 			.also { builder ->
-				// Add custom commands (excluding standard navigation handled by player commands)
+				// Add custom session commands (app-specific features only)
+				// PREV/NEXT use standard Player.COMMAND_SEEK_TO_* (not custom commands)
 				val buttonConfig = AudioProController.settingNotificationButtons
 				
 				for (buttonType in buttonConfig) {

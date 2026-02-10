@@ -4,10 +4,10 @@ import { normalizeVolume } from './utils';
 import { AudioProEventType, AudioProState, DEFAULT_CONFIG } from './values';
 
 import type {
-	AudioProConfigureOptions,
-	AudioProEvent,
-	AudioProPlaybackErrorPayload,
-	AudioProTrack,
+    AudioProConfigureOptions,
+    AudioProEvent,
+    AudioProPlaybackErrorPayload,
+    AudioProTrack,
 } from './types';
 
 export interface AudioProStore {
@@ -21,6 +21,8 @@ export interface AudioProStore {
 	trackPlaying: AudioProTrack | null;
 	configureOptions: AudioProConfigureOptions;
 	error: AudioProPlaybackErrorPayload | null;
+	/** True while a user-initiated seek is in-flight (set by seekTo/seekBy, cleared by SEEK_COMPLETE). */
+	isSeeking: boolean;
 	setDebug: (debug: boolean) => void;
 	setDebugIncludesProgress: (includeProgress: boolean) => void;
 	setTrackPlaying: (track: AudioProTrack | null) => void;
@@ -68,6 +70,7 @@ export const internalStore = create<AudioProStore>((set, get) => ({
 	trackPlaying: null,
 	configureOptions: { ...DEFAULT_CONFIG },
 	error: null,
+	isSeeking: false,
 	setDebug: (debug) => set({ debug }),
 	setDebugIncludesProgress: (includeProgress) => set({ debugIncludesProgress: includeProgress }),
 	setTrackPlaying: (track) => set({ trackPlaying: track }),
@@ -93,16 +96,41 @@ export const internalStore = create<AudioProStore>((set, get) => ({
 			console.warn(`[react-native-audio-pro]: Event ${type} missing required track property`);
 		}
 
+		// 0. Clear seeking flag on SEEK_COMPLETE
+		if (type === AudioProEventType.SEEK_COMPLETE && current.isSeeking) {
+			updates.isSeeking = false;
+		}
+
 		// 1. State changes
 		if (
 			type === AudioProEventType.STATE_CHANGED &&
 			payload?.state &&
 			payload.state !== current.playerState
 		) {
-			updates.playerState = payload.state;
-			// Clear error when leaving ERROR state
-			if (payload.state !== AudioProState.ERROR && current.error !== null) {
-				updates.error = null;
+			// During a seek, Media3/AVPlayer briefly transitions through
+			// PAUSED/LOADING before settling back to PLAYING. Suppress
+			// these transient states so the play/pause icon doesn't flicker.
+			const isTransientSeekState =
+				current.isSeeking &&
+				current.playerState === AudioProState.PLAYING &&
+				(payload.state === AudioProState.PAUSED ||
+					payload.state === AudioProState.LOADING);
+
+			if (!isTransientSeekState) {
+				updates.playerState = payload.state;
+				// Clear error when leaving ERROR state
+				if (payload.state !== AudioProState.ERROR && current.error !== null) {
+					updates.error = null;
+				}
+				// Reset position on terminal states so stale values don't leak into the next track
+				if (
+					payload.state === AudioProState.STOPPED ||
+					payload.state === AudioProState.IDLE
+				) {
+					updates.position = 0;
+					updates.duration = 0;
+					updates.activeTrackIndex = -1;
+				}
 			}
 		}
 
@@ -141,7 +169,15 @@ export const internalStore = create<AudioProStore>((set, get) => ({
 		}
 
 		// 4. Progress updates
-		if (payload?.position !== undefined && payload.position !== current.position) {
+		// Skip position from SEEK_COMPLETE — the optimistic update from seekTo()
+		// already set the correct value; the native-reported position can differ
+		// slightly due to keyframe alignment, causing a visible micro-jump.
+		const skipPositionUpdate = type === AudioProEventType.SEEK_COMPLETE;
+		if (
+			!skipPositionUpdate &&
+			payload?.position !== undefined &&
+			payload.position !== current.position
+		) {
 			updates.position = payload.position;
 		}
 		if (payload?.duration !== undefined && payload.duration !== current.duration) {
