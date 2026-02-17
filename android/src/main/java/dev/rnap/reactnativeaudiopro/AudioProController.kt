@@ -484,6 +484,9 @@ object AudioProController {
 			.setTitle(title)
 			.setArtist(artist)
 			.setAlbumTitle(album)
+			.setIsPlayable(true)
+			.setIsBrowsable(false)
+			.setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
 
 		if (artwork != null) {
 			metadataBuilder.setArtworkUri(artwork)
@@ -1189,6 +1192,14 @@ object AudioProController {
 		}
 	}
 
+	/**
+	 * Notifies Android Auto that the queue changed, triggering a browse tree refresh.
+	 * Called from the player listener when TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED fires.
+	 */
+	fun notifyAutoQueueChanged() {
+		AudioProPlaybackService.instance?.notifyAutoQueueChanged()
+	}
+
 
 	suspend fun seekTo(position: Long) {
 		ensureSession()
@@ -1270,6 +1281,9 @@ object AudioProController {
 						payload,
 						"onTimelineChanged(PLAYLIST_CHANGED)"
 					)
+
+					// Notify Android Auto that the queue (Now Playing children) changed
+					AudioProController.notifyAutoQueueChanged()
 				}
 
 				// Handle deferred seek (e.g. restoration where addToQueue hasn't finished yet)

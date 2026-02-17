@@ -44,6 +44,11 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	companion object {
 		private const val NOTIFICATION_ID = Constants.NOTIFICATION_ID
 		private const val CHANNEL_ID = Constants.NOTIFICATION_CHANNEL_ID
+
+		// Static reference to the running service for Android Auto notifications
+		@Volatile
+		var instance: AudioProPlaybackService? = null
+			private set
 	}
 
 	/**
@@ -111,6 +116,14 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	fun updateNotificationButtonStates(liked: Boolean, disliked: Boolean, bookmarked: Boolean) {
 		sessionCallback?.updateButtonStates(liked, disliked, bookmarked)
 	}
+
+	/**
+	 * Notifies Android Auto that the queue has changed so it refreshes the browse tree.
+	 */
+	@OptIn(UnstableApi::class)
+	fun notifyAutoQueueChanged() {
+		sessionCallback?.notifyQueueChanged()
+	}
 	
 	private fun createAmbientLibrarySessionCallback(): MediaLibrarySession.Callback {
 		return object : MediaLibrarySession.Callback {
@@ -127,6 +140,7 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	@OptIn(UnstableApi::class) // MediaSessionService.setListener
 	override fun onCreate() {
 		super.onCreate()
+		instance = this
 		// Use the new Media3 standard notification provider
 		setMediaNotificationProvider(AudioProNotificationProvider(this))
 		
@@ -202,6 +216,7 @@ open class AudioProPlaybackService : MediaLibraryService() {
 			android.util.Log.e(Constants.LOG_TAG, "Error during service destruction", e)
 		}
 
+		instance = null
 		super.onDestroy()
 	}
 

@@ -8,6 +8,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
 import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaConstants
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
@@ -357,11 +358,28 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 		private const val MEDIA_NOW_PLAYING_ID = "now_playing"
 	}
 
+	/**
+	 * Notifies Android Auto that the "Now Playing" children list has changed.
+	 * Call this when the queue is modified (add/remove/reorder) so Auto refreshes.
+	 */
+	fun notifyQueueChanged() {
+		(session as? MediaLibraryService.MediaLibrarySession)?.let { libSession ->
+			libSession.notifyChildrenChanged(MEDIA_NOW_PLAYING_ID, 0, null)
+			AudioProController.log("Notified Android Auto: Now Playing children changed")
+		}
+	}
+
 	override fun onGetLibraryRoot(
 		session: MediaLibraryService.MediaLibrarySession,
 		browser: MediaSession.ControllerInfo,
 		params: MediaLibraryService.LibraryParams?,
 	): ListenableFuture<LibraryResult<MediaItem>> {
+		val rootExtras = Bundle().apply {
+			putInt(
+				MediaConstants.EXTRAS_KEY_ROOT_CHILDREN_BROWSABLE_ONLY,
+				1
+			)
+		}
 		val rootItem = MediaItem.Builder()
 			.setMediaId(MEDIA_ROOT_ID)
 			.setMediaMetadata(
@@ -370,6 +388,7 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 					.setIsBrowsable(true)
 					.setIsPlayable(false)
 					.setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+					.setExtras(rootExtras)
 					.build()
 			)
 			.build()
@@ -394,7 +413,7 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 							.setTitle("Now Playing")
 							.setIsBrowsable(true)
 							.setIsPlayable(false)
-							.setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+							.setMediaType(MediaMetadata.MEDIA_TYPE_PLAYLIST)
 							.build()
 					)
 					.build()
@@ -403,9 +422,9 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 				)
 			}
 			MEDIA_NOW_PLAYING_ID -> {
-				// Return the current queue items
+				// Return the current queue items with pagination support
 				val player = session.player
-				val items = mutableListOf<MediaItem>()
+				val allItems = mutableListOf<MediaItem>()
 				for (i in 0 until player.mediaItemCount) {
 					val existingItem = player.getMediaItemAt(i)
 					// Ensure each item is marked as playable for Android Auto
@@ -414,12 +433,27 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 							existingItem.mediaMetadata.buildUpon()
 								.setIsPlayable(true)
 								.setIsBrowsable(false)
+								.setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
 								.build()
 						)
 						.build()
-					items.add(rebuiltItem)
+					allItems.add(rebuiltItem)
 				}
-				Futures.immediateFuture(LibraryResult.ofItemList(items, params))
+
+				// Apply pagination if requested
+				val startIndex = if (pageSize > 0) page * pageSize else 0
+				val endIndex = if (pageSize > 0) {
+					minOf(startIndex + pageSize, allItems.size)
+				} else {
+					allItems.size
+				}
+				val pagedItems = if (startIndex < allItems.size) {
+					allItems.subList(startIndex, endIndex)
+				} else {
+					emptyList()
+				}
+
+				Futures.immediateFuture(LibraryResult.ofItemList(pagedItems, params))
 			}
 			else -> {
 				Futures.immediateFuture(
@@ -427,6 +461,63 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 				)
 			}
 		}
+	}
+
+	override fun onGetItem(
+		session: MediaLibraryService.MediaLibrarySession,
+		browser: MediaSession.ControllerInfo,
+		mediaId: String,
+	): ListenableFuture<LibraryResult<MediaItem>> {
+		// Check static nodes first
+		if (mediaId == MEDIA_ROOT_ID || mediaId == MEDIA_NOW_PLAYING_ID) {
+			val item = MediaItem.Builder()
+				.setMediaId(mediaId)
+				.setMediaMetadata(
+					MediaMetadata.Builder()
+						.setTitle(if (mediaId == MEDIA_ROOT_ID) "Audio Pro" else "Now Playing")
+						.setIsBrowsable(true)
+						.setIsPlayable(false)
+						.build()
+				)
+				.build()
+			return Futures.immediateFuture(LibraryResult.ofItem(item, null))
+		}
+
+		// Search queue for matching media ID
+		val player = session.player
+		for (i in 0 until player.mediaItemCount) {
+			val queueItem = player.getMediaItemAt(i)
+			if (queueItem.mediaId == mediaId) {
+				val rebuiltItem = queueItem.buildUpon()
+					.setMediaMetadata(
+						queueItem.mediaMetadata.buildUpon()
+							.setIsPlayable(true)
+							.setIsBrowsable(false)
+							.setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
+							.build()
+					)
+					.build()
+				return Futures.immediateFuture(LibraryResult.ofItem(rebuiltItem, null))
+			}
+		}
+
+		return Futures.immediateFuture(
+			LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+		)
+	}
+
+	/**
+	 * Subscribe to receive updates when children of a node change.
+	 * Required for Android Auto to receive notifyChildrenChanged() callbacks.
+	 */
+	override fun onSubscribe(
+		session: MediaLibraryService.MediaLibrarySession,
+		browser: MediaSession.ControllerInfo,
+		parentId: String,
+		params: MediaLibraryService.LibraryParams?,
+	): ListenableFuture<LibraryResult<Void>> {
+		// Accept all subscriptions — we'll notify on queue changes
+		return Futures.immediateFuture(LibraryResult.ofVoid())
 	}
 
 }
