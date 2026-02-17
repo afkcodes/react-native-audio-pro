@@ -53,6 +53,8 @@ export type {
 	AudioProPlaybackSpeedChangedPayload,
 	/** Payload for progress update events */
 	AudioProProgressPayload,
+	/** Payload for queue changed events */
+	AudioProQueueChangedPayload,
 	/** Payload for seek completion events */
 	AudioProSeekCompletePayload,
 	/** Payload for state change events */
@@ -62,6 +64,12 @@ export type {
 	/** Payload for track ended events */
 	AudioProTrackEndedPayload,
 } from './types';
+
+/**
+ * Error code enum for Media3-aligned error classification
+ * @see {@link ./types}
+ */
+export { AudioProErrorCode } from './types';
 
 /**
  * Constants and enums used throughout the library

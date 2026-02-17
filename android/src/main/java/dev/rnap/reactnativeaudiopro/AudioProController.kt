@@ -46,6 +46,26 @@ object AudioProController {
 	private var engineProgressRunnable: Runnable? = null
 	private var enginePlayerListener: Player.Listener? = null
 	
+	// ─────────────────────────────────────────────────────────────
+	// Batched Event System (Media3 onEvents pattern)
+	// ─────────────────────────────────────────────────────────────
+	// Instead of emitting events from each individual callback,
+	// we defer emissions until onEvents() is called. This ensures
+	// a single batched emission after all state changes settle.
+	
+	/** Pending state to emit (null = no state change pending) */
+	private var pendingState: String? = null
+	private var pendingStatePosition: Long = 0L
+	private var pendingStateDuration: Long = 0L
+	private var pendingStateReason: String = ""
+	
+	/** Flag: should we emit TRACK_ENDED in onEvents? */
+	private var pendingTrackEnded: Boolean = false
+	private var pendingTrackEndedDuration: Long = 0L
+	
+	/** Flag: player error occurred this batch */
+	private var pendingError: PlaybackException? = null
+	
 	// Sleep Timer
 	private var sleepTimerHandler: Handler? = null
 	private var sleepTimerRunnable: Runnable? = null
@@ -58,6 +78,82 @@ object AudioProController {
 	private fun safeDuration(): Long {
 		val raw = engineBrowser?.duration ?: return 0L
 		return if (raw != C.TIME_UNSET && raw > 0) raw else 0L
+	}
+
+	// ─────────────────────────────────────────────────────────────
+	// Batched Event Emission Helpers
+	// ─────────────────────────────────────────────────────────────
+	
+	/**
+	 * Sets a pending state to be emitted in the next onEvents() call.
+	 * Does NOT emit immediately - batching prevents UI flicker.
+	 */
+	private fun setPendingState(state: String, position: Long, duration: Long, reason: String) {
+		log("setPendingState: $state (reason=$reason)")
+		pendingState = state
+		pendingStatePosition = position
+		pendingStateDuration = duration
+		pendingStateReason = reason
+	}
+	
+	/**
+	 * Clears all pending batch state. Called after emitting.
+	 */
+	private fun clearPendingBatch() {
+		pendingState = null
+		pendingStatePosition = 0L
+		pendingStateDuration = 0L
+		pendingStateReason = ""
+		pendingTrackEnded = false
+		pendingTrackEndedDuration = 0L
+		pendingError = null
+	}
+	
+	/**
+	 * Emits all pending batched events. Called from onEvents().
+	 * This is the ONLY place state changes should be emitted to JS
+	 * (except for events that need immediate emission like SEEK_COMPLETE).
+	 */
+	private fun emitBatchedEvents(player: Player) {
+		// Handle pending error first (takes priority)
+		pendingError?.let { error ->
+			val message = error.message ?: "Unknown error"
+			val jsErrorCode = mapMedia3ErrorCode(error.errorCode)
+			val recoverable = isRecoverableError(error.errorCode)
+			val cause = error.cause?.let { "${it.javaClass.simpleName}: ${it.message}" }
+			emitError(message, jsErrorCode, recoverable, cause, "onEvents(pendingError)")
+			
+			if (!recoverable) {
+				resetInternal(AudioProModule.STATE_ERROR)
+			}
+			clearPendingBatch()
+			return
+		}
+		
+		// Emit pending state change
+		pendingState?.let { state ->
+			emitState(state, pendingStatePosition, pendingStateDuration, "onEvents(${pendingStateReason})")
+			
+			// Manage progress timer based on state
+			when (state) {
+				AudioProModule.STATE_PLAYING -> startProgressTimer()
+				AudioProModule.STATE_PAUSED,
+				AudioProModule.STATE_STOPPED,
+				AudioProModule.STATE_ERROR -> stopProgressTimer()
+			}
+		}
+		
+		// Emit TRACK_ENDED if pending
+		if (pendingTrackEnded) {
+			emitNotice(
+				AudioProModule.EVENT_TYPE_TRACK_ENDED,
+				pendingTrackEndedDuration,
+				pendingTrackEndedDuration,
+				"onEvents(trackEnded)"
+			)
+		}
+		
+		clearPendingBatch()
 	}
 
 	private val engineBrowserConnectionListener =
@@ -123,6 +219,50 @@ object AudioProController {
 		log("Configured AudioPro: debug=$settingDebug, cache=$settingCacheEnabled")
 	}
 
+	/**
+	 * Emit current state and progress to JS so the internal store syncs with native.
+	 * Called when JS app resumes after being killed but native service survived.
+	 */
+	fun syncFromNative() {
+		runOnUiThread {
+			val browser = engineBrowser ?: run {
+				log("syncFromNative: no active browser, skipping")
+				return@runOnUiThread
+			}
+			
+			val position = browser.currentPosition.coerceAtLeast(0L)
+			val duration = browser.duration.let { if (it > 0) it else 0L }
+			val buffered = browser.bufferedPosition.coerceAtLeast(0L)
+			
+			// Determine current state from player
+			val state = when {
+				browser.playbackState == androidx.media3.common.Player.STATE_IDLE -> AudioProModule.STATE_IDLE
+				browser.playbackState == androidx.media3.common.Player.STATE_ENDED -> AudioProModule.STATE_STOPPED
+				browser.isPlaying -> AudioProModule.STATE_PLAYING
+				browser.playWhenReady && browser.playbackState == androidx.media3.common.Player.STATE_BUFFERING -> AudioProModule.STATE_LOADING
+				else -> AudioProModule.STATE_PAUSED
+			}
+			
+			log("syncFromNative: state=$state, position=$position, duration=$duration")
+			
+			// Force emit state (bypass duplicate check by temporarily clearing lastEmittedState)
+			flowLastEmittedState = ""
+			emitState(state, position, duration, "syncFromNative")
+			
+			// Emit progress
+			emitProgress(position, duration, buffered, "syncFromNative")
+			
+			// Emit track changed if we have an active track
+			activeTrack?.let { trackMap ->
+				val index = browser.currentMediaItemIndex
+				val payload = Arguments.createMap().apply {
+					putInt("index", index)
+				}
+				emitEvent(AudioProModule.EVENT_TYPE_TRACK_CHANGED, trackMap, payload, "syncFromNative")
+			}
+		}
+	}
+
 	var headersAudio: Map<String, String>? = null
 	var headersArtwork: Map<String, String>? = null
 
@@ -185,10 +325,15 @@ object AudioProController {
 				detachPlayerListener()
 				stopProgressTimer()
 
-				// Notify JS that the native service died so internalStore
-				// reflects the real state (STOPPED) instead of stale PLAYING/PAUSED.
-				Log.i(Constants.LOG_TAG, "[DISCONNECT] MediaBrowser disconnected – emitting STOPPED")
-				emitState(AudioProModule.STATE_STOPPED, 0L, 0L, "browserDisconnected")
+				// Only emit STOPPED if we're not in the middle of reconnecting.
+				// If sessionDeferred is set, a new connection is pending - skip STOPPED
+				// to avoid resetting position in the JS store during reconnection.
+				if (sessionDeferred == null) {
+					Log.i(Constants.LOG_TAG, "[DISCONNECT] MediaBrowser disconnected – emitting STOPPED")
+					emitState(AudioProModule.STATE_STOPPED, 0L, 0L, "browserDisconnected")
+				} else {
+					Log.i(Constants.LOG_TAG, "[DISCONNECT] MediaBrowser disconnected but reconnection pending – skipping STOPPED emit")
+				}
 
 				if (::engineBrowserFuture.isInitialized) {
 					MediaBrowser.releaseFuture(engineBrowserFuture)
@@ -364,7 +509,7 @@ object AudioProController {
 
 
 	
-	suspend fun addToQueue(tracks: com.facebook.react.bridge.ReadableArray) {
+	suspend fun addMediaItems(tracks: com.facebook.react.bridge.ReadableArray) {
 		ensureSession()
 		val items = ArrayList<MediaItem>()
 		for (i in 0 until tracks.size()) {
@@ -374,52 +519,130 @@ object AudioProController {
 		}
 		runOnUiThread {
 			engineBrowser?.addMediaItems(items)
-			log("Added ${items.size} tracks to queue")
+			log("Added ${items.size} media items to queue")
 		}
 	}
 	
-	suspend fun addToQueue(track: ReadableMap) {
+	suspend fun addMediaItems(track: ReadableMap) {
 		ensureSession()
 		val item = toMediaItem(track)
 		runOnUiThread {
 			engineBrowser?.addMediaItem(item)
-			log("Added track to queue: ${track.getString("title")}")
+			log("Added media item to queue: ${track.getString("title")}")
 		}
 	}
 
-	suspend fun clearQueue() {
+	/**
+	 * Insert media items at a specific position in the queue.
+	 * Media3 equivalent: player.addMediaItems(index, items)
+	 */
+	suspend fun addMediaItemsAt(index: Int, tracks: com.facebook.react.bridge.ReadableArray) {
 		ensureSession()
+		val items = ArrayList<MediaItem>()
+		for (i in 0 until tracks.size()) {
+			tracks.getMap(i)?.let {
+				items.add(toMediaItem(it))
+			}
+		}
 		runOnUiThread {
-			engineBrowser?.stop()
-			engineBrowser?.clearMediaItems()
-			log("Stopped playback and cleared queue")
+			engineBrowser?.let { player ->
+				val safeIndex = index.coerceIn(0, player.mediaItemCount)
+				player.addMediaItems(safeIndex, items)
+				log("Inserted ${items.size} media items at index $safeIndex")
+			}
 		}
 	}
 
-
-	suspend fun skipTo(index: Int) {
+	/**
+	 * Remove a range of media items from the queue.
+	 * Media3 equivalent: player.removeMediaItems(fromIndex, toIndex)
+	 * @param fromIndex Start index (inclusive)
+	 * @param toIndex End index (exclusive)
+	 */
+	suspend fun removeMediaItems(fromIndex: Int, toIndex: Int) {
 		ensureSession()
 		runOnUiThread {
 			engineBrowser?.let { player ->
-				if (index >= 0 && index < player.mediaItemCount) {
-					player.seekToDefaultPosition(index)
-					log("skipTo: Switching to track at index $index")
+				if (fromIndex >= 0 && toIndex <= player.mediaItemCount && fromIndex < toIndex) {
+					player.removeMediaItems(fromIndex, toIndex)
+					log("Removed media items from index $fromIndex to $toIndex")
 				} else {
-					log("skipTo: Index $index out of bounds (count=${player.mediaItemCount}), deferring seek")
-					flowPendingSeekIndex = index
-					flowPendingSeekPosition = null // reset specific position if just skipTo
+					log("Invalid range for removeMediaItems: $fromIndex to $toIndex (count=${player.mediaItemCount})")
 				}
 			}
 		}
 	}
 
-	suspend fun skipToWithSeek(index: Int, position: Long) {
+	/**
+	 * Move a media item from one position to another in the queue.
+	 * Media3 equivalent: player.moveMediaItem(currentIndex, newIndex)
+	 */
+	suspend fun moveMediaItem(fromIndex: Int, toIndex: Int) {
+		ensureSession()
+		runOnUiThread {
+			engineBrowser?.let { player ->
+				if (fromIndex >= 0 && fromIndex < player.mediaItemCount &&
+					toIndex >= 0 && toIndex < player.mediaItemCount) {
+					player.moveMediaItem(fromIndex, toIndex)
+					log("Moved media item from index $fromIndex to $toIndex")
+				} else {
+					log("Invalid indices for moveMediaItem: $fromIndex -> $toIndex (count=${player.mediaItemCount})")
+				}
+			}
+		}
+	}
+
+	/**
+	 * Set media items (replaces entire queue).
+	 * Media3 equivalent: player.setMediaItems(items)
+	 */
+	suspend fun setMediaItems(tracks: com.facebook.react.bridge.ReadableArray) {
+		ensureSession()
+		val items = ArrayList<MediaItem>()
+		for (i in 0 until tracks.size()) {
+			tracks.getMap(i)?.let {
+				items.add(toMediaItem(it))
+			}
+		}
+		runOnUiThread {
+			engineBrowser?.setMediaItems(items)
+			log("Set ${items.size} media items")
+		}
+	}
+
+	suspend fun clearMediaItems() {
+		ensureSession()
+		runOnUiThread {
+			engineBrowser?.stop()
+			engineBrowser?.clearMediaItems()
+			log("Stopped playback and cleared media items")
+		}
+	}
+
+
+	suspend fun seekToMediaItem(index: Int) {
+		ensureSession()
+		runOnUiThread {
+			engineBrowser?.let { player ->
+				if (index >= 0 && index < player.mediaItemCount) {
+					player.seekToDefaultPosition(index)
+					log("seekToMediaItem: Switching to media item at index $index")
+				} else {
+					log("seekToMediaItem: Index $index out of bounds (count=${player.mediaItemCount}), deferring seek")
+					flowPendingSeekIndex = index
+					flowPendingSeekPosition = null // reset specific position if just seekToMediaItem
+				}
+			}
+		}
+	}
+
+	suspend fun seekToMediaItemWithPosition(index: Int, position: Long) {
 		ensureSession()
 		runOnUiThread {
 			engineBrowser?.let { player ->
 				if (index >= 0 && index < player.mediaItemCount) {
 					// Existing logic for valid index
-					log("skipToWithSeek: Switching to track at index $index")
+					log("seekToMediaItemWithPosition: Switching to media item at index $index")
 					
 					flowIsRestorationSeek = true
 					flowPendingSeekPosition = position
@@ -428,25 +651,29 @@ object AudioProController {
 
 					if (player.playbackState == Player.STATE_READY) {
 						Log.i(Constants.LOG_TAG, "[RESTORE] Player already READY, performing immediate seek to $position")
-						log("skipToWithSeek: Player already READY, performing immediate seek to $position")
+						log("seekToMediaItemWithPosition: Player already READY, performing immediate seek to $position")
 						flowIsRestorationSeek = false
 						player.seekTo(position)
 						
 						val dur = safeDuration()
 						val isPlaying = player.isPlaying
+						val buffered = player.bufferedPosition
 						
-						emitNotice(AudioProModule.EVENT_TYPE_PROGRESS, position, dur, "skipToWithSeek(immediate)")
+						emitProgress(position, dur, buffered, "seekToMediaItemWithPosition(immediate)")
 						val state = if (isPlaying) AudioProModule.STATE_PLAYING else AudioProModule.STATE_PAUSED
-						emitState(state, position, dur, "skipToWithSeek(immediate, state=$state)")
+						emitState(state, position, dur, "seekToMediaItemWithPosition(immediate, state=$state)")
 					} else if (player.playbackState == Player.STATE_IDLE) {
 						Log.i(Constants.LOG_TAG, "[RESTORE] Player IDLE, emitting LOADING state and calling prepare()")
-						log("skipToWithSeek: Player IDLE, emitting LOADING state and calling prepare()")
+						log("seekToMediaItemWithPosition: Player IDLE, emitting LOADING state and calling prepare()")
 						
-						emitState(AudioProModule.STATE_LOADING, 0L, 0L, "skipToWithSeek(prepare)")
+						emitState(AudioProModule.STATE_LOADING, 0L, 0L, "seekToMediaItemWithPosition(prepare)")
+						// Ensure playWhenReady is false before prepare() to prevent auto-play.
+						// This is a restoration seek - user should explicitly press play.
+						player.playWhenReady = false
 						player.prepare()
 					}
 				} else {
-					log("skipToWithSeek: Index $index out of bounds (count=${player.mediaItemCount}), deferring seek")
+					log("seekToMediaItemWithPosition: Index $index out of bounds (count=${player.mediaItemCount}), deferring seek")
 					flowPendingSeekIndex = index
 					flowPendingSeekPosition = position
 					flowIsRestorationSeek = true // Mark as restoration seek
@@ -455,14 +682,14 @@ object AudioProController {
 		}
 	}
 
-	suspend fun removeTrack(index: Int) {
+	suspend fun removeMediaItem(index: Int) {
 		ensureSession()
 		runOnUiThread {
 			if (index >= 0 && index < (engineBrowser?.mediaItemCount ?: 0)) {
 				engineBrowser?.removeMediaItem(index)
-				log("Removed track at index $index")
+				log("Removed media item at index $index")
 			} else {
-				log("Invalid index for removeTrack: $index")
+				log("Invalid index for removeMediaItem: $index")
 			}
 		}
 	}
@@ -470,47 +697,47 @@ object AudioProController {
 
 	
 
-	suspend fun playNext() {
+	suspend fun seekToNextMediaItem() {
 		ensureSession()
 		runOnUiThread {
 			val browser = engineBrowser
 			if (browser != null) {
-				log("playNext: count=${browser.mediaItemCount}, index=${browser.currentMediaItemIndex}, hasNext=${browser.hasNextMediaItem()}")
+				log("seekToNextMediaItem: count=${browser.mediaItemCount}, index=${browser.currentMediaItemIndex}, hasNext=${browser.hasNextMediaItem()}")
 				if (browser.hasNextMediaItem()) {
 					browser.seekToNextMediaItem()
 					if (browser.playbackState == Player.STATE_IDLE || browser.playbackState == Player.STATE_ENDED) {
 						browser.prepare()
 					}
 					browser.play()
-					log("Skipped to next track")
+					log("Seeked to next media item")
 				} else {
-					log("No next track to skip to")
+					log("No next media item to seek to")
 				}
 			} else {
-				log("playNext: Browser is null")
+				log("seekToNextMediaItem: Browser is null")
 			}
 		}
 	}
 
-	suspend fun playPrevious() {
+	suspend fun seekToPreviousMediaItem() {
 		ensureSession()
 		runOnUiThread {
 			val browser = engineBrowser
 			if (browser != null) {
-				log("playPrevious: count=${browser.mediaItemCount}, index=${browser.currentMediaItemIndex}, hasPrevious=${browser.hasPreviousMediaItem()}")
+				log("seekToPreviousMediaItem: count=${browser.mediaItemCount}, index=${browser.currentMediaItemIndex}, hasPrevious=${browser.hasPreviousMediaItem()}")
 				if (browser.hasPreviousMediaItem()) {
 					browser.seekToPreviousMediaItem()
 					if (browser.playbackState == Player.STATE_IDLE || browser.playbackState == Player.STATE_ENDED) {
 						browser.prepare()
 					}
 					browser.play()
-					log("Skipped to previous track")
+					log("Seeked to previous media item")
 				} else {
-					log("No previous track to skip to")
+					log("No previous media item to seek to")
 					browser.seekTo(0)
 				}
 			} else {
-				log("playPrevious: Browser is null")
+				log("seekToPreviousMediaItem: Browser is null")
 			}
 		}
 	}
@@ -550,28 +777,24 @@ object AudioProController {
 	suspend fun setRepeatMode(mode: String) {
 		ensureSession()
 		runOnUiThread {
-			val bundle = android.os.Bundle()
-			bundle.putString("mode", mode)
-			
-			engineBrowser?.sendCustomCommand(
-				SessionCommand(Constants.CUSTOM_COMMAND_SET_REPEAT_MODE, android.os.Bundle.EMPTY),
-				bundle
-			)
-			log("Sent setRepeatMode command: $mode")
+			// Use standard Player method instead of custom session command
+			val repeatMode = when (mode.lowercase()) {
+				"off" -> Player.REPEAT_MODE_OFF
+				"one" -> Player.REPEAT_MODE_ONE
+				"all" -> Player.REPEAT_MODE_ALL
+				else -> Player.REPEAT_MODE_OFF
+			}
+			engineBrowser?.repeatMode = repeatMode
+			log("Set repeatMode: $mode -> $repeatMode")
 		}
 	}
 
-	suspend fun setShuffleMode(enabled: Boolean) {
+	suspend fun setShuffleModeEnabled(enabled: Boolean) {
 		ensureSession()
 		runOnUiThread {
-			val bundle = android.os.Bundle()
-			bundle.putBoolean("enabled", enabled)
-			
-			engineBrowser?.sendCustomCommand(
-				SessionCommand(Constants.CUSTOM_COMMAND_SET_SHUFFLE_MODE, android.os.Bundle.EMPTY),
-				bundle
-			)
-			log("Sent setShuffleMode command: $enabled")
+			// Use standard Player method instead of custom session command
+			engineBrowser?.shuffleModeEnabled = enabled
+			log("Set shuffleModeEnabled: $enabled")
 		}
 	}
 
@@ -589,12 +812,33 @@ object AudioProController {
 		}
 	}
 
+	/**
+	 * Updates the notification button states (like/dislike/bookmark).
+	 * Call this when the user interacts with like/dislike/bookmark or when track changes.
+	 * The notification will update to reflect the new states.
+	 */
+	suspend fun updateNotificationState(liked: Boolean, disliked: Boolean = false, bookmarked: Boolean = false) {
+		ensureSession()
+		runOnUiThread {
+			val bundle = android.os.Bundle().apply {
+				putBoolean("liked", liked)
+				putBoolean("disliked", disliked)
+				putBoolean("bookmarked", bookmarked)
+			}
+			
+			engineBrowser?.sendCustomCommand(
+				SessionCommand(Constants.CUSTOM_COMMAND_UPDATE_NOTIFICATION_STATE, android.os.Bundle.EMPTY),
+				bundle
+			)
+			log("Sent updateNotificationState command: liked=$liked, disliked=$disliked, bookmarked=$bookmarked")
+		}
+	}
+
 	suspend fun updateTrack(index: Int, track: ReadableMap) {
 		ensureSession()
 		runOnUiThread {
 			engineBrowser?.let { browser ->
 				if (index >= 0 && index < browser.mediaItemCount) {
-					// vibrancy(track) - Removed unresolved reference
 					val item = toMediaItem(track)
 					browser.replaceMediaItem(index, item)
 					log("UpdateTrack: Replaced item at index $index with ${item.mediaMetadata.title}")
@@ -668,7 +912,7 @@ object AudioProController {
 		)
 	}
 	
-	suspend fun getQueue(): com.facebook.react.bridge.WritableArray {
+	suspend fun getMediaItems(): com.facebook.react.bridge.WritableArray {
 		ensureSession()
 		// We'll need a way to return this sync or async. 
 		// Since we are in suspend function, we can use a CompletableDeferred or just wait?
@@ -1014,6 +1258,20 @@ object AudioProController {
 				super.onTimelineChanged(timeline, reason)
 				log("onTimelineChanged: reason=$reason, windowCount=${timeline.windowCount}")
 
+				// Emit QUEUE_CHANGED when playlist is modified
+				if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
+					val payload = Arguments.createMap().apply {
+						putInt("size", timeline.windowCount)
+						putInt("currentIndex", engineBrowser?.currentMediaItemIndex ?: -1)
+					}
+					emitEvent(
+						AudioProModule.EVENT_TYPE_QUEUE_CHANGED,
+						activeTrack,
+						payload,
+						"onTimelineChanged(PLAYLIST_CHANGED)"
+					)
+				}
+
 				// Handle deferred seek (e.g. restoration where addToQueue hasn't finished yet)
 				flowPendingSeekIndex?.let { index ->
 					if (index >= 0 && index < timeline.windowCount) {
@@ -1040,6 +1298,23 @@ object AudioProController {
 							engineBrowser?.seekToDefaultPosition(index)
 						}
 					}
+				}
+			}
+			
+			override fun onAudioSessionIdChanged(audioSessionId: Int) {
+				super.onAudioSessionIdChanged(audioSessionId)
+				log("onAudioSessionIdChanged: $audioSessionId")
+				
+				if (audioSessionId != C.AUDIO_SESSION_ID_UNSET) {
+					val payload = Arguments.createMap().apply {
+						putInt("audioSessionId", audioSessionId)
+					}
+					emitEvent(
+						AudioProModule.EVENT_TYPE_AUDIO_SESSION_CHANGED,
+						activeTrack,
+						payload,
+						"onAudioSessionIdChanged"
+					)
 				}
 			}
 
@@ -1091,8 +1366,8 @@ object AudioProController {
 				val dur = safeDuration()
 
 				if (isPlaying) {
-					emitState(AudioProModule.STATE_PLAYING, pos, dur, "onIsPlayingChanged(true)")
-					startProgressTimer()
+					// Defer emission to onEvents() for batching
+					setPendingState(AudioProModule.STATE_PLAYING, pos, dur, "onIsPlayingChanged(true)")
 				} else {
 					// During a seek, Media3 briefly sets isPlaying=false while it
 					// rebuffers at the new position. Emitting PAUSED here would
@@ -1104,9 +1379,9 @@ object AudioProController {
 					if (isSeeking && playIntended) {
 						log("onIsPlayingChanged(false) suppressed — seek in progress with playWhenReady=true")
 					} else {
-						emitState(AudioProModule.STATE_PAUSED, pos, dur, "onIsPlayingChanged(false)")
+						// Defer emission to onEvents() for batching
+						setPendingState(AudioProModule.STATE_PAUSED, pos, dur, "onIsPlayingChanged(false)")
 					}
-					stopProgressTimer()
 				}
 			}
 
@@ -1138,14 +1413,16 @@ object AudioProController {
 						if (isSeeking && isPlayIntended) {
 							log("STATE_BUFFERING suppressed — seek in progress with playWhenReady=true")
 						} else if (isPlayIntended) {
-							emitState(
+							// Defer emission to onEvents() for batching
+							setPendingState(
 								AudioProModule.STATE_LOADING,
 								pos,
 								dur,
 								"onPlaybackStateChanged(STATE_BUFFERING, playIntended=true)"
 							)
 						} else if (flowLastEmittedState == AudioProModule.STATE_PLAYING) {
-							emitState(
+							// Defer emission to onEvents() for batching
+							setPendingState(
 								AudioProModule.STATE_PAUSED,
 								pos,
 								dur,
@@ -1174,34 +1451,36 @@ object AudioProController {
 							engineBrowser?.seekTo(seekPos)
 							
 							// Emit PROGRESS so UI shows correct position+duration immediately
+							// (This is immediate, not batched, as it's for restoration)
 							log("STATE_READY: Emitting PROGRESS for restoration: position=$seekPos, duration=$dur")
-							emitNotice(AudioProModule.EVENT_TYPE_PROGRESS, seekPos, dur, "restoration(pendingSeek)")
+							val buffered = engineBrowser?.bufferedPosition ?: 0L
+							emitProgress(seekPos, dur, buffered, "restoration(pendingSeek)")
 							
 							// Note: flowPendingSeekPosition is NOT cleared here.
 							// It will be cleared by onPositionDiscontinuity when the seek completes.
 						}
 
 						if (isActuallyPlaying) {
-							emitState(
+							// Defer emission to onEvents() for batching
+							setPendingState(
 								AudioProModule.STATE_PLAYING,
 								pos,
 								dur,
 								"onPlaybackStateChanged(STATE_READY, isPlaying=true)"
 							)
-							startProgressTimer()
 						} else if (isSeeking && isPlayIntended) {
 							// During a seek, STATE_READY may fire while isPlaying is
 							// still false (Media3 hasn't resumed yet). Don't emit
 							// PAUSED — onIsPlayingChanged(true) will follow shortly.
 							log("STATE_READY(isPlaying=false) suppressed — seek in progress with playWhenReady=true")
 						} else {
-							emitState(
+							// Defer emission to onEvents() for batching
+							setPendingState(
 								AudioProModule.STATE_PAUSED,
 								pos,
 								dur,
 								"onPlaybackStateChanged(STATE_READY, isPlaying=false)"
 							)
-							stopProgressTimer()
 						}
 					}
 
@@ -1216,9 +1495,10 @@ object AudioProController {
 					 * handle the repeat, so we should NOT interfere by pausing/seeking.
 					 */
 					Player.STATE_ENDED -> {
+						// Immediate: stop progress timer
 						stopProgressTimer()
 
-						// Reset error state and last emitted state
+						// Immediate: reset error state and last emitted state
 						flowIsInErrorState = false
 						flowLastEmittedState = ""
 						flowLastEmittedPosition = null
@@ -1231,18 +1511,14 @@ object AudioProController {
 						val repeatMode = engineBrowser?.repeatMode ?: Player.REPEAT_MODE_OFF
 						if (repeatMode != Player.REPEAT_MODE_OFF) {
 							// Repeat is enabled - Media3 will automatically restart playback
-							// Don't pause or seek, just emit the track ended event
+							// Don't pause or seek, just emit the track ended event (deferred)
 							log("STATE_ENDED with repeat mode $repeatMode - letting Media3 handle repeat")
-							emitNotice(
-								AudioProModule.EVENT_TYPE_TRACK_ENDED,
-								endedDur,
-								endedDur,
-								"onPlaybackStateChanged(STATE_ENDED, repeat=$repeatMode)"
-							)
+							pendingTrackEnded = true
+							pendingTrackEndedDuration = endedDur
 							return
 						}
 
-						// No repeat mode - pause and reset to beginning
+						// No repeat mode - pause and reset to beginning (immediate actions)
 						// 1. Pause to stop playWhenReady before seeking
 						engineBrowser?.pause()
 
@@ -1252,26 +1528,24 @@ object AudioProController {
 						// 3. Cancel any pending seek operations
 						flowPendingSeekPosition = null
 
-						// 4. Emit STOPPED (stopped = loaded but at 0, not playing)
-						emitState(
+						// 4. Queue STOPPED state for emission in onEvents()
+						setPendingState(
 							AudioProModule.STATE_STOPPED,
 							0L,
 							endedDur,
 							"onPlaybackStateChanged(STATE_ENDED)"
 						)
 
-						// 5. Emit TRACK_ENDED for JS
-						emitNotice(
-							AudioProModule.EVENT_TYPE_TRACK_ENDED,
-							endedDur,
-							endedDur,
-							"onPlaybackStateChanged(STATE_ENDED)"
-						)
+						// 5. Queue TRACK_ENDED for emission in onEvents()
+						pendingTrackEnded = true
+						pendingTrackEndedDuration = endedDur
 					}
 
 					Player.STATE_IDLE -> {
+						// Immediate: stop progress timer
 						stopProgressTimer()
-						emitState(
+						// Defer emission to onEvents() for batching
+						setPendingState(
 							AudioProModule.STATE_STOPPED,
 							0L,
 							0L,
@@ -1366,13 +1640,11 @@ object AudioProController {
 			}
 
 			/**
-			 * Handles critical errors according to the contract in logic.md:
-			 * - onError() should transition to ERROR state
-			 * - onError() should emit STATE_CHANGED: ERROR and PLAYBACK_ERROR
-			 * - onError() should clear the player state just like clear()
+			 * Handles player errors with Media3-aligned classification:
+			 * - Recoverable errors: Network timeouts, connection failures → emit error but don't tear down
+			 * - Unrecoverable errors: Decoding failures, audio init failures → full teardown
 			 *
-			 * This method is for unrecoverable player failures that require player teardown.
-			 * For non-critical errors that don't require state transition, use emitError() directly.
+			 * Media3 error codes are mapped to JS-friendly codes.
 			 */
 			override fun onPlayerError(error: PlaybackException) {
 				// If we're already in an error state, just log and return
@@ -1387,24 +1659,110 @@ object AudioProController {
 				errorDetails.append(" | Error code: ${error.errorCode}")
 				errorDetails.append(" | Error code name: ${error.errorCodeName}")
 				
-				error.cause?.let { cause ->
+				val cause = error.cause?.let { cause ->
 					errorDetails.append(" | Cause: ${cause.javaClass.simpleName}: ${cause.message}")
+					"${cause.javaClass.simpleName}: ${cause.message}"
 				}
 				
 				android.util.Log.e(Constants.LOG_TAG, errorDetails.toString(), error)
 
 				val message = error.message ?: "Unknown error"
-				// First, emit PLAYBACK_ERROR event with error details
-				emitError(message, 500, "onPlayerError(${error.errorCode})")
+				val jsErrorCode = mapMedia3ErrorCode(error.errorCode)
+				val recoverable = isRecoverableError(error.errorCode)
 
-				// Then use the shared resetInternal function to:
-				// 1. Clear the player state (like clear())
-				// 2. Emit STATE_CHANGED: ERROR
-				resetInternal(AudioProModule.STATE_ERROR)
+				// Emit PLAYBACK_ERROR event with enhanced details
+				emitError(message, jsErrorCode, recoverable, cause, "onPlayerError(${error.errorCode})")
+
+				if (!recoverable) {
+					// Unrecoverable: use the shared resetInternal function to:
+					// 1. Clear the player state (like clear())
+					// 2. Emit STATE_CHANGED: ERROR
+					resetInternal(AudioProModule.STATE_ERROR)
+				} else {
+					// Recoverable: Media3 will handle retry with exponential backoff
+					// Don't tear down, just emit the error event
+					log("Recoverable error, not tearing down player")
+				}
+			}
+
+			/**
+			 * Called after all events in a batch have been processed.
+			 * This is where we emit batched state updates to JS.
+			 * 
+			 * Benefits of onEvents() pattern:
+			 * 1. Single emission after all state changes settle
+			 * 2. No UI flicker from rapid state transitions
+			 * 3. Guaranteed consistency (e.g., STATE_READY + isPlaying both processed)
+			 */
+			override fun onEvents(player: Player, events: Player.Events) {
+				log("onEvents: ${events.size()} events")
+				emitBatchedEvents(player)
 			}
 		}
 
 		engineBrowser?.addListener(enginePlayerListener!!)
+	}
+
+	/**
+	 * Determines if an error is recoverable (network issues) or unrecoverable (codec/hardware).
+	 * HTTP errors (4xx, 5xx) are considered recoverable since JS can refresh expired URLs.
+	 */
+	private fun isRecoverableError(errorCode: Int): Boolean {
+		return when (errorCode) {
+			// Network errors - recoverable (Media3 will retry)
+			PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
+			PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+			PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+			PlaybackException.ERROR_CODE_IO_INVALID_HTTP_CONTENT_TYPE,
+			PlaybackException.ERROR_CODE_TIMEOUT,
+			PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW,
+			// HTTP errors (403/401 for expired URLs) - recoverable via URL refresh
+			PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS -> true
+			
+			// Unrecoverable errors - require user intervention or different content
+			else -> false
+		}
+	}
+
+	/**
+	 * Maps Media3 error codes to JS-friendly codes.
+	 * Based on PlaybackException error code ranges.
+	 */
+	private fun mapMedia3ErrorCode(errorCode: Int): Int {
+		return when (errorCode) {
+			// Network errors (1xxx)
+			PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT -> 1001
+			PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED -> 1002
+			PlaybackException.ERROR_CODE_TIMEOUT -> 1003
+			PlaybackException.ERROR_CODE_IO_UNSPECIFIED -> 1004
+			PlaybackException.ERROR_CODE_IO_INVALID_HTTP_CONTENT_TYPE -> 1005
+			
+			// Decoding errors (2xxx)
+			PlaybackException.ERROR_CODE_DECODING_FAILED -> 2001
+			PlaybackException.ERROR_CODE_AUDIO_TRACK_INIT_FAILED -> 2002
+			PlaybackException.ERROR_CODE_DECODER_INIT_FAILED -> 2003
+			PlaybackException.ERROR_CODE_DECODER_QUERY_FAILED -> 2004
+			PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED -> 2005
+			PlaybackException.ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES -> 2006
+			
+			// DRM errors (3xxx)
+			PlaybackException.ERROR_CODE_DRM_UNSPECIFIED -> 3001
+			PlaybackException.ERROR_CODE_DRM_SCHEME_UNSUPPORTED -> 3002
+			PlaybackException.ERROR_CODE_DRM_PROVISIONING_FAILED -> 3003
+			PlaybackException.ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED -> 3004
+			PlaybackException.ERROR_CODE_DRM_LICENSE_EXPIRED -> 3005
+			
+			// Content errors (4xxx)
+			PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND -> 4001
+			PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS -> 4002
+			PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED -> 4003
+			PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED -> 4004
+			PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW -> 4005
+			
+			// Unknown/unspecified
+			PlaybackException.ERROR_CODE_UNSPECIFIED -> 0
+			else -> errorCode // Pass through unknown codes
+		}
 	}
 
 	private fun startProgressTimer() {
@@ -1415,7 +1773,8 @@ object AudioProController {
 				// Use pending seek position if available to prevent UI jumping back
 				val pos = flowPendingSeekPosition ?: (engineBrowser?.currentPosition ?: 0L)
 				val dur = safeDuration()
-				emitNotice(AudioProModule.EVENT_TYPE_PROGRESS, pos, dur, "progressTimer")
+				val buffered = engineBrowser?.bufferedPosition ?: 0L
+				emitProgress(pos, dur, buffered, "progressTimer")
 				engineProgressHandler?.postDelayed(this, settingProgressIntervalMs)
 			}
 		}
@@ -1540,20 +1899,44 @@ object AudioProController {
 	}
 
 	/**
-	 * Emits a PLAYBACK_ERROR event without transitioning to the ERROR state.
-	 * Use this for non-critical errors that don't require player teardown.
+	 * Emits a PROGRESS event with position, duration, and bufferedPosition.
+	 * The bufferedPosition indicates how much of the track has been buffered.
+	 */
+	private fun emitProgress(position: Long, duration: Long, bufferedPosition: Long, reason: String = "") {
+		val sanitizedPosition = if (position < 0) 0L else position
+		val sanitizedDuration = if (duration < 0) 0L else duration
+		val sanitizedBuffered = if (bufferedPosition < 0) 0L else bufferedPosition
+
+		val payload = Arguments.createMap().apply {
+			putDouble("position", sanitizedPosition.toDouble())
+			putDouble("duration", sanitizedDuration.toDouble())
+			putDouble("bufferedPosition", sanitizedBuffered.toDouble())
+		}
+		emitEvent(AudioProModule.EVENT_TYPE_PROGRESS, activeTrack, payload, reason)
+	}
+
+	/**
+	 * Emits a PLAYBACK_ERROR event to JavaScript with enhanced error details.
 	 *
 	 * According to the contract in logic.md:
 	 * - PLAYBACK_ERROR and ERROR state are separate and must not be conflated
 	 * - PLAYBACK_ERROR can be emitted with or without a corresponding state change
 	 * - Useful for soft errors (e.g., image fetch failed, headers issue, non-fatal network retry)
+	 *
+	 * @param message Human-readable error message
+	 * @param code JS-friendly error code (mapped from Media3 error codes)
+	 * @param recoverable Whether the error is recoverable (true = player still usable)
+	 * @param cause Optional cause string from the underlying exception
+	 * @param reason Debug reason for logging
 	 */
-	private fun emitError(message: String, code: Int, reason: String = "") {
+	private fun emitError(message: String, code: Int, recoverable: Boolean = false, cause: String? = null, reason: String = "") {
 		val index = engineBrowser?.currentMediaItemIndex ?: -1
 		val payload = Arguments.createMap().apply {
 			putString("error", message)
 			putInt("errorCode", code)
+			putBoolean("recoverable", recoverable)
 			putInt("index", index)
+			cause?.let { putString("cause", it) }
 		}
 		emitEvent(AudioProModule.EVENT_TYPE_PLAYBACK_ERROR, activeTrack, payload, reason)
 	}

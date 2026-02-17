@@ -10,8 +10,10 @@ export interface UseAudioProReturn {
 	state: AudioProState;
 	position: number;
 	duration: number;
+	bufferedPosition: number;
 	playingTrack: AudioProTrack | null;
 	activeTrackIndex: number;
+	queueSize: number;
 	playbackSpeed: number;
 	volume: number;
 	error: AudioProPlaybackErrorPayload | null;
@@ -21,8 +23,10 @@ const selectAll = (state: AudioProStore): UseAudioProReturn => ({
 	state: state.playerState,
 	position: state.position,
 	duration: state.duration,
+	bufferedPosition: state.bufferedPosition,
 	playingTrack: state.trackPlaying,
 	activeTrackIndex: state.activeTrackIndex,
+	queueSize: state.queueSize,
 	playbackSpeed: state.playbackSpeed,
 	volume: state.volume,
 	error: state.error,

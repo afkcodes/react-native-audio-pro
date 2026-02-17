@@ -76,6 +76,16 @@ export const AudioPro = {
 	},
 
 	/**
+	 * Sync JS state from native.
+	 * Call this when native service survived but JS was killed (e.g., after swipe from recents).
+	 * Triggers STATE_CHANGED, PROGRESS, and TRACK_CHANGED events to update the internal store.
+	 */
+	syncFromNative(): void {
+		logDebug('AudioPro: syncFromNative()');
+		NativeAudioPro.syncFromNative();
+	},
+
+	/**
 	 * Resume playback or start playback if paused/stopped.
 	 * To play a specific track, use `addToQueue` then `play` or `skipTo`.
 	 *
@@ -108,13 +118,13 @@ export const AudioPro = {
 	},
 
 	/**
-	 * Add tracks to the queue.
-	 *
-	 * @param tracks - Single track or array of tracks to add
+	 * Add media items to the end of the queue.
+	 * Media3 equivalent: player.addMediaItems(items)
+	 * @param items - Single item or array of items to add
 	 */
-	addToQueue(tracks: AudioProTrack | AudioProTrack[]): void {
-		const trackList = Array.isArray(tracks) ? tracks : [tracks];
-		const validTracks = trackList
+	addMediaItems(items: AudioProTrack | AudioProTrack[]): void {
+		const itemList = Array.isArray(items) ? items : [items];
+		const validItems = itemList
 			.map((t) => {
 				const rt = { ...t };
 				validateFilePath(rt.url);
@@ -123,66 +133,138 @@ export const AudioPro = {
 			})
 			.filter((t) => validateTrack(t));
 
-		if (validTracks.length === 0) {
-			console.warn('[react-native-audio-pro]: No valid tracks provided to addToQueue().');
+		if (validItems.length === 0) {
+			console.warn('[react-native-audio-pro]: No valid items provided to addMediaItems().');
 			return;
 		}
 
-		logDebug('AudioPro: addToQueue()', validTracks.length, 'tracks');
-		NativeAudioPro.addToQueue(validTracks);
+		logDebug('AudioPro: addMediaItems()', validItems.length, 'items');
+		NativeAudioPro.addMediaItems(validItems);
 	},
 
 	/**
-	 * Clear the playback queue
+	 * Clear all media items from the queue.
+	 * Media3 equivalent: player.clearMediaItems()
 	 */
-	clearQueue(): void {
-		logDebug('AudioPro: clearQueue()');
-		NativeAudioPro.clearQueue();
+	clearMediaItems(): void {
+		logDebug('AudioPro: clearMediaItems()');
+		NativeAudioPro.clearMediaItems();
 	},
 
 	/**
-	 * Skip to the next track
+	 * Insert media items at a specific position in the queue.
+	 * Media3 equivalent: player.addMediaItems(index, items)
+	 * @param index - Position to insert at (0-based)
+	 * @param items - Single item or array of items to insert
 	 */
-	playNext(): void {
-		logDebug('AudioPro: playNext()');
-		NativeAudioPro.playNext();
+	addMediaItemsAt(index: number, items: AudioProTrack | AudioProTrack[]): void {
+		const itemList = Array.isArray(items) ? items : [items];
+		const validItems = itemList
+			.map((t) => {
+				const rt = { ...t };
+				validateFilePath(rt.url);
+				validateFilePath(rt.artwork);
+				return rt;
+			})
+			.filter((t) => validateTrack(t));
+
+		if (validItems.length === 0) {
+			console.warn('[react-native-audio-pro]: No valid items provided to addMediaItemsAt().');
+			return;
+		}
+
+		logDebug('AudioPro: addMediaItemsAt()', index, validItems.length, 'items');
+		NativeAudioPro.addMediaItemsAt(index, validItems);
 	},
 
 	/**
-	 * Skip to the previous track
+	 * Remove media items in range [fromIndex, toIndex).
+	 * Media3 equivalent: player.removeMediaItems(fromIndex, toIndex)
+	 * @param fromIndex - Start index (inclusive, 0-based)
+	 * @param toIndex - End index (exclusive)
 	 */
-	playPrevious(): void {
-		logDebug('AudioPro: playPrevious()');
-		NativeAudioPro.playPrevious();
+	removeMediaItems(fromIndex: number, toIndex: number): void {
+		logDebug('AudioPro: removeMediaItems()', fromIndex, toIndex);
+		NativeAudioPro.removeMediaItems(fromIndex, toIndex);
 	},
 
 	/**
-	 * Skip to a specific index in the queue
-	 * @param index - The index to skip to (0-based)
+	 * Move a media item from one position to another.
+	 * Media3 equivalent: player.moveMediaItem(currentIndex, newIndex)
+	 * @param currentIndex - Current position of the item
+	 * @param newIndex - New position for the item
 	 */
-	skipTo(index: number): void {
-		logDebug('AudioPro: skipTo()', index);
-		NativeAudioPro.skipTo(index);
+	moveMediaItem(currentIndex: number, newIndex: number): void {
+		logDebug('AudioPro: moveMediaItem()', currentIndex, '->', newIndex);
+		NativeAudioPro.moveMediaItem(currentIndex, newIndex);
 	},
 
 	/**
-	 * Skip to a specific index in the queue with a pending seek position
-	 * The seek will happen when the track is ready (STATE_READY)
-	 * @param index - The index to skip to (0-based)
-	 * @param positionMs - Position in milliseconds to seek to once track is ready
+	 * Set media items (replaces entire queue).
+	 * Media3 equivalent: player.setMediaItems(items)
+	 * @param items - Array of items to set as the queue
 	 */
-	skipToWithSeek(index: number, positionMs: number): void {
-		logDebug('AudioPro: skipToWithSeek()', index, positionMs);
-		NativeAudioPro.skipToWithSeek(index, positionMs);
+	setMediaItems(items: AudioProTrack[]): void {
+		const validItems = items
+			.map((t) => {
+				const rt = { ...t };
+				validateFilePath(rt.url);
+				validateFilePath(rt.artwork);
+				return rt;
+			})
+			.filter((t) => validateTrack(t));
+
+		if (validItems.length === 0) {
+			console.warn('[react-native-audio-pro]: No valid items provided to setMediaItems().');
+			return;
+		}
+
+		logDebug('AudioPro: setMediaItems()', validItems.length, 'items');
+		NativeAudioPro.setMediaItems(validItems);
 	},
 
 	/**
-	 * Remove a track from the queue at the specified index
-	 * @param index - Index of the track to remove (0-based)
+	 * Seek to the next media item in the queue.
+	 * Media3 equivalent: player.seekToNextMediaItem()
 	 */
-	removeTrack(index: number): void {
-		logDebug('AudioPro: removeTrack()', index);
-		NativeAudioPro.removeTrack(index);
+	seekToNextMediaItem(): void {
+		logDebug('AudioPro: seekToNextMediaItem()');
+		NativeAudioPro.seekToNextMediaItem();
+	},
+
+	/**
+	 * Seek to the previous media item in the queue.
+	 * Media3 equivalent: player.seekToPreviousMediaItem()
+	 */
+	seekToPreviousMediaItem(): void {
+		logDebug('AudioPro: seekToPreviousMediaItem()');
+		NativeAudioPro.seekToPreviousMediaItem();
+	},
+
+	/**
+	 * Seek to a specific media item in the queue.
+	 * Media3 equivalent: player.seekToMediaItem(index, positionMs)
+	 * @param index - The index to seek to (0-based)
+	 * @param positionMs - Optional position in milliseconds to seek to once ready
+	 */
+	seekToMediaItem(index: number, positionMs?: number): void {
+		if (positionMs !== undefined) {
+			logDebug('AudioPro: seekToMediaItem()', index, positionMs);
+			NativeAudioPro.seekToMediaItemWithPosition(index, positionMs);
+		} else {
+			logDebug('AudioPro: seekToMediaItem()', index);
+			NativeAudioPro.seekToMediaItem(index);
+		}
+	},
+
+	/**
+	 * Remove a single media item from the queue.
+	 * Media3 equivalent: player.removeMediaItem(index)
+	 * @param index - Index of the item to remove (0-based)
+	 */
+	removeMediaItem(index: number): void {
+		logDebug('AudioPro: removeMediaItem()', index);
+		NativeAudioPro.removeMediaItem(index);
 	},
 
 	/**
@@ -224,12 +306,13 @@ export const AudioPro = {
 	},
 
 	/**
-	 * Set shuffle mode
+	 * Set shuffle mode enabled/disabled.
+	 * Media3 equivalent: player.setShuffleModeEnabled(shuffleModeEnabled)
 	 * @param enabled - true to enable shuffle, false to disable
 	 */
-	setShuffleMode(enabled: boolean) {
-		logDebug('AudioPro: setShuffleMode()', enabled);
-		NativeAudioPro.setShuffleMode(enabled);
+	setShuffleModeEnabled(enabled: boolean) {
+		logDebug('AudioPro: setShuffleModeEnabled()', enabled);
+		NativeAudioPro.setShuffleModeEnabled(enabled);
 	},
 
 	/**
@@ -289,28 +372,29 @@ export const AudioPro = {
 	},
 
 	/**
-	 * Get the current playback state
-	 *
+	 * Get the current playback state.
+	 * Media3 equivalent: player.getPlaybackState()
 	 * @returns Current playback state (IDLE, STOPPED, LOADING, PLAYING, PAUSED, ERROR)
 	 */
-	getState() {
+	getPlaybackState() {
 		return internalStore.getState().playerState;
 	},
 
 	/**
-	 * Get the currently playing track
-	 *
-	 * @returns Currently playing track or null if no track is playing
+	 * Get the current media item.
+	 * Media3 equivalent: player.getCurrentMediaItem()
+	 * @returns Currently playing media item or null if none
 	 */
-	getPlayingTrack() {
+	getCurrentMediaItem() {
 		return internalStore.getState().trackPlaying;
 	},
 
 	/**
-	 * Get the index of the currently playing track in the queue
-	 * @returns Index of the current track, or -1 if no track is playing
+	 * Get the index of the current media item in the queue.
+	 * Media3 equivalent: player.getCurrentMediaItemIndex()
+	 * @returns Index of the current item, or -1 if none
 	 */
-	getActiveTrackIndex() {
+	getCurrentMediaItemIndex() {
 		return internalStore.getState().activeTrackIndex;
 	},
 
@@ -429,13 +513,13 @@ export const AudioPro = {
 	},
 
 	/**
-	 * Get the current playback queue
-	 *
-	 * @returns Promise resolving to the list of tracks in the queue
+	 * Get all media items in the queue.
+	 * Media3 equivalent: getting all media items from player
+	 * @returns Promise resolving to the list of media items in the queue
 	 */
-	getQueue(): Promise<AudioProTrack[]> {
-		logDebug('AudioPro: getQueue()');
-		return NativeAudioPro.getQueue();
+	getMediaItems(): Promise<AudioProTrack[]> {
+		logDebug('AudioPro: getMediaItems()');
+		return NativeAudioPro.getMediaItems();
 	},
 
 	/**
@@ -592,6 +676,24 @@ export const AudioPro = {
 	setSkipSilence(enabled: boolean): void {
 		logDebug('AudioPro: setSkipSilence()', enabled);
 		NativeAudioPro.setSkipSilence(enabled);
+	},
+
+	/**
+	 * Update notification button states (like/dislike/bookmark).
+	 * Call this when the track's liked/bookmarked state changes to update notification icons.
+	 * @param options - Object with liked, disliked, and bookmarked boolean states.
+	 */
+	updateNotificationState(options: {
+		liked?: boolean;
+		disliked?: boolean;
+		bookmarked?: boolean;
+	}): void {
+		logDebug('AudioPro: updateNotificationState()', options);
+		NativeAudioPro.updateNotificationState(
+			options.liked ?? false,
+			options.disliked ?? false,
+			options.bookmarked ?? false,
+		);
 	},
 
 	/**

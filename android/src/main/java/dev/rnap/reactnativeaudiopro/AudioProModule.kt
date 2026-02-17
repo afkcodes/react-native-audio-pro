@@ -38,6 +38,8 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 		const val EVENT_TYPE_SHUFFLE_MODE_CHANGED = "SHUFFLE_MODE_CHANGED"
 		const val EVENT_TYPE_CUSTOM_ACTION = "CUSTOM_ACTION"
 		const val EVENT_TYPE_SLEEP_TIMER_COMPLETE = "SLEEP_TIMER_COMPLETE"
+		const val EVENT_TYPE_QUEUE_CHANGED = "QUEUE_CHANGED"
+		const val EVENT_TYPE_AUDIO_SESSION_CHANGED = "AUDIO_SESSION_CHANGED"
 
 		// Trigger sources for seek events
 		const val TRIGGER_SOURCE_USER = "USER"
@@ -63,37 +65,84 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
-	fun addToQueue(tracks: com.facebook.react.bridge.ReadableArray) {
+	fun syncFromNative() {
+		AudioProController.syncFromNative()
+	}
+
+	@ReactMethod
+	fun addMediaItems(tracks: com.facebook.react.bridge.ReadableArray) {
 		CoroutineScope(Dispatchers.Main).launch {
-			AudioProController.addToQueue(tracks)
+			AudioProController.addMediaItems(tracks)
 		}
 	}
 
 	@ReactMethod
-	fun clearQueue() {
+	fun clearMediaItems() {
 		CoroutineScope(Dispatchers.Main).launch {
-			AudioProController.clearQueue()
+			AudioProController.clearMediaItems()
+		}
+	}
+
+	/**
+	 * Insert media items at a specific position in the queue.
+	 */
+	@ReactMethod
+	fun addMediaItemsAt(index: Double, tracks: com.facebook.react.bridge.ReadableArray) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.addMediaItemsAt(index.toInt(), tracks)
+		}
+	}
+
+	/**
+	 * Remove a range of media items from the queue.
+	 * @param fromIndex Start index (inclusive)
+	 * @param toIndex End index (exclusive)
+	 */
+	@ReactMethod
+	fun removeMediaItems(fromIndex: Double, toIndex: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.removeMediaItems(fromIndex.toInt(), toIndex.toInt())
+		}
+	}
+
+	/**
+	 * Move a media item from one position to another in the queue.
+	 */
+	@ReactMethod
+	fun moveMediaItem(fromIndex: Double, toIndex: Double) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.moveMediaItem(fromIndex.toInt(), toIndex.toInt())
+		}
+	}
+
+	/**
+	 * Set media items (replaces entire queue).
+	 */
+	@ReactMethod
+	fun setMediaItems(tracks: com.facebook.react.bridge.ReadableArray) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.setMediaItems(tracks)
 		}
 	}
 
 	@ReactMethod
-	fun skipTo(index: Double) {
+	fun seekToMediaItem(index: Double) {
 		CoroutineScope(Dispatchers.Main).launch {
-			AudioProController.skipTo(index.toInt())
+			AudioProController.seekToMediaItem(index.toInt())
 		}
 	}
 
 	@ReactMethod
-	fun skipToWithSeek(index: Double, position: Double) {
+	fun seekToMediaItemWithPosition(index: Double, position: Double) {
 		CoroutineScope(Dispatchers.Main).launch {
-			AudioProController.skipToWithSeek(index.toInt(), position.toLong())
+			AudioProController.seekToMediaItemWithPosition(index.toInt(), position.toLong())
 		}
 	}
 
 	@ReactMethod
-	fun removeTrack(index: Double) {
+	fun removeMediaItem(index: Double) {
 		CoroutineScope(Dispatchers.Main).launch {
-			AudioProController.removeTrack(index.toInt())
+			AudioProController.removeMediaItem(index.toInt())
 		}
 	}
 
@@ -102,13 +151,13 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 
 	
 	@ReactMethod
-	fun getQueue(promise: com.facebook.react.bridge.Promise) {
+	fun getMediaItems(promise: com.facebook.react.bridge.Promise) {
 		CoroutineScope(Dispatchers.Main).launch {
 			try {
-				val queue = AudioProController.getQueue()
+				val queue = AudioProController.getMediaItems()
 				promise.resolve(queue)
 			} catch (e: Exception) {
-				promise.reject("GET_QUEUE_ERROR", e)
+				promise.reject("GET_MEDIA_ITEMS_ERROR", e)
 			}
 		}
 	}
@@ -149,16 +198,16 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
-	fun playNext() {
+	fun seekToNextMediaItem() {
 		CoroutineScope(Dispatchers.Main).launch {
-			AudioProController.playNext()
+			AudioProController.seekToNextMediaItem()
 		}
 	}
 	
 	@ReactMethod
-	fun playPrevious() {
+	fun seekToPreviousMediaItem() {
 		CoroutineScope(Dispatchers.Main).launch {
-			AudioProController.playPrevious()
+			AudioProController.seekToPreviousMediaItem()
 		}
 	}
 
@@ -170,9 +219,9 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	}
 	
 	@ReactMethod
-	fun setShuffleMode(enabled: Boolean) {
+	fun setShuffleModeEnabled(enabled: Boolean) {
 		CoroutineScope(Dispatchers.Main).launch {
-			AudioProController.setShuffleMode(enabled)
+			AudioProController.setShuffleModeEnabled(enabled)
 		}
 	}
 
@@ -296,6 +345,17 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 	fun setSkipSilence(enabled: Boolean) {
 		CoroutineScope(Dispatchers.Main).launch {
 			AudioProController.setSkipSilence(enabled)
+		}
+	}
+
+	/**
+	 * Updates the notification button states (like/dislike/bookmark).
+	 * Call this when track state changes to update the notification icons.
+	 */
+	@ReactMethod
+	fun updateNotificationState(liked: Boolean, disliked: Boolean, bookmarked: Boolean) {
+		CoroutineScope(Dispatchers.Main).launch {
+			AudioProController.updateNotificationState(liked, disliked, bookmarked)
 		}
 	}
 

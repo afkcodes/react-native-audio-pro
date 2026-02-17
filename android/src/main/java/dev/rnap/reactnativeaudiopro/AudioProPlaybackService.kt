@@ -38,6 +38,9 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	private lateinit var ambientPlayer: ExoPlayer
 	private val equalizer = AudioProEqualizer()
 
+	// Store callback reference for dynamic button state updates
+	private var sessionCallback: AudioProMediaLibrarySessionCallback? = null
+
 	companion object {
 		private const val NOTIFICATION_ID = Constants.NOTIFICATION_ID
 		private const val CHANNEL_ID = Constants.NOTIFICATION_CHANNEL_ID
@@ -71,7 +74,42 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	 */
 	@OptIn(UnstableApi::class)
 	protected open fun createLibrarySessionCallback(): MediaLibrarySession.Callback {
-		return AudioProMediaLibrarySessionCallback(this)
+		val callback = AudioProMediaLibrarySessionCallback(this)
+		sessionCallback = callback
+		return callback
+	}
+
+	/**
+	 * Updates the liked state in the notification.
+	 * Call this when the user likes/unlikes a track.
+	 */
+	@OptIn(UnstableApi::class)
+	fun updateNotificationLikedState(liked: Boolean) {
+		sessionCallback?.updateLikedState(liked)
+	}
+
+	/**
+	 * Updates the disliked state in the notification.
+	 */
+	@OptIn(UnstableApi::class)
+	fun updateNotificationDislikedState(disliked: Boolean) {
+		sessionCallback?.updateDislikedState(disliked)
+	}
+
+	/**
+	 * Updates the bookmarked state in the notification.
+	 */
+	@OptIn(UnstableApi::class)
+	fun updateNotificationBookmarkedState(bookmarked: Boolean) {
+		sessionCallback?.updateBookmarkedState(bookmarked)
+	}
+
+	/**
+	 * Updates all button states at once (e.g., when track changes).
+	 */
+	@OptIn(UnstableApi::class)
+	fun updateNotificationButtonStates(liked: Boolean, disliked: Boolean, bookmarked: Boolean) {
+		sessionCallback?.updateButtonStates(liked, disliked, bookmarked)
 	}
 	
 	private fun createAmbientLibrarySessionCallback(): MediaLibrarySession.Callback {
@@ -109,33 +147,28 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	/**
 	 * Called when the task is removed from the recent tasks list.
 	 *
-	 * Behavior: Stop playback and release the service.
+	 * Behavior: Pause playback but keep notification visible (Spotify-style).
+	 * The notification stays in an inactive/paused state so user can resume.
 	 * The last-known queue, track index, and position are already persisted
 	 * in MMKV on the JS side, so the next cold start will restore them.
 	 */
 	override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-		android.util.Log.i(Constants.LOG_TAG, "[TASK_REMOVED] App swiped from recents – stopping playback")
+		android.util.Log.i(Constants.LOG_TAG, "[TASK_REMOVED] App swiped from recents – pausing playback (notification stays)")
 
-		// We stop playback to respect user intent (swipe away = stop),
-		// but we do NOT call stopSelf() or release().
-		// Media3's default behavior will handle service lifecycle:
-		// - If playing: Service stays alive (we are stopping, so it won't be playing)
-		// - If not playing: Service eventually stops
+		// Spotify-style: Pause but keep notification visible in paused state.
+		// User can tap notification to resume, or swipe notification away to fully dismiss.
 		
 		try {
-			if (::player.isInitialized) {
-				// Stop playback and seek to 0. This puts player in IDLE/STOPPED state.
-				// MediaSessionService will eventually unbind if no controllers are attached.
-				player.stop()
-				player.clearMediaItems()
+			if (::player.isInitialized && player.isPlaying) {
+				// Just pause - don't stop or clear. This keeps notification visible.
+				player.pause()
 			}
-			if (::ambientPlayer.isInitialized) {
-				ambientPlayer.stop()
-				ambientPlayer.clearMediaItems()
+			if (::ambientPlayer.isInitialized && ambientPlayer.isPlaying) {
+				ambientPlayer.pause()
 			}
-			// Do NOT release sessions here. Let onDestroy handle it.
+			// Do NOT release sessions or clear media items. Let notification persist.
 		} catch (e: Exception) {
-			android.util.Log.e(Constants.LOG_TAG, "[TASK_REMOVED] Error during cleanup", e)
+			android.util.Log.e(Constants.LOG_TAG, "[TASK_REMOVED] Error during pause", e)
 		}
 
 		super.onTaskRemoved(rootIntent)

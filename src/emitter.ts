@@ -1,4 +1,4 @@
-import { NativeModules, NativeEventEmitter, Platform, DeviceEventEmitter } from 'react-native';
+import { DeviceEventEmitter, NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
 import { internalStore } from './internalStore';
 import { logDebug } from './utils';
@@ -27,7 +27,20 @@ export const ambientEmitter =
  * Handles debug logging and state updates
  */
 emitter.addListener('AudioProEvent', (event: AudioProEvent) => {
-	const { debug, debugIncludesProgress, updateFromEvent } = internalStore.getState();
+	const {
+		debug,
+		debugIncludesProgress,
+		updateFromEvent,
+		position: currentPosition,
+	} = internalStore.getState();
+
+	// DEBUG: Always log events that update position
+	if (event.payload?.position !== undefined) {
+		console.log(
+			`[POSITION DEBUG] Event ${event.type}: position=${event.payload.position}, current=${currentPosition}`,
+		);
+	}
+
 	if (debug) {
 		if (event.type !== AudioProEventType.PROGRESS || debugIncludesProgress) {
 			logDebug('AudioProEvent', JSON.stringify(event));
