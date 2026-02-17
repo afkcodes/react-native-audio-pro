@@ -11,6 +11,7 @@ Modern, background-capable audio playback for React Native — built for podcast
 - 💾 **Offline Caching Controls**
 - 🔁 **Sliding Window URL Refreshing**
 - 🎚️ **Equalizer & Bass Boost** (Android)
+- 🚗 **Android Auto Support** (Android)
 
 Works out of the box with background playback, lock screen controls, and clean hooks-based state. Under the hood: Android uses Media3 (not old-school ExoPlayer), giving you up-to-date media session support. iOS uses AVFoundation.
 
@@ -22,6 +23,7 @@ Works out of the box with background playback, lock screen controls, and clean h
 
 - [✅️ Core Features](#-core-features)
 - [✨ Advanced Features](#-advanced-features)
+- [🚗 Android Auto](#-android-auto)
 - [⚙️ Requirements](#%EF%B8%8F-requirements)
 - [🚀 Installation](#-installation)
 - [📚 API Overview](#-api-overview)
@@ -38,6 +40,7 @@ These are fully supported, maintained features and the foundation of the library
 - 🔒 **Lock Screen Controls** — Native media controls on Android and iOS.
 - 🖼 **Artwork Support** — Display album art on lock screen.
 - 🪟 **Notification Center** — Android media session support.
+- 🚗 **Android Auto** — Playback controls, metadata, artwork, and queue browsing on car head units.
 - ⚙️ **Imperative API** — `play`, `pause`, `stop`, `seekTo`, `setVolume`, `setPlaybackSpeed`.
 - 🕘 **Start Time Support** — Begin playback from a specific position.
 - 🪪 **HTTP Headers** — Pass custom headers for audio and artwork URLs.
@@ -93,6 +96,23 @@ AudioPro.ambientPlay({
 });
 AudioPro.ambientSetVolume(0.5);
 ```
+
+## 🚗 Android Auto
+
+Android Auto support is built-in. When your app is connected to Android Auto (USB or wireless), playback controls (play/pause, skip, seek, artwork) are displayed automatically on the car head unit.
+
+**What works out of the box:**
+- Play/pause, next/previous track controls
+- Track metadata (title, artist, album) and artwork on the head unit
+- Seek bar with progress tracking
+- Queue browsing — Android Auto can browse the current "Now Playing" queue
+- Live queue sync — queue changes from the app are reflected on Auto in real-time
+
+**Setup:**
+
+No additional configuration needed in your React Native code. The library handles the Android Auto integration at the native level. Just make sure your app's `AndroidManifest.xml` in the consuming app doesn't override the library's service export settings.
+
+> **Note:** Android Auto requires your app to be reviewed and approved by Google for production distribution via the Play Store. During development, you can use the [Android Auto Desktop Head Unit (DHU)](https://developer.android.com/training/cars/testing) for testing.
 
 ### 🎵 Gapless Playback
 Gapless playback is enabled by default. Simply add multiple tracks to the queue, and the player will transition between them seamlessly without interruptions.
