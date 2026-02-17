@@ -44,6 +44,11 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	companion object {
 		private const val NOTIFICATION_ID = Constants.NOTIFICATION_ID
 		private const val CHANNEL_ID = Constants.NOTIFICATION_CHANNEL_ID
+
+		// Static reference to the running service for Android Auto notifications
+		@Volatile
+		var instance: AudioProPlaybackService? = null
+			private set
 	}
 
 	/**
@@ -111,6 +116,14 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	fun updateNotificationButtonStates(liked: Boolean, disliked: Boolean, bookmarked: Boolean) {
 		sessionCallback?.updateButtonStates(liked, disliked, bookmarked)
 	}
+
+	/**
+	 * Notifies Android Auto that the queue has changed so it refreshes the browse tree.
+	 */
+	@OptIn(UnstableApi::class)
+	fun notifyAutoQueueChanged() {
+		sessionCallback?.notifyQueueChanged()
+	}
 	
 	private fun createAmbientLibrarySessionCallback(): MediaLibrarySession.Callback {
 		return object : MediaLibrarySession.Callback {
@@ -127,6 +140,7 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	@OptIn(UnstableApi::class) // MediaSessionService.setListener
 	override fun onCreate() {
 		super.onCreate()
+		instance = this
 		// Use the new Media3 standard notification provider
 		setMediaNotificationProvider(AudioProNotificationProvider(this))
 		
@@ -202,6 +216,10 @@ open class AudioProPlaybackService : MediaLibraryService() {
 			android.util.Log.e(Constants.LOG_TAG, "Error during service destruction", e)
 		}
 
+		// Release Cast resources
+		AudioProCastManager.release()
+
+		instance = null
 		super.onDestroy()
 	}
 
@@ -270,8 +288,24 @@ open class AudioProPlaybackService : MediaLibraryService() {
 			}
 		})
 
+		// Determine the session player: CastPlayer wrapping ExoPlayer if Cast is
+		// enabled, otherwise plain ExoPlayer. Media3 1.9.0 CastPlayer.Builder with
+		// setLocalPlayer() handles local↔remote switching automatically.
+		val sessionPlayer: Player = if (AudioProController.castEnabled) {
+			val cp = AudioProCastManager.initialize(this, player)
+			if (cp != null) {
+				android.util.Log.i(Constants.LOG_TAG, "Using CastPlayer (wraps ExoPlayer for local + cast)")
+				cp
+			} else {
+				android.util.Log.w(Constants.LOG_TAG, "CastPlayer init failed, falling back to ExoPlayer only")
+				player
+			}
+		} else {
+			player
+		}
+
 		mediaLibrarySession =
-			MediaLibrarySession.Builder(this, player, createLibrarySessionCallback())
+			MediaLibrarySession.Builder(this, sessionPlayer, createLibrarySessionCallback())
 				.also { builder -> getSessionActivityIntent()?.let { builder.setSessionActivity(it) } }
 				.build()
 				

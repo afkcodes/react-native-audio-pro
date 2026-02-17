@@ -72,6 +72,10 @@ export const AudioPro = {
 			this.setSkipSilence(options.skipSilence);
 		}
 
+		if (options.castEnabled !== undefined) {
+			logDebug('AudioPro: Configuring castEnabled', options.castEnabled);
+		}
+
 		logDebug('AudioPro: configure()', config);
 	},
 

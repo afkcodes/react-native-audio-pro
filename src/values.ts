@@ -79,6 +79,8 @@ export enum AudioProEventType {
 	QUEUE_CHANGED = 'QUEUE_CHANGED',
 	/** Audio session ID changed (for visualizers/equalizer) */
 	AUDIO_SESSION_CHANGED = 'AUDIO_SESSION_CHANGED',
+	/** Google Cast connection state changed */
+	CAST_STATE_CHANGED = 'CAST_STATE_CHANGED',
 }
 
 /**

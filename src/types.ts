@@ -83,6 +83,18 @@ export type AudioProConfigureOptions = {
 	 * Enable or disable silence skipping. Default is false.
 	 */
 	skipSilence?: boolean;
+
+	/**
+	 * Enable Google Cast support. Default is false.
+	 * When enabled, the library will initialize CastPlayer which wraps ExoPlayer
+	 * and handles local↔cast switching automatically.
+	 *
+	 * The consuming app must provide a CastOptionsProvider in AndroidManifest.xml
+	 * with their Cast receiver app ID.
+	 *
+	 * @platform android
+	 */
+	castEnabled?: boolean;
 };
 
 // ==============================
@@ -142,6 +154,8 @@ export interface AudioProEvent {
 		size?: number; // For QUEUE_CHANGED events: queue size
 		currentIndex?: number; // For QUEUE_CHANGED events
 		audioSessionId?: number; // For AUDIO_SESSION_CHANGED events
+		castState?: AudioProCastState; // For CAST_STATE_CHANGED events
+		isConnected?: boolean; // For CAST_STATE_CHANGED events
 	};
 }
 
@@ -234,6 +248,20 @@ export interface AudioProQueueChangedPayload {
 
 export interface AudioProAudioSessionChangedPayload {
 	audioSessionId: number;
+}
+
+/**
+ * Google Cast connection states
+ */
+export type AudioProCastState =
+	| 'NO_DEVICES_AVAILABLE'
+	| 'NOT_CONNECTED'
+	| 'CONNECTING'
+	| 'CONNECTED';
+
+export interface AudioProCastStateChangedPayload {
+	castState: AudioProCastState;
+	isConnected: boolean;
 }
 
 // ==============================

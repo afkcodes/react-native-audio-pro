@@ -40,6 +40,7 @@ class AudioProModule(private val reactContext: ReactApplicationContext) :
 		const val EVENT_TYPE_SLEEP_TIMER_COMPLETE = "SLEEP_TIMER_COMPLETE"
 		const val EVENT_TYPE_QUEUE_CHANGED = "QUEUE_CHANGED"
 		const val EVENT_TYPE_AUDIO_SESSION_CHANGED = "AUDIO_SESSION_CHANGED"
+		const val EVENT_TYPE_CAST_STATE_CHANGED = "CAST_STATE_CHANGED"
 
 		// Trigger sources for seek events
 		const val TRIGGER_SOURCE_USER = "USER"
