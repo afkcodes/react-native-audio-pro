@@ -73,6 +73,12 @@ export enum AudioProEventType {
 	SHUFFLE_MODE_CHANGED = 'SHUFFLE_MODE_CHANGED',
 	/** Custom notification action button pressed */
 	CUSTOM_ACTION = 'CUSTOM_ACTION',
+	/** Sleep timer completed */
+	SLEEP_TIMER_COMPLETE = 'SLEEP_TIMER_COMPLETE',
+	/** Queue/playlist changed (add/remove/move/clear) */
+	QUEUE_CHANGED = 'QUEUE_CHANGED',
+	/** Audio session ID changed (for visualizers/equalizer) */
+	AUDIO_SESSION_CHANGED = 'AUDIO_SESSION_CHANGED',
 }
 
 /**

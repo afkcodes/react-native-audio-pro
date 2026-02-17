@@ -5289,6 +5289,7 @@ export const playlist = data.songs.map((song) => ({
 	artwork: song.image[2]?.link || song.image[0]?.link || '',
 	title: song.title,
 	artist: song.subtitle,
+	source: song.source || 'gaana',
 }));
 
 // export const playlist: Track[] = [

@@ -180,23 +180,23 @@ describe('AudioPro queue functionality', () => {
 			},
 		];
 
-		AudioPro.addToQueue(tracks);
-		expect(NativeModules.AudioPro.addToQueue).toHaveBeenCalledWith(tracks);
+		AudioPro.addMediaItems(tracks);
+		expect(NativeModules.AudioPro.addMediaItems).toHaveBeenCalledWith(tracks);
 	});
 
-	it('calls native clearQueue method', () => {
-		AudioPro.clearQueue();
-		expect(NativeModules.AudioPro.clearQueue).toHaveBeenCalled();
+	it('calls native clearMediaItems method', () => {
+		AudioPro.clearMediaItems();
+		expect(NativeModules.AudioPro.clearMediaItems).toHaveBeenCalled();
 	});
 
-	it('calls native removeTrack with correct index', () => {
-		AudioPro.removeTrack(2);
-		expect(NativeModules.AudioPro.removeTrack).toHaveBeenCalledWith(2);
+	it('calls native removeMediaItem with correct index', () => {
+		AudioPro.removeMediaItem(2);
+		expect(NativeModules.AudioPro.removeMediaItem).toHaveBeenCalledWith(2);
 	});
 
-	it('calls native getQueue', async () => {
-		await AudioPro.getQueue();
-		expect(NativeModules.AudioPro.getQueue).toHaveBeenCalled();
+	it('calls native getMediaItems', async () => {
+		await AudioPro.getMediaItems();
+		expect(NativeModules.AudioPro.getMediaItems).toHaveBeenCalled();
 	});
 });
 
@@ -205,19 +205,19 @@ describe('AudioPro navigation controls', () => {
 		jest.clearAllMocks();
 	});
 
-	it('calls native playNext', () => {
-		AudioPro.playNext();
-		expect(NativeModules.AudioPro.playNext).toHaveBeenCalled();
+	it('calls native seekToNextMediaItem', () => {
+		AudioPro.seekToNextMediaItem();
+		expect(NativeModules.AudioPro.seekToNextMediaItem).toHaveBeenCalled();
 	});
 
-	it('calls native playPrevious', () => {
-		AudioPro.playPrevious();
-		expect(NativeModules.AudioPro.playPrevious).toHaveBeenCalled();
+	it('calls native seekToPreviousMediaItem', () => {
+		AudioPro.seekToPreviousMediaItem();
+		expect(NativeModules.AudioPro.seekToPreviousMediaItem).toHaveBeenCalled();
 	});
 
-	it('calls native skipTo with correct index', () => {
-		AudioPro.skipTo(3);
-		expect(NativeModules.AudioPro.skipTo).toHaveBeenCalledWith(3);
+	it('calls native seekToMediaItem with correct index', () => {
+		AudioPro.seekToMediaItem(3);
+		expect(NativeModules.AudioPro.seekToMediaItem).toHaveBeenCalledWith(3);
 	});
 });
 
@@ -231,9 +231,9 @@ describe('AudioPro playback modes', () => {
 		expect(NativeModules.AudioPro.setRepeatMode).toHaveBeenCalledWith('ONE');
 	});
 
-	it('calls native setShuffleMode', () => {
-		AudioPro.setShuffleMode(true);
-		expect(NativeModules.AudioPro.setShuffleMode).toHaveBeenCalledWith(true);
+	it('calls native setShuffleModeEnabled', () => {
+		AudioPro.setShuffleModeEnabled(true);
+		expect(NativeModules.AudioPro.setShuffleModeEnabled).toHaveBeenCalledWith(true);
 	});
 });
 
@@ -249,17 +249,17 @@ describe('AudioPro getter methods', () => {
 	it('returns correct player state', () => {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		internalStore.setState({ playerState: 'IDLE' as any });
-		const state = AudioPro.getState();
+		const state = AudioPro.getPlaybackState();
 		expect(state).toBe('IDLE'); // Default state
 	});
 
 	// Helper to mock state for other tests
 	useMockPlayerState('PLAYING');
 
-	it('returns correct playing track', () => {
+	it('returns correct current media item', () => {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		internalStore.setState({ trackPlaying: { url: 'https://example.com/audio.mp3' } as any });
-		const track = AudioPro.getPlayingTrack();
+		const track = AudioPro.getCurrentMediaItem();
 		expect(track).toEqual({
 			url: 'https://example.com/audio.mp3',
 		});
@@ -280,8 +280,8 @@ describe('AudioPro getter methods', () => {
 		expect(interval).toBe(1000); // Default
 	});
 
-	it('returns correct active track index', () => {
-		const index = AudioPro.getActiveTrackIndex();
+	it('returns correct current media item index', () => {
+		const index = AudioPro.getCurrentMediaItemIndex();
 		expect(index).toBe(-1); // Default initial state
 	});
 });

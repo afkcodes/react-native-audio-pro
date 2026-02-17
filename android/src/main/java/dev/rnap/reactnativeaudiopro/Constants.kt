@@ -37,4 +37,7 @@ object Constants {
     const val CUSTOM_COMMAND_BOOKMARK = "dev.rnap.reactnativeaudiopro.BOOKMARK"
     const val CUSTOM_COMMAND_REWIND_30 = "dev.rnap.reactnativeaudiopro.REWIND_30"
     const val CUSTOM_COMMAND_FORWARD_30 = "dev.rnap.reactnativeaudiopro.FORWARD_30"
+
+    // Notification Button State Update Command
+    const val CUSTOM_COMMAND_UPDATE_NOTIFICATION_STATE = "dev.rnap.reactnativeaudiopro.UPDATE_NOTIFICATION_STATE"
 }

@@ -14,6 +14,7 @@ export interface AudioProStore {
 	playerState: AudioProState;
 	position: number;
 	duration: number;
+	bufferedPosition: number;
 	playbackSpeed: number;
 	volume: number;
 	debug: boolean;
@@ -21,6 +22,12 @@ export interface AudioProStore {
 	trackPlaying: AudioProTrack | null;
 	configureOptions: AudioProConfigureOptions;
 	error: AudioProPlaybackErrorPayload | null;
+	/** True while a user-initiated seek is in-flight (set by seekTo/seekBy, cleared by SEEK_COMPLETE). */
+	isSeeking: boolean;
+	/** Current index in the queue (0-based, -1 if no queue) */
+	activeTrackIndex: number;
+	/** Number of tracks in the queue */
+	queueSize: number;
 	setDebug: (debug: boolean) => void;
 	setDebugIncludesProgress: (includeProgress: boolean) => void;
 	setTrackPlaying: (track: AudioProTrack | null) => void;
@@ -29,20 +36,6 @@ export interface AudioProStore {
 	setVolume: (volume: number) => void;
 	setError: (error: AudioProPlaybackErrorPayload | null) => void;
 	updateFromEvent: (event: AudioProEvent) => void;
-	activeTrackIndex: number;
-}
-
-function getTrackIdentity(track: AudioProTrack | null | undefined): string | null {
-	if (!track) {
-		return null;
-	}
-	return track.id ?? track.url ?? null;
-}
-
-function tracksMatch(a: AudioProTrack | null | undefined, b: AudioProTrack | null | undefined) {
-	const aId = getTrackIdentity(a);
-	const bId = getTrackIdentity(b);
-	return aId !== null && aId === bId;
 }
 
 function hasTrackMetadataChanged(prev: AudioProTrack, next: AudioProTrack) {
@@ -60,7 +53,9 @@ export const internalStore = create<AudioProStore>((set, get) => ({
 	playerState: AudioProState.IDLE,
 	position: 0,
 	duration: 0,
+	bufferedPosition: 0,
 	activeTrackIndex: -1,
+	queueSize: 0,
 	playbackSpeed: 1.0,
 	volume: normalizeVolume(1.0),
 	debug: false,
@@ -68,6 +63,7 @@ export const internalStore = create<AudioProStore>((set, get) => ({
 	trackPlaying: null,
 	configureOptions: { ...DEFAULT_CONFIG },
 	error: null,
+	isSeeking: false,
 	setDebug: (debug) => set({ debug }),
 	setDebugIncludesProgress: (includeProgress) => set({ debugIncludesProgress: includeProgress }),
 	setTrackPlaying: (track) => set({ trackPlaying: track }),
@@ -76,62 +72,75 @@ export const internalStore = create<AudioProStore>((set, get) => ({
 	setVolume: (volume) => set({ volume: normalizeVolume(volume) }),
 	setError: (error) => set({ error }),
 	updateFromEvent: (event) => {
-		// Early exit for simple remote commands (no state change)
-		if (
-			event.type === AudioProEventType.REMOTE_NEXT ||
-			event.type === AudioProEventType.REMOTE_PREV
-		) {
-			return;
-		}
-
 		const { type, track, payload } = event;
 		const current = get();
 		const updates: Partial<AudioProStore> = {};
 
-		// Warn if a non-error event has no track
-		if (track === undefined && type !== AudioProEventType.PLAYBACK_ERROR) {
-			console.warn(`[react-native-audio-pro]: Event ${type} missing required track property`);
+		// ─────────────────────────────────────────────────────────────────────
+		// Handle events that don't require state updates
+		// ─────────────────────────────────────────────────────────────────────
+		if (type === AudioProEventType.REMOTE_NEXT || type === AudioProEventType.REMOTE_PREV) {
+			// Remote commands are informational - apps can listen to these
+			// via addEventListener but they don't change internal store state
+			return;
 		}
 
-		// 1. State changes
-		if (
-			type === AudioProEventType.STATE_CHANGED &&
-			payload?.state &&
-			payload.state !== current.playerState
-		) {
-			updates.playerState = payload.state;
-			// Clear error when leaving ERROR state
-			if (payload.state !== AudioProState.ERROR && current.error !== null) {
-				updates.error = null;
+		// ─────────────────────────────────────────────────────────────────────
+		// 1. SEEK_COMPLETE - clear seeking flag
+		// ─────────────────────────────────────────────────────────────────────
+		if (type === AudioProEventType.SEEK_COMPLETE) {
+			if (current.isSeeking) {
+				updates.isSeeking = false;
+			}
+			// Skip position update from SEEK_COMPLETE - the optimistic update
+			// from seekTo() already set the correct value. Native position can
+			// differ slightly due to keyframe alignment, causing micro-jumps.
+		}
+
+		// ─────────────────────────────────────────────────────────────────────
+		// 2. STATE_CHANGED - update player state
+		// ─────────────────────────────────────────────────────────────────────
+		if (type === AudioProEventType.STATE_CHANGED && payload?.state) {
+			const newState = payload.state;
+			const shouldUpdateState = newState !== current.playerState;
+
+			if (shouldUpdateState) {
+				// During a seek, Media3/AVPlayer briefly transitions through
+				// PAUSED/LOADING before settling back to PLAYING. Suppress
+				// these transient states so the play/pause icon doesn't flicker.
+				const isTransientSeekState =
+					current.isSeeking &&
+					current.playerState === AudioProState.PLAYING &&
+					(newState === AudioProState.PAUSED || newState === AudioProState.LOADING);
+
+				if (!isTransientSeekState) {
+					updates.playerState = newState;
+
+					// Clear error when leaving ERROR state
+					if (newState !== AudioProState.ERROR && current.error !== null) {
+						updates.error = null;
+					}
+				}
 			}
 		}
 
-		// 2. Playback errors
-		// According to the contract in logic.md:
-		// - PLAYBACK_ERROR and ERROR state are separate and must not be conflated
-		// - ERROR state must be explicitly triggered by native logic
-		// - PLAYBACK_ERROR events should not automatically imply or trigger a STATE_CHANGED: ERROR
+		// ─────────────────────────────────────────────────────────────────────
+		// 3. PLAYBACK_ERROR - store error info (don't change state)
+		// ─────────────────────────────────────────────────────────────────────
 		if (type === AudioProEventType.PLAYBACK_ERROR && payload?.error) {
 			updates.error = {
 				error: payload.error,
 				errorCode: payload.errorCode,
+				recoverable: payload.recoverable,
+				cause: payload.cause,
+				index: payload.index,
 			};
-			// Note: We do NOT automatically transition to ERROR state here
-			// Native code is responsible for emitting STATE_CHANGED: ERROR if needed
+			// Note: Native is responsible for emitting STATE_CHANGED: ERROR
 		}
 
-		// 2.5 Track ended
-		// According to the contract in logic.md:
-		// - Native is responsible for detecting the end of a track
-		// - Native must emit both STATE_CHANGED: STOPPED and TRACK_ENDED
-		// - TypeScript should not infer or emit state transitions on its own
-		if (type === AudioProEventType.TRACK_ENDED) {
-			// Note: We do NOT automatically transition to STOPPED state here
-			// Native code is responsible for emitting STATE_CHANGED: STOPPED
-			// We only receive the TRACK_ENDED event for informational purposes
-		}
-
-		// 3. Speed changes
+		// ─────────────────────────────────────────────────────────────────────
+		// 4. PLAYBACK_SPEED_CHANGED - update speed
+		// ─────────────────────────────────────────────────────────────────────
 		if (
 			type === AudioProEventType.PLAYBACK_SPEED_CHANGED &&
 			payload?.speed !== undefined &&
@@ -140,41 +149,124 @@ export const internalStore = create<AudioProStore>((set, get) => ({
 			updates.playbackSpeed = payload.speed;
 		}
 
-		// 4. Progress updates
-		if (payload?.position !== undefined && payload.position !== current.position) {
-			updates.position = payload.position;
-		}
-		if (payload?.duration !== undefined && payload.duration !== current.duration) {
-			updates.duration = payload.duration;
+		// ─────────────────────────────────────────────────────────────────────
+		// 5. QUEUE_CHANGED - update queue size and active index
+		// ─────────────────────────────────────────────────────────────────────
+		if (type === AudioProEventType.QUEUE_CHANGED) {
+			if (payload?.size !== undefined && payload.size !== current.queueSize) {
+				updates.queueSize = payload.size;
+			}
+			if (
+				payload?.currentIndex !== undefined &&
+				payload.currentIndex !== current.activeTrackIndex
+			) {
+				updates.activeTrackIndex = payload.currentIndex;
+			}
 		}
 
-		if (payload?.index !== undefined && payload.index !== current.activeTrackIndex) {
-			updates.activeTrackIndex = payload.index;
+		// ─────────────────────────────────────────────────────────────────────
+		// 6. PROGRESS - update position, duration, buffered (most frequent)
+		// ─────────────────────────────────────────────────────────────────────
+		if (type === AudioProEventType.PROGRESS) {
+			if (payload?.position !== undefined && payload.position !== current.position) {
+				updates.position = payload.position;
+			}
+			if (payload?.duration !== undefined && payload.duration !== current.duration) {
+				updates.duration = payload.duration;
+			}
+			if (
+				payload?.bufferedPosition !== undefined &&
+				payload.bufferedPosition !== current.bufferedPosition
+			) {
+				updates.bufferedPosition = payload.bufferedPosition;
+			}
 		}
 
-		// 5. Track loading/unloading
-		if (track) {
-			const prev = current.trackPlaying;
-			const eventSignalsTrackSwap =
-				(type === AudioProEventType.STATE_CHANGED &&
-					(payload?.state === AudioProState.LOADING ||
-						payload?.state === AudioProState.PLAYING)) ||
-				type === AudioProEventType.TRACK_CHANGED;
-			const shouldAdoptTrack = !prev || tracksMatch(prev, track) || eventSignalsTrackSwap;
+		// ─────────────────────────────────────────────────────────────────────
+		// 7. STATE_CHANGED may also carry position/duration (initial load, etc)
+		// Only accept position=0 from STATE_CHANGED if it's a terminal state.
+		// Non-terminal states (LOADING, PAUSED, PLAYING) may erroneously send 0.
+		// PROGRESS events are the authoritative source for position.
+		// ─────────────────────────────────────────────────────────────────────
+		if (type === AudioProEventType.STATE_CHANGED) {
+			const isTerminalState =
+				payload?.state === AudioProState.STOPPED || payload?.state === AudioProState.IDLE;
 
-			if (shouldAdoptTrack && (!prev || hasTrackMetadataChanged(prev, track))) {
+			// Only update position if:
+			// 1. It's non-zero (always valid), OR
+			// 2. It's zero AND we're transitioning to a terminal state
+			if (payload?.position !== undefined && payload.position !== current.position) {
+				if (payload.position > 0 || isTerminalState) {
+					updates.position = payload.position;
+				}
+			}
+			if (payload?.duration !== undefined && payload.duration !== current.duration) {
+				if (payload.duration > 0 || isTerminalState) {
+					updates.duration = payload.duration;
+				}
+			}
+			if (payload?.index !== undefined && payload.index !== current.activeTrackIndex) {
+				updates.activeTrackIndex = payload.index;
+			}
+		}
+
+		// ─────────────────────────────────────────────────────────────────────
+		// 8. TRACK_CHANGED - update track and index
+		// ─────────────────────────────────────────────────────────────────────
+		if (type === AudioProEventType.TRACK_CHANGED) {
+			const isActuallyNewTrack =
+				track && (!current.trackPlaying || track.id !== current.trackPlaying.id);
+
+			if (
+				track &&
+				(!current.trackPlaying || hasTrackMetadataChanged(current.trackPlaying, track))
+			) {
 				updates.trackPlaying = track;
 			}
-		} else if (
-			track === null &&
-			type !== AudioProEventType.PLAYBACK_ERROR &&
-			current.trackPlaying !== null
+			if (payload?.index !== undefined && payload.index !== current.activeTrackIndex) {
+				updates.activeTrackIndex = payload.index;
+			}
+			// Only reset position to 0 if track actually changed (different ID).
+			// When returning from background, native may re-emit TRACK_CHANGED
+			// for the same track with position=0, which would incorrectly reset progress.
+			if (payload?.position !== undefined && payload.position !== current.position) {
+				if (payload.position > 0 || isActuallyNewTrack) {
+					updates.position = payload.position;
+				}
+			}
+			if (payload?.duration !== undefined && payload.duration !== current.duration) {
+				updates.duration = payload.duration;
+			}
+		}
+
+		// ─────────────────────────────────────────────────────────────────────
+		// 9. Track updates from other events (STATE_CHANGED with new track)
+		// ─────────────────────────────────────────────────────────────────────
+		if (
+			type === AudioProEventType.STATE_CHANGED &&
+			track &&
+			(payload?.state === AudioProState.LOADING || payload?.state === AudioProState.PLAYING)
 		) {
-			// Explicit unload of track (not during error)
+			// Track loading or playing - adopt the track if it's new/changed
+			if (!current.trackPlaying || hasTrackMetadataChanged(current.trackPlaying, track)) {
+				updates.trackPlaying = track;
+			}
+		}
+
+		// ─────────────────────────────────────────────────────────────────────
+		// 10. Explicit track unload (track: null in event)
+		// ─────────────────────────────────────────────────────────────────────
+		if (
+			track === null &&
+			current.trackPlaying !== null &&
+			type !== AudioProEventType.PLAYBACK_ERROR
+		) {
 			updates.trackPlaying = null;
 		}
 
-		// 6. Apply batched updates
+		// ─────────────────────────────────────────────────────────────────────
+		// Apply all batched updates
+		// ─────────────────────────────────────────────────────────────────────
 		if (Object.keys(updates).length > 0) {
 			set(updates);
 		}

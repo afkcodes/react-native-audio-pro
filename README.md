@@ -134,6 +134,20 @@ npx pod-install
 ```
 *Enable **Background Modes** -> **Audio, AirPlay, and Picture in Picture** in Xcode.*
 
+### 📦 Installation from GitHub
+
+Since this is a private fork, you can install it directly from GitHub:
+
+```bash
+# Install specific branch (recommended)
+yarn add github:afkcodes/react-native-audio-pro#feature/main
+
+# OR using npm
+npm install github:afkcodes/react-native-audio-pro#feature/main
+```
+
+*Note: This repository uses `react-native-builder-bob`. The `prepare` script will automatically build the necessary JS files upon installation.*
+
 ### 🤖 Android Installation
 Ensure `compileSdkVersion` and `targetSdkVersion` are **35** in `android/build.gradle`.
 

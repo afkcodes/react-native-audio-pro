@@ -3,6 +3,7 @@ package dev.rnap.reactnativeaudiopro
 import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaLibraryService
@@ -19,8 +20,63 @@ import kotlinx.coroutines.launch
 @UnstableApi
 open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlaybackService) : MediaLibraryService.MediaLibrarySession.Callback {
 
+	// Reference to the session for dynamic button updates
+	private var session: MediaSession? = null
+
+	// Dynamic button states
+	private var isLiked: Boolean = false
+	private var isDisliked: Boolean = false
+	private var isBookmarked: Boolean = false
+
+	/**
+	 * Updates the liked state and refreshes notification buttons.
+	 * Called when user likes/unlikes the current track.
+	 */
+	fun updateLikedState(liked: Boolean) {
+		isLiked = liked
+		refreshMediaButtonPreferences()
+	}
+
+	/**
+	 * Updates the disliked state and refreshes notification buttons.
+	 */
+	fun updateDislikedState(disliked: Boolean) {
+		isDisliked = disliked
+		refreshMediaButtonPreferences()
+	}
+
+	/**
+	 * Updates the bookmarked state and refreshes notification buttons.
+	 */
+	fun updateBookmarkedState(bookmarked: Boolean) {
+		isBookmarked = bookmarked
+		refreshMediaButtonPreferences()
+	}
+
+	/**
+	 * Updates all button states at once (e.g., when track changes).
+	 */
+	fun updateButtonStates(liked: Boolean, disliked: Boolean, bookmarked: Boolean) {
+		isLiked = liked
+		isDisliked = disliked
+		isBookmarked = bookmarked
+		refreshMediaButtonPreferences()
+	}
+
+	/**
+	 * Refreshes the media button preferences on the session.
+	 * This triggers a notification update with the new button states.
+	 */
+	private fun refreshMediaButtonPreferences() {
+		session?.let { 
+			it.setMediaButtonPreferences(getCommandButtons())
+			AudioProController.log("Updated media button preferences - liked=$isLiked, disliked=$isDisliked, bookmarked=$isBookmarked")
+		}
+	}
+
 	/**
 	 * Creates CommandButtons dynamically based on the notification button configuration
+	 * and current button states (liked, disliked, bookmarked).
 	 */
 	private fun getCommandButtons(): List<CommandButton> {
 		val buttons = mutableListOf<CommandButton>()
@@ -30,22 +86,28 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 
 		for ((index, buttonType) in buttonConfig.withIndex()) {
 			val button = when (buttonType) {
+				// Standard Media3 Player commands for navigation
 				"PREV" -> CommandButton.Builder(CommandButton.ICON_PREVIOUS)
 					.setDisplayName("Previous")
-					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_PREV, Bundle.EMPTY))
+					.setPlayerCommand(Player.COMMAND_SEEK_TO_PREVIOUS)
 					.build()
 
 				"NEXT" -> CommandButton.Builder(CommandButton.ICON_NEXT)
 					.setDisplayName("Next")
-					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_NEXT, Bundle.EMPTY))
+					.setPlayerCommand(Player.COMMAND_SEEK_TO_NEXT)
 					.build()
 
-				"LIKE" -> CommandButton.Builder(CommandButton.ICON_HEART_UNFILLED)
-					.setDisplayName("Like")
+				// Dynamic state buttons - icon changes based on current state
+				"LIKE" -> CommandButton.Builder(
+						if (isLiked) CommandButton.ICON_HEART_FILLED else CommandButton.ICON_HEART_UNFILLED
+					)
+					.setDisplayName(if (isLiked) "Unlike" else "Like")
 					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_LIKE, Bundle.EMPTY))
 					.build()
 
-				"DISLIKE" -> CommandButton.Builder(CommandButton.ICON_THUMB_DOWN_UNFILLED)
+				"DISLIKE" -> CommandButton.Builder(
+						if (isDisliked) CommandButton.ICON_THUMB_DOWN_FILLED else CommandButton.ICON_THUMB_DOWN_UNFILLED
+					)
 					.setDisplayName("Dislike")
 					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_DISLIKE, Bundle.EMPTY))
 					.build()
@@ -55,19 +117,21 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_SAVE, Bundle.EMPTY))
 					.build()
 
-				"BOOKMARK" -> CommandButton.Builder(CommandButton.ICON_BOOKMARK_UNFILLED)
-					.setDisplayName("Bookmark")
+				"BOOKMARK" -> CommandButton.Builder(
+						if (isBookmarked) CommandButton.ICON_BOOKMARK_FILLED else CommandButton.ICON_BOOKMARK_UNFILLED
+					)
+					.setDisplayName(if (isBookmarked) "Remove Bookmark" else "Bookmark")
 					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_BOOKMARK, Bundle.EMPTY))
 					.build()
 
 				"REWIND_30" -> CommandButton.Builder(CommandButton.ICON_SKIP_BACK)
 					.setDisplayName("Rewind 30s")
-					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_REWIND_30, Bundle.EMPTY))
+					.setPlayerCommand(Player.COMMAND_SEEK_BACK)
 					.build()
 
 				"FORWARD_30" -> CommandButton.Builder(CommandButton.ICON_SKIP_FORWARD)
 					.setDisplayName("Forward 30s")
-					.setSessionCommand(SessionCommand(Constants.CUSTOM_COMMAND_FORWARD_30, Bundle.EMPTY))
+					.setPlayerCommand(Player.COMMAND_SEEK_FORWARD)
 					.build()
 
 				else -> {
@@ -87,25 +151,18 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 	val mediaNotificationSessionCommands
 		get() = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
 			.also { builder ->
-				// Add custom commands based on button configuration
+				// Add custom session commands (app-specific features only)
+				// PREV/NEXT use standard Player.COMMAND_SEEK_TO_* (not custom commands)
 				val buttonConfig = AudioProController.settingNotificationButtons
 				
 				for (buttonType in buttonConfig) {
 					when (buttonType) {
-						"PREV" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_PREV, Bundle.EMPTY))
-						"NEXT" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_NEXT, Bundle.EMPTY))
 						"LIKE" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_LIKE, Bundle.EMPTY))
 						"DISLIKE" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_DISLIKE, Bundle.EMPTY))
 						"SAVE" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SAVE, Bundle.EMPTY))
 						"BOOKMARK" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_BOOKMARK, Bundle.EMPTY))
-						"REWIND_30" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_REWIND_30, Bundle.EMPTY))
-						"FORWARD_30" -> builder.add(SessionCommand(Constants.CUSTOM_COMMAND_FORWARD_30, Bundle.EMPTY))
 					}
 				}
-				
-				// Always add skip forward/backward commands
-				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SKIP_FORWARD, Bundle.EMPTY))
-				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SKIP_BACKWARD, Bundle.EMPTY))
 				
 				// Add Ambient Commands
 				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_AMBIENT_PLAY, Bundle.EMPTY))
@@ -119,9 +176,11 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_EQUALIZER, Bundle.EMPTY))
 				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_BASS_BOOST, Bundle.EMPTY))
 
-				// Add Playlist Commands
-				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_REPEAT_MODE, Bundle.EMPTY))
-				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_SET_SHUFFLE_MODE, Bundle.EMPTY))
+				// Notification Button State Update Command
+				builder.add(SessionCommand(Constants.CUSTOM_COMMAND_UPDATE_NOTIFICATION_STATE, Bundle.EMPTY))
+
+				// Note: REPEAT_MODE and SHUFFLE_MODE now use standard Player commands
+				// (COMMAND_SET_REPEAT_MODE, COMMAND_SET_SHUFFLE_MODE) instead of session commands
 			}
 			.build()
 
@@ -130,7 +189,43 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 		session: MediaSession,
 		controller: MediaSession.ControllerInfo,
 	): MediaSession.ConnectionResult {
+		// Store session reference for dynamic button updates
+		this.session = session
+
+		// Explicitly declare available Player commands for consistency across Android versions
+		val availablePlayerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
+			.addAll(
+				// Standard playback
+				Player.COMMAND_PLAY_PAUSE,
+				Player.COMMAND_PREPARE,
+				Player.COMMAND_STOP,
+				// Seeking
+				Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM,
+				Player.COMMAND_SEEK_TO_NEXT,
+				Player.COMMAND_SEEK_TO_PREVIOUS,
+				Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
+				Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
+				Player.COMMAND_SEEK_BACK,
+				Player.COMMAND_SEEK_FORWARD,
+				// Queue
+				Player.COMMAND_GET_TIMELINE,
+				Player.COMMAND_GET_CURRENT_MEDIA_ITEM,
+				Player.COMMAND_GET_MEDIA_ITEMS_METADATA,
+				Player.COMMAND_SET_MEDIA_ITEM,
+				Player.COMMAND_CHANGE_MEDIA_ITEMS,
+				// Playback parameters
+				Player.COMMAND_SET_SPEED_AND_PITCH,
+				Player.COMMAND_SET_REPEAT_MODE,
+				Player.COMMAND_SET_SHUFFLE_MODE,
+				Player.COMMAND_SET_VOLUME,
+				// State
+				Player.COMMAND_GET_AUDIO_ATTRIBUTES,
+				Player.COMMAND_GET_VOLUME,
+			)
+			.build()
+
 		return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
+			.setAvailablePlayerCommands(availablePlayerCommands)
 			.setAvailableSessionCommands(mediaNotificationSessionCommands)
 			.setMediaButtonPreferences(getCommandButtons())
 			.build()
@@ -145,30 +240,6 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 	): ListenableFuture<SessionResult> {
 		AudioProController.log("onCustomCommand: ${customCommand.customAction}")
 		when (customCommand.customAction) {
-			Constants.CUSTOM_COMMAND_NEXT -> {
-				AudioProController.emitNext()
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_PREV -> {
-				AudioProController.emitPrev()
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_SKIP_FORWARD -> {
-				CoroutineScope(Dispatchers.Main).launch {
-					AudioProController.seekForward(AudioProController.settingSkipIntervalMs)
-				}
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_SKIP_BACKWARD -> {
-				CoroutineScope(Dispatchers.Main).launch {
-					AudioProController.seekBack(AudioProController.settingSkipIntervalMs)
-				}
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
 			// Custom notification actions
 			Constants.CUSTOM_COMMAND_LIKE -> {
 				AudioProController.emitCustomAction("LIKE")
@@ -187,24 +258,6 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 
 			Constants.CUSTOM_COMMAND_BOOKMARK -> {
 				AudioProController.emitCustomAction("BOOKMARK")
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_REWIND_30 -> {
-				CoroutineScope(Dispatchers.Main).launch {
-					AudioProController.seekBack(30000L)
-				}
-				// Also emit as custom action so JS can respond if needed
-				AudioProController.emitCustomAction("REWIND_30")
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_FORWARD_30 -> {
-				CoroutineScope(Dispatchers.Main).launch {
-					AudioProController.seekForward(30000L)
-				}
-				// Also emit as custom action so JS can respond if needed
-				AudioProController.emitCustomAction("FORWARD_30")
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 			
@@ -256,21 +309,22 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 
-			Constants.CUSTOM_COMMAND_SET_REPEAT_MODE -> {
-				val mode = args.getString("mode", "OFF")
-				service.handleSetRepeatMode(mode)
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
-
-			Constants.CUSTOM_COMMAND_SET_SHUFFLE_MODE -> {
-				val enabled = args.getBoolean("enabled", false)
-				service.handleSetShuffleMode(enabled)
-				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-			}
+			// Note: REPEAT_MODE and SHUFFLE_MODE now handled via standard Player commands
+			// (Player.COMMAND_SET_REPEAT_MODE, Player.COMMAND_SET_SHUFFLE_MODE)
+			// No custom command handler needed - MediaBrowser.repeatMode/shuffleModeEnabled work directly
 
 			Constants.CUSTOM_COMMAND_SET_SKIP_SILENCE -> {
 				val enabled = args.getBoolean("enabled", false)
 				service.handleSetSkipSilence(enabled)
+				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+			}
+
+			Constants.CUSTOM_COMMAND_UPDATE_NOTIFICATION_STATE -> {
+				// Update notification button states (like/dislike/bookmark)
+				val liked = args.getBoolean("liked", false)
+				val disliked = args.getBoolean("disliked", false)
+				val bookmarked = args.getBoolean("bookmarked", false)
+				updateButtonStates(liked, disliked, bookmarked)
 				return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
 			}
 

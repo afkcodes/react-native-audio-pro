@@ -38,6 +38,9 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	private lateinit var ambientPlayer: ExoPlayer
 	private val equalizer = AudioProEqualizer()
 
+	// Store callback reference for dynamic button state updates
+	private var sessionCallback: AudioProMediaLibrarySessionCallback? = null
+
 	companion object {
 		private const val NOTIFICATION_ID = Constants.NOTIFICATION_ID
 		private const val CHANNEL_ID = Constants.NOTIFICATION_CHANNEL_ID
@@ -71,7 +74,42 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	 */
 	@OptIn(UnstableApi::class)
 	protected open fun createLibrarySessionCallback(): MediaLibrarySession.Callback {
-		return AudioProMediaLibrarySessionCallback(this)
+		val callback = AudioProMediaLibrarySessionCallback(this)
+		sessionCallback = callback
+		return callback
+	}
+
+	/**
+	 * Updates the liked state in the notification.
+	 * Call this when the user likes/unlikes a track.
+	 */
+	@OptIn(UnstableApi::class)
+	fun updateNotificationLikedState(liked: Boolean) {
+		sessionCallback?.updateLikedState(liked)
+	}
+
+	/**
+	 * Updates the disliked state in the notification.
+	 */
+	@OptIn(UnstableApi::class)
+	fun updateNotificationDislikedState(disliked: Boolean) {
+		sessionCallback?.updateDislikedState(disliked)
+	}
+
+	/**
+	 * Updates the bookmarked state in the notification.
+	 */
+	@OptIn(UnstableApi::class)
+	fun updateNotificationBookmarkedState(bookmarked: Boolean) {
+		sessionCallback?.updateBookmarkedState(bookmarked)
+	}
+
+	/**
+	 * Updates all button states at once (e.g., when track changes).
+	 */
+	@OptIn(UnstableApi::class)
+	fun updateNotificationButtonStates(liked: Boolean, disliked: Boolean, bookmarked: Boolean) {
+		sessionCallback?.updateButtonStates(liked, disliked, bookmarked)
 	}
 	
 	private fun createAmbientLibrarySessionCallback(): MediaLibrarySession.Callback {
@@ -107,37 +145,31 @@ open class AudioProPlaybackService : MediaLibraryService() {
 	// with the notification provider.
 
 	/**
-	 * Called when the task is removed from the recent tasks list
-	 * This happens when the user swipes away the app from the recent apps list
+	 * Called when the task is removed from the recent tasks list.
+	 *
+	 * Behavior: Pause playback but keep notification visible (Spotify-style).
+	 * The notification stays in an inactive/paused state so user can resume.
+	 * The last-known queue, track index, and position are already persisted
+	 * in MMKV on the JS side, so the next cold start will restore them.
 	 */
 	override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-		android.util.Log.d(Constants.LOG_TAG, "Task removed, stopping service")
+		android.util.Log.i(Constants.LOG_TAG, "[TASK_REMOVED] App swiped from recents – pausing playback (notification stays)")
 
-		// Force stop playback and release resources
+		// Spotify-style: Pause but keep notification visible in paused state.
+		// User can tap notification to resume, or swipe notification away to fully dismiss.
+		
 		try {
-			// Main Session
-			val hasSession = ::mediaLibrarySession.isInitialized
-			if (hasSession) {
-				mediaLibrarySession.player.stop()
-				mediaLibrarySession.release()
+			if (::player.isInitialized && player.isPlaying) {
+				// Just pause - don't stop or clear. This keeps notification visible.
+				player.pause()
 			}
-			if (::player.isInitialized) {
-				player.release()
+			if (::ambientPlayer.isInitialized && ambientPlayer.isPlaying) {
+				ambientPlayer.pause()
 			}
-			
-			// Ambient Session
-			if (::ambientLibrarySession.isInitialized) {
-				ambientLibrarySession.player.stop()
-				ambientLibrarySession.release()
-			}
-			if (::ambientPlayer.isInitialized) {
-				ambientPlayer.release()
-			}
+			// Do NOT release sessions or clear media items. Let notification persist.
 		} catch (e: Exception) {
-			android.util.Log.e(Constants.LOG_TAG, "Error stopping playback", e)
+			android.util.Log.e(Constants.LOG_TAG, "[TASK_REMOVED] Error during pause", e)
 		}
-
-		stopSelf()
 
 		super.onTaskRemoved(rootIntent)
 	}
@@ -220,6 +252,8 @@ open class AudioProPlaybackService : MediaLibraryService() {
 						.build(),
 					/* handleAudioFocus = */ true
 				)
+				.setSeekBackIncrementMs(30000)
+				.setSeekForwardIncrementMs(30000)
 				.build()
 		player.setHandleAudioBecomingNoisy(true)
 		player.repeatMode = Player.REPEAT_MODE_OFF
