@@ -3,14 +3,17 @@ package dev.rnap.reactnativeaudiopro
 import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
+import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
+import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
@@ -340,6 +343,90 @@ open class AudioProMediaLibrarySessionCallback(private val service: AudioProPlay
 		mediaItems: List<MediaItem>,
 	): ListenableFuture<List<MediaItem>> {
 		return Futures.immediateFuture(mediaItems)
+	}
+
+	// ─────────────────────────────────────────────────────────────
+	// Android Auto / Media Browser Tree
+	// ─────────────────────────────────────────────────────────────
+	// Android Auto requires a browsable media tree to display the app.
+	// We provide a minimal root + "Now Playing" node that exposes
+	// the current queue so Auto can render playback controls properly.
+
+	companion object {
+		private const val MEDIA_ROOT_ID = "root"
+		private const val MEDIA_NOW_PLAYING_ID = "now_playing"
+	}
+
+	override fun onGetLibraryRoot(
+		session: MediaLibraryService.MediaLibrarySession,
+		browser: MediaSession.ControllerInfo,
+		params: MediaLibraryService.LibraryParams?,
+	): ListenableFuture<LibraryResult<MediaItem>> {
+		val rootItem = MediaItem.Builder()
+			.setMediaId(MEDIA_ROOT_ID)
+			.setMediaMetadata(
+				MediaMetadata.Builder()
+					.setTitle("Audio Pro")
+					.setIsBrowsable(true)
+					.setIsPlayable(false)
+					.setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+					.build()
+			)
+			.build()
+		return Futures.immediateFuture(LibraryResult.ofItem(rootItem, params))
+	}
+
+	override fun onGetChildren(
+		session: MediaLibraryService.MediaLibrarySession,
+		browser: MediaSession.ControllerInfo,
+		parentId: String,
+		page: Int,
+		pageSize: Int,
+		params: MediaLibraryService.LibraryParams?,
+	): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+		return when (parentId) {
+			MEDIA_ROOT_ID -> {
+				// Return a single "Now Playing" browsable folder
+				val nowPlayingFolder = MediaItem.Builder()
+					.setMediaId(MEDIA_NOW_PLAYING_ID)
+					.setMediaMetadata(
+						MediaMetadata.Builder()
+							.setTitle("Now Playing")
+							.setIsBrowsable(true)
+							.setIsPlayable(false)
+							.setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+							.build()
+					)
+					.build()
+				Futures.immediateFuture(
+					LibraryResult.ofItemList(listOf(nowPlayingFolder), params)
+				)
+			}
+			MEDIA_NOW_PLAYING_ID -> {
+				// Return the current queue items
+				val player = session.player
+				val items = mutableListOf<MediaItem>()
+				for (i in 0 until player.mediaItemCount) {
+					val existingItem = player.getMediaItemAt(i)
+					// Ensure each item is marked as playable for Android Auto
+					val rebuiltItem = existingItem.buildUpon()
+						.setMediaMetadata(
+							existingItem.mediaMetadata.buildUpon()
+								.setIsPlayable(true)
+								.setIsBrowsable(false)
+								.build()
+						)
+						.build()
+					items.add(rebuiltItem)
+				}
+				Futures.immediateFuture(LibraryResult.ofItemList(items, params))
+			}
+			else -> {
+				Futures.immediateFuture(
+					LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+				)
+			}
+		}
 	}
 
 }

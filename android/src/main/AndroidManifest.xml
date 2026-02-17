@@ -8,12 +8,17 @@
 	<application>
 		<service
 			android:name=".AudioProPlaybackService"
-			android:exported="false"
+			android:exported="true"
 			android:foregroundServiceType="mediaPlayback">
 			<intent-filter>
 				<action android:name="androidx.media3.session.MediaLibraryService" />
 			</intent-filter>
 		</service>
+
+		<!-- Required for Android Auto to discover this as a media app -->
+		<meta-data
+			android:name="com.google.android.gms.car.application"
+			android:resource="@xml/automotive_app_desc" />
 
 	</application>
 </manifest>
