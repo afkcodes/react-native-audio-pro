@@ -78,12 +78,16 @@ dependencies {
 	implementation "com.facebook.react:react-android"
 	implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-	implementation "androidx.media3:media3-exoplayer:1.6.0"
-	implementation "androidx.media3:media3-session:1.6.0"
-	implementation "androidx.media3:media3-common:1.6.0"
-	implementation "androidx.media3:media3-common-ktx:1.6.0"
-	implementation "androidx.media3:media3-database:1.6.0"
-	implementation "androidx.media3:media3-exoplayer-hls:1.6.0"
+	implementation "androidx.media3:media3-exoplayer:1.9.0"
+	implementation "androidx.media3:media3-session:1.9.0"
+	implementation "androidx.media3:media3-common:1.9.0"
+	implementation "androidx.media3:media3-common-ktx:1.9.0"
+	implementation "androidx.media3:media3-database:1.9.0"
+	implementation "androidx.media3:media3-exoplayer-hls:1.9.0"
+	implementation "androidx.media3:media3-cast:1.9.0"
+
+	// Google Cast SDK for Chromecast / smart speaker support
+	implementation "com.google.android.gms:play-services-cast-framework:22.2.0"
 
 
 	implementation "androidx.core:core-ktx:1.16.0"

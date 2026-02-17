@@ -63,6 +63,10 @@ export type {
 	AudioProTrack,
 	/** Payload for track ended events */
 	AudioProTrackEndedPayload,
+	/** Google Cast connection state */
+	AudioProCastState,
+	/** Payload for cast state change events */
+	AudioProCastStateChangedPayload,
 } from './types';
 
 /**

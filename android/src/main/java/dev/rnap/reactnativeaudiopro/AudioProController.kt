@@ -185,6 +185,24 @@ object AudioProController {
 	var settingSkipIntervalMs: Long = 30000L
 	var settingCacheEnabled: Boolean = true
 
+	/**
+	 * Whether Google Cast support is enabled.
+	 * Set to true by calling initializeCast() from JS before play().
+	 */
+	var castEnabled: Boolean = false
+		private set
+
+	/**
+	 * Emit a cast state change event to React Native.
+	 */
+	fun emitCastStateChanged(state: String, isConnected: Boolean) {
+		val payload = Arguments.createMap().apply {
+			putString("castState", state)
+			putBoolean("isConnected", isConnected)
+		}
+		emitEvent(AudioProModule.EVENT_TYPE_CAST_STATE_CHANGED, activeTrack, payload, "CastStateChanged($state)")
+	}
+
 	fun configure(options: ReadableMap) {
 		if (options.hasKey("debug")) {
 			settingDebug = options.getBoolean("debug")
@@ -216,7 +234,12 @@ object AudioProController {
 			}
 		}
 		
-		log("Configured AudioPro: debug=$settingDebug, cache=$settingCacheEnabled")
+		if (options.hasKey("castEnabled")) {
+			castEnabled = options.getBoolean("castEnabled")
+			log("Cast support ${if (castEnabled) "enabled" else "disabled"}")
+		}
+		
+		log("Configured AudioPro: debug=$settingDebug, cache=$settingCacheEnabled, cast=$castEnabled")
 	}
 
 	/**

@@ -12,6 +12,7 @@ Modern, background-capable audio playback for React Native — built for podcast
 - 🔁 **Sliding Window URL Refreshing**
 - 🎚️ **Equalizer & Bass Boost** (Android)
 - 🚗 **Android Auto Support** (Android)
+- 📺 **Google Cast** (Android) — Chromecast, smart speakers, Cast-enabled devices
 
 Works out of the box with background playback, lock screen controls, and clean hooks-based state. Under the hood: Android uses Media3 (not old-school ExoPlayer), giving you up-to-date media session support. iOS uses AVFoundation.
 
@@ -24,6 +25,7 @@ Works out of the box with background playback, lock screen controls, and clean h
 - [✅️ Core Features](#-core-features)
 - [✨ Advanced Features](#-advanced-features)
 - [🚗 Android Auto](#-android-auto)
+- [📺 Google Cast](#-google-cast)
 - [⚙️ Requirements](#%EF%B8%8F-requirements)
 - [🚀 Installation](#-installation)
 - [📚 API Overview](#-api-overview)
@@ -41,6 +43,7 @@ These are fully supported, maintained features and the foundation of the library
 - 🖼 **Artwork Support** — Display album art on lock screen.
 - 🪟 **Notification Center** — Android media session support.
 - 🚗 **Android Auto** — Playback controls, metadata, artwork, and queue browsing on car head units.
+- 📺 **Google Cast** — Cast audio to Chromecast, smart speakers, and Cast-enabled devices with automatic local↔remote switching.
 - ⚙️ **Imperative API** — `play`, `pause`, `stop`, `seekTo`, `setVolume`, `setPlaybackSpeed`.
 - 🕘 **Start Time Support** — Begin playback from a specific position.
 - 🪪 **HTTP Headers** — Pass custom headers for audio and artwork URLs.
@@ -113,6 +116,64 @@ Android Auto support is built-in. When your app is connected to Android Auto (US
 No additional configuration needed in your React Native code. The library handles the Android Auto integration at the native level. Just make sure your app's `AndroidManifest.xml` in the consuming app doesn't override the library's service export settings.
 
 > **Note:** Android Auto requires your app to be reviewed and approved by Google for production distribution via the Play Store. During development, you can use the [Android Auto Desktop Head Unit (DHU)](https://developer.android.com/training/cars/testing) for testing.
+
+## 📺 Google Cast
+
+Cast audio to Chromecast, smart speakers, Google Home, and other Cast-enabled devices. Built on Media3 1.9.0's `CastPlayer` which handles local↔remote switching automatically — when a user connects to a Cast device, playback transfers seamlessly, and when they disconnect, it resumes locally without losing position.
+
+**What works:**
+- Automatic playback transfer between phone and Cast device
+- Track metadata (title, artist, artwork) displayed on Cast device
+- Queue sync — the entire queue transfers to the Cast device
+- Seamless switchback — disconnect from Cast and local playback resumes at the same position
+- Cast state events (`CAST_STATE_CHANGED`) emitted to JS for UI updates (show/hide Cast button)
+
+**Setup:**
+
+1. Enable Cast in your configuration:
+
+```typescript
+AudioPro.configure({
+  castEnabled: true, // Enable Google Cast support
+});
+```
+
+2. Create a `CastOptionsProvider` in your Android app:
+
+```kotlin
+// e.g. MyCastOptionsProvider.kt
+class MyCastOptionsProvider : OptionsProvider {
+    override fun getCastOptions(context: Context): CastOptions {
+        return CastOptions.Builder()
+            .setReceiverApplicationId(CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID)
+            // Or use your own receiver app ID for custom receiver
+            .build()
+    }
+    override fun getAdditionalSessionProviders(context: Context): List<SessionProvider>? = null
+}
+```
+
+3. Register it in your app's `AndroidManifest.xml`:
+
+```xml
+<meta-data
+    android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+    android:value="com.yourapp.MyCastOptionsProvider" />
+```
+
+4. Add a Cast button to your UI (use the `MediaRouteButton` or a custom button):
+
+```typescript
+AudioPro.addEventListener((event) => {
+  if (event.type === 'CAST_STATE_CHANGED') {
+    const { castState, isConnected } = event.payload;
+    // Show/hide Cast button based on castState
+    // 'NO_DEVICES_AVAILABLE' | 'NOT_CONNECTED' | 'CONNECTING' | 'CONNECTED'
+  }
+});
+```
+
+> **Note:** The consuming app must provide its own `CastOptionsProvider` with a Cast receiver app ID. The default media receiver works for basic audio casting. For custom UI on the Cast device, create a custom Web Receiver app.
 
 ### 🎵 Gapless Playback
 Gapless playback is enabled by default. Simply add multiple tracks to the queue, and the player will transition between them seamlessly without interruptions.

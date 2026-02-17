@@ -216,6 +216,9 @@ open class AudioProPlaybackService : MediaLibraryService() {
 			android.util.Log.e(Constants.LOG_TAG, "Error during service destruction", e)
 		}
 
+		// Release Cast resources
+		AudioProCastManager.release()
+
 		instance = null
 		super.onDestroy()
 	}
@@ -285,8 +288,24 @@ open class AudioProPlaybackService : MediaLibraryService() {
 			}
 		})
 
+		// Determine the session player: CastPlayer wrapping ExoPlayer if Cast is
+		// enabled, otherwise plain ExoPlayer. Media3 1.9.0 CastPlayer.Builder with
+		// setLocalPlayer() handles local↔remote switching automatically.
+		val sessionPlayer: Player = if (AudioProController.castEnabled) {
+			val cp = AudioProCastManager.initialize(this, player)
+			if (cp != null) {
+				android.util.Log.i(Constants.LOG_TAG, "Using CastPlayer (wraps ExoPlayer for local + cast)")
+				cp
+			} else {
+				android.util.Log.w(Constants.LOG_TAG, "CastPlayer init failed, falling back to ExoPlayer only")
+				player
+			}
+		} else {
+			player
+		}
+
 		mediaLibrarySession =
-			MediaLibrarySession.Builder(this, player, createLibrarySessionCallback())
+			MediaLibrarySession.Builder(this, sessionPlayer, createLibrarySessionCallback())
 				.also { builder -> getSessionActivityIntent()?.let { builder.setSessionActivity(it) } }
 				.build()
 				
